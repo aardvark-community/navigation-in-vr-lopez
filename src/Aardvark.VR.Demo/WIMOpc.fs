@@ -82,18 +82,8 @@ module WIMOpc =
         let controllerPos = newModel.menuModel.controllerMenuSelector
 
         let userHMD = newModel.controllerInfos |> HMap.tryFind controllerPos.kind
-        
-        //match userHMD with
-        //| Some pos -> 
-        //    let newHMDPosList = 
-        //        newModel.WIMuserPos
-        //        |> PList.map (fun lmk -> 
-        //            {lmk with trafo = pos.pose.deviceToWorld * newModel.WIMworkSpaceTrafo.Inverse}
-        //        )
-        //    {newModel with WIMuserPos = newHMDPosList}
-        //| None -> newModel
-
-        let testin = 
+      
+        let newWIMuserPos = 
             match userHMD with 
             | Some pos -> 
                 newModel.WIMuserPos
@@ -110,10 +100,4 @@ module WIMOpc =
                 )
             | None -> PList.empty
         
-        {newModel with WIMuserPos = testin}
-
-
-        
-
-    
-    
+        {newModel with WIMuserPos = newWIMuserPos}
