@@ -1,0 +1,16 @@
+bin/Release
+bin/Debug
+*.swp
+*.userprefs
+**/obj
+/packages
+!/packages/*.config
+/src/*.suo
+/bin/*.nupkg
+/src/.vs
+/paket-files
+/.fake
+/.paket/paket.exe
+/Aardvark.log
+/src/Aardvark.VR.Demo/*.domaincache
+/.paket/Paket.Restore.targets

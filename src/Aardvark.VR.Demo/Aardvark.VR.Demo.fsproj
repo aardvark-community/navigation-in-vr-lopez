@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>..\..\bin\Debug\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <OutputPath>..\..\bin\Release\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="SerializationOpc.fs" />
+    <Compile Include="OpcViewerFunc.fs" />
+    <Compile Include="UtilitiesModel.fs" />
+    <Compile Include="UtilitiesMenu.fs" />
+    <Compile Include="MenuModel.fs" />
+    <Compile Include="MenuApp.fs" />
+    <Compile Include="Model.fs" />
+    <Compile Include="OpcUtilities.fs" />
+    <Compile Include="WIMOpc.fs" />
+    <Compile Include="PlaceLandmark.fs" />
+    <Compile Include="NavigationOpc.fs" />
+    <Compile Include="App.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Aardvark.VR\Aardvark.VR.fsproj" />
+    <ProjectReference Include="..\OPCViewer.Base\OPCViewer.Base.fsproj" />
+  </ItemGroup>
+  <Import Project="..\..\.paket\Paket.Restore.targets" />
+</Project>
