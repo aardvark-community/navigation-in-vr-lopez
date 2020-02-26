@@ -77,6 +77,7 @@ type Model =
         WIMlandmarkOnController     : plist<VisibleBox>
         WIMlandmarkOnAnnotationSpace: plist<VisibleBox>
         WIMuserPos                  : plist<VisibleBox>
+        teleportRay                 : Ray3d
         
     }
 
@@ -149,6 +150,7 @@ module Model =
             WIMlandmarkOnController     = PList.empty
             WIMlandmarkOnAnnotationSpace= PList.empty
             WIMuserPos                  = PList.empty
+            teleportRay                 = Ray3d.Invalid
         }
 
     let initMainReset = 

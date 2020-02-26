@@ -40,12 +40,14 @@ module MenuApp =
                 let hmdPos = controllers |> HMap.values |> Seq.item 0
                 //match model.menu with
                 //| PlaceLandmarks ->
-                let newMenuBoxes = UtilitiesMenu.mkBoxesMenu model.initialMenuPosition hmdPos.pose 6 //number of menu possibilities should be the number of boxes. So far 2
+                let newMenuBoxes = UtilitiesMenu.mkBoxesMenu model.initialMenuPosition hmdPos.pose 8 //number of menu possibilities should be the number of boxes. So far 2
                 let box0id = newMenuBoxes |> Seq.item 0
                 let box1id = newMenuBoxes |> Seq.item 1
                 let box2id = newMenuBoxes |> Seq.item 2
                 let box3id = newMenuBoxes |> Seq.item 3
                 let box4id = newMenuBoxes |> Seq.item 4
+                let box5id = newMenuBoxes |> Seq.item 5
+                let box6id = newMenuBoxes |> Seq.item 6
                 let newMenuBoxes = 
                     newMenuBoxes 
                     |> PList.map (fun idx -> 
@@ -54,6 +56,8 @@ module MenuApp =
                         else if idx.id.Equals(box2id.id) then {idx with id = "WIM"}
                         else if idx.id.Equals(box3id.id) then {idx with id = "Scale"}
                         else if idx.id.Equals(box4id.id) then {idx with id = "Reset"}
+                        else if idx.id.Equals(box5id.id) then {idx with id = "Teleportation"}
+                        else if idx.id.Equals(box6id.id) then {idx with id = "Drone mode"}
                         else {idx with id = "Node Based"}
                         )
                 {model with mainMenuBoxes = newMenuBoxes; menuButtonPressed = buttonPressed}
@@ -90,6 +94,8 @@ module MenuApp =
                             let box2ID = model.mainMenuBoxes |> Seq.item 2
                             let box3ID = model.mainMenuBoxes |> Seq.item 3
                             let box4ID = model.mainMenuBoxes |> Seq.item 4
+                            let box5ID = model.mainMenuBoxes |> Seq.item 5
+                            let box6ID = model.mainMenuBoxes |> Seq.item 6
 
                             let menuSelector = if a.joystickHold then a else b
                                 
@@ -103,6 +109,10 @@ module MenuApp =
                                 {   model with menu = MenuState.Scale; controllerMenuSelector = menuSelector}
                             else if box4ID.id = id then 
                                 {   model with menu = MenuState.Reset; controllerMenuSelector = menuSelector}
+                            else if box5ID.id = id then 
+                                {   model with menu = MenuState.Teleportation; controllerMenuSelector = menuSelector}
+                            else if box6ID.id = id then 
+                                {   model with menu = MenuState.DroneMode; controllerMenuSelector = menuSelector}
                             else 
                                 {
                                     model with 

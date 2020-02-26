@@ -253,6 +253,9 @@ module Demo =
                         annotationSpaceTrafo         = Trafo3d.Identity
                         workSpaceTrafo               = Trafo3d.Identity
                     }
+                | Menu.MenuState.Teleportation -> 
+                    newModel
+                | _ -> newModel
                     
             | None -> newModel
 
@@ -550,6 +553,26 @@ module Demo =
                 |> Sg.map OpcViewerMsg
                 |> Sg.noEvents     
                 |> Sg.trafo m.WIMopcSpaceTrafo
+
+        let throwRay = 
+            m.teleportRay
+            |> Mod.map(fun ray -> 
+                [|ray.Line3d|]
+            )
+         
+        let throwRayLine = 
+            throwRay 
+            |> Sg.lines (Mod.constant C4b.White)
+            |> Sg.noEvents
+            |> Sg.uniform "LineWidth" (Mod.constant 5) 
+            |> Sg.effect [
+                toEffect DefaultSurfaces.trafo
+                toEffect DefaultSurfaces.vertexColor
+                toEffect DefaultSurfaces.thickLine
+                ]
+            |> Sg.pass (RenderPass.after "lines" RenderPassOrder.Arbitrary RenderPass.main)
+            |> Sg.depthTest (Mod.constant DepthTestMode.None)
+
         
         let transformedSgs = 
             [
@@ -573,6 +596,7 @@ module Demo =
                 deviceSgs
                 menuApp
                 landmarks
+                throwRayLine
             ] |> Sg.ofList
 
         Sg.ofList [transformedSgs; WIMtransformedSgs; notTransformedSgs; opcs; WIMopcs]
@@ -655,6 +679,7 @@ module Demo =
             WIMlandmarkOnController     = PList.empty
             WIMlandmarkOnAnnotationSpace= PList.empty
             WIMuserPos                  = PList.empty
+            teleportRay                 = Ray3d.Invalid
         }
     let app =
         {

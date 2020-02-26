@@ -82,6 +82,7 @@ module Mutable =
         let _WIMlandmarkOnController = MList.Create(__initial.WIMlandmarkOnController, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _WIMlandmarkOnAnnotationSpace = MList.Create(__initial.WIMlandmarkOnAnnotationSpace, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _WIMuserPos = MList.Create(__initial.WIMuserPos, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
+        let _teleportRay = ResetMod.Create(__initial.teleportRay)
         
         member x.text = _text :> IMod<_>
         member x.vr = _vr :> IMod<_>
@@ -116,6 +117,7 @@ module Mutable =
         member x.WIMlandmarkOnController = _WIMlandmarkOnController :> alist<_>
         member x.WIMlandmarkOnAnnotationSpace = _WIMlandmarkOnAnnotationSpace :> alist<_>
         member x.WIMuserPos = _WIMuserPos :> alist<_>
+        member x.teleportRay = _teleportRay :> IMod<_>
         
         member x.Current = __current :> IMod<_>
         member x.Update(v : Demo.Main.Model) =
@@ -154,6 +156,7 @@ module Mutable =
                 MList.Update(_WIMlandmarkOnController, v.WIMlandmarkOnController)
                 MList.Update(_WIMlandmarkOnAnnotationSpace, v.WIMlandmarkOnAnnotationSpace)
                 MList.Update(_WIMuserPos, v.WIMuserPos)
+                ResetMod.Update(_teleportRay,v.teleportRay)
                 
         
         static member Create(__initial : Demo.Main.Model) : MModel = MModel(__initial)
@@ -367,4 +370,10 @@ module Mutable =
                     override x.Get(r) = r.WIMuserPos
                     override x.Set(r,v) = { r with WIMuserPos = v }
                     override x.Update(r,f) = { r with WIMuserPos = f r.WIMuserPos }
+                }
+            let teleportRay =
+                { new Lens<Demo.Main.Model, Aardvark.Base.Ray3d>() with
+                    override x.Get(r) = r.teleportRay
+                    override x.Set(r,v) = { r with teleportRay = v }
+                    override x.Update(r,f) = { r with teleportRay = f r.teleportRay }
                 }

@@ -15,6 +15,8 @@ type MenuState =
 | WIM
 | NodeBased
 | Reset
+| Teleportation
+| DroneMode
 
 [<DomainType>]
 type MenuModel = 
