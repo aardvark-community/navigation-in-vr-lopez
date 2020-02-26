@@ -20,8 +20,8 @@
     <Compile Include="Model.fs" />
     <Compile Include="OpcUtilities.fs" />
     <Compile Include="WIMOpc.fs" />
-    <Compile Include="NavigationOpc.fs" />
     <Compile Include="PlaceLandmark.fs" />
+    <Compile Include="NavigationOpc.fs" />
     <Compile Include="App.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

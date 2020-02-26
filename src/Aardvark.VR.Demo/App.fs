@@ -481,7 +481,7 @@ module Demo =
             |> Sg.set
             |> defaultEffect
             |> Sg.noEvents
-
+            
         //let landmarksFromStart = 
         //    m.landmarkFromStart
         //    |> AList.toASet 
@@ -561,8 +561,8 @@ module Demo =
 
         let WIMtransformedSgs = 
             [
-                landmarksOnWIM
-                userPosOnWIM
+                landmarksOnWIM 
+                userPosOnWIM 
             ]
             |> Sg.ofList
             //|> Sg.trafo m.WIMannotationSpaceTrafo

@@ -72,7 +72,7 @@ module PlaceLandmark =
         match newCP with 
         | Some id -> 
             let newModel = 
-                let updateFlagPos = 
+                let updateLandmarkPos = 
                     newModel.landmarkOnController
                     |> PList.map (fun landmark -> {landmark with trafo = id.pose.deviceToWorld})
 
@@ -86,7 +86,7 @@ module PlaceLandmark =
                         | Some landmark ->
                             let updateLandmark = 
                                 {landmark with 
-                                    trafo = id.pose.deviceToWorld * newModel.workSpaceTrafo.Inverse
+                                    trafo = id.pose.deviceToWorld * newModel.WIMworkSpaceTrafo.Inverse
                                 }
                             let newlandMarkOnAnnotationSpace = 
                                 newModel.landmarkOnAnnotationSpace
@@ -94,7 +94,7 @@ module PlaceLandmark =
                             
                             let updateWIMLandmark = 
                                 {landmark with 
-                                    trafo = id.pose.deviceToWorld * newModel.WIMworkSpaceTrafo.Inverse
+                                    trafo = id.pose.deviceToWorld 
                                 }
                             let newlandMarkOnWIMAnnotationSpace = 
                                 newModel.WIMlandmarkOnAnnotationSpace
@@ -102,13 +102,13 @@ module PlaceLandmark =
 
                             {newModel with 
                                 landmarkOnController = PList.empty; 
-                                WIMlandmarkOnAnnotationSpace = newlandMarkOnAnnotationSpace;
-                                landmarkOnAnnotationSpace = newlandMarkOnWIMAnnotationSpace
+                                WIMlandmarkOnAnnotationSpace = newlandMarkOnWIMAnnotationSpace;
+                                landmarkOnAnnotationSpace = newlandMarkOnAnnotationSpace
                             }
                         | None -> newModel
                     | false -> 
                         {newModel with 
-                            landmarkOnController = updateFlagPos
+                            landmarkOnController = updateLandmarkPos
                         }
             newModel
         | None -> newModel

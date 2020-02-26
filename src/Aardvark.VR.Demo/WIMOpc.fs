@@ -88,7 +88,7 @@ module WIMOpc =
             | Some pos -> 
                 newModel.WIMuserPos
                 |> PList.map (fun lmkC -> 
-                    let newLmkC = pos.pose.deviceToWorld * newModel.WIMworkSpaceTrafo
+                    let newLmkC = pos.pose.deviceToWorld * newModel.workSpaceTrafo.Inverse * newModel.WIMworkSpaceTrafo
                     let rtLmkC = newLmkC.GetOrthoNormalOrientation()
                     let rotLmkC = Rot3d.FromFrame(rtLmkC.Forward.C0.XYZ, rtLmkC.Forward.C1.XYZ, rtLmkC.Forward.C2.XYZ)
                     let rotationLmkC = rotLmkC.GetEulerAngles()

@@ -51,32 +51,7 @@ module NavigationOpc =
                 let newControllerDistance = dist - newModel.offsetControllerDistance + newModel.initControlTrafo.GetScale()
 
                 let scaleControllerCenter = Trafo3d.Translation (-newModel.initControlTrafo.GetModelOrigin()) * Trafo3d.Scale (newControllerDistance) * Trafo3d.Translation (newModel.initControlTrafo.GetModelOrigin())
-
-                //printfn "Scale now is: %f, %f, %f" (scaleControllerCenter.Forward.M00) (scaleControllerCenter.Forward.M11) (scaleControllerCenter.Forward.M22)
-                //printfn "controller distance: %f" newControllerDistance
                 
-                //// Rotation with origin in the first controller
-                //let firstControllerTrafo = 
-                //    newModel 
-                //    |> OpcUtilities.getWorldTrafoIfBackPressed (controllersFiltered |> HMap.keys |> Seq.item 0)
-
-                //let secondControllerTrafo = 
-                //    newModel
-                //    |> OpcUtilities.getWorldTrafoIfBackPressed (controllersFiltered |> HMap.keys |> Seq.item 1)
-
-                //let secondControllerToNewCoordinateSystem = 
-                //    newModel.rotationAxis * newModel.init2ControlTrafo.Inverse * secondControllerTrafo
-                    
-                //let initialControllerDir = newModel.initControlTrafo.GetModelOrigin() - newModel.init2ControlTrafo.GetModelOrigin()
-                //let currentControllerDir = firstControllerTrafo.GetModelOrigin() - secondControllerTrafo.GetModelOrigin()
-                    
-                //let getRotation = Trafo3d.RotateInto(initialControllerDir, currentControllerDir)
-
-                //let newRotationTrafo = 
-                //    Trafo3d.Translation (-newModel.rotationAxis.GetModelOrigin()) * getRotation * Trafo3d.Translation (newModel.rotationAxis.GetModelOrigin())
-                    // coordinate system (rotation axis) should probably be at the middle distance of the controllers
-
-                //let newWorkSpace = newModel.initWorkSpaceTrafo * newRotationTrafo * scaleControllerCenter//newModel.initControlTrafo.Inverse * currentControllerTrafo
                 let newWorkSpace = newModel.initWorkSpaceTrafo * scaleControllerCenter//newModel.initControlTrafo.Inverse * currentControllerTrafo
                 let newOpcSpace = newModel.initOpcSpaceTrafo * newWorkSpace
                 let newFlagSpace = newModel.initAnnotationSpaceTrafo * newWorkSpace
