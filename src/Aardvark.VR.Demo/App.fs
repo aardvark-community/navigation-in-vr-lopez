@@ -129,11 +129,19 @@ module Demo =
                 | Menu.MenuState.NodeBased -> 
                     model
                 | Menu.MenuState.WIM -> 
-                    model
+                    let newModel = 
+                        model 
+                        |> WIMOpc.updateMiniMap kind p
+
+                    newModel
                     |> WIMOpc.editMiniMap kind p
+                    
                 | Menu.MenuState.WIMLandmarks -> 
                     model
                     |> PlaceLandmark.placingOnWIM kind p
+                | Menu.MenuState.Teleportation -> 
+                    model 
+                    |> Teleport.hitRay kind p
                 | _ -> model
             
             let controllerMenuUpdate = MenuApp.update model.controllerInfos state vr newModel.menuModel (MenuAction.UpdateControllerPose (kind, p))
@@ -254,7 +262,9 @@ module Demo =
                         workSpaceTrafo               = Trafo3d.Identity
                     }
                 | Menu.MenuState.Teleportation -> 
-                    newModel
+                    let dir = V3d.Subtract(V3d(id.pose.deviceToWorld.GetModelOrigin().X + 1000000000.0, id.pose.deviceToWorld.GetModelOrigin().Y, id.pose.deviceToWorld.GetModelOrigin().Z), id.pose.deviceToWorld.GetModelOrigin())
+                    let testRay = Ray3d(id.pose.deviceToWorld.GetModelOrigin(), dir.Normalized)
+                    {newModel with teleportRay = testRay}
                 | _ -> newModel
                     
             | None -> newModel
@@ -555,14 +565,19 @@ module Demo =
                 |> Sg.trafo m.WIMopcSpaceTrafo
 
         let throwRay = 
-            m.teleportRay
-            |> Mod.map(fun ray -> 
-                [|ray.Line3d|]
-            )
-         
+            //m.teleportRay
+            //|> Mod.map(fun ray -> 
+            //    [|ray.Line3d|]
+            //)
+            let ttt = m.teleportRay
+            adaptive{
+                let! rrr = ttt
+                return [|rrr.Line3d|]
+            }
+            
         let throwRayLine = 
             throwRay 
-            |> Sg.lines (Mod.constant C4b.White)
+            |> Sg.lines (Mod.constant C4b.Red)
             |> Sg.noEvents
             |> Sg.uniform "LineWidth" (Mod.constant 5) 
             |> Sg.effect [
@@ -572,8 +587,28 @@ module Demo =
                 ]
             |> Sg.pass (RenderPass.after "lines" RenderPassOrder.Arbitrary RenderPass.main)
             |> Sg.depthTest (Mod.constant DepthTestMode.None)
-
         
+        let compass = 
+            let north = "N"
+            Sg.textWithConfig { TextConfig.Default with renderStyle = RenderStyle.Billboard; align = TextAlignment.Center; flipViewDependent = true } (Mod.constant(north))
+            |> Sg.noEvents
+            |> Sg.scale 0.05
+            |> Sg.scale 50.0
+            |> Sg.trafo(Mod.constant(Trafo3d.Identity))
+
+        let compass1 = 
+            m.totalCompass
+            |> AList.toASet
+            |> ASet.map (fun c -> 
+                Sg.textWithConfig { TextConfig.Default with renderStyle = RenderStyle.Billboard; align = TextAlignment.Center; flipViewDependent = true } c.text
+                |> Sg.noEvents
+                |> Sg.scale 0.05
+                |> Sg.scale 50.0
+                |> Sg.trafo c.trafo
+            )
+            |> Sg.set
+            
+
         let transformedSgs = 
             [
                 landmarksOnAnnotationSpace
@@ -597,6 +632,7 @@ module Demo =
                 menuApp
                 landmarks
                 throwRayLine
+                //compass
             ] |> Sg.ofList
 
         Sg.ofList [transformedSgs; WIMtransformedSgs; notTransformedSgs; opcs; WIMopcs]
@@ -680,6 +716,8 @@ module Demo =
             WIMlandmarkOnAnnotationSpace= PList.empty
             WIMuserPos                  = PList.empty
             teleportRay                 = Ray3d.Invalid
+
+            totalCompass                = PList.empty
         }
     let app =
         {

@@ -19,14 +19,12 @@ module Teleport =
         
         let newModel = { model with controllerInfos = newControllersPosition}
         
-        let ci = newModel.controllerInfos |> HMap.tryFind kind
-        
         let controllerPos = newModel.menuModel.controllerMenuSelector
         let newCP = newModel.controllerInfos |> HMap.tryFind controllerPos.kind
         
         match newCP with
         | Some id -> 
-            let dir = V3d.Subtract(V3d(id.pose.deviceToWorld.GetModelOrigin().X + 10.0, id.pose.deviceToWorld.GetModelOrigin().Y, id.pose.deviceToWorld.GetModelOrigin().Z), id.pose.deviceToWorld.GetModelOrigin())
+            let dir = V3d.Subtract(V3d(id.pose.deviceToWorld.GetModelOrigin().X + 1000000000.0, id.pose.deviceToWorld.GetModelOrigin().Y, id.pose.deviceToWorld.GetModelOrigin().Z), id.pose.deviceToWorld.GetModelOrigin())
             let testRay = Ray3d(id.pose.deviceToWorld.GetModelOrigin(), dir.Normalized)
             {model with teleportRay = testRay}
         | None -> model

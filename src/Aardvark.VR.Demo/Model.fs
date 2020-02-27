@@ -28,10 +28,23 @@ type Polygon =
     }
 
 [<DomainType>]
+type Compass = 
+    {
+        trafo   : Trafo3d
+        text    : string
+    }
+module Compass = 
+    let initial = 
+        {
+            trafo   = Trafo3d.Identity
+            text    = ""
+        }
+
+[<DomainType>]
 type Model =
     {
-        text    : string
-        vr      : bool                
+        text                : string
+        vr                  : bool                
         
         cameraState         : CameraControllerState
 
@@ -78,6 +91,8 @@ type Model =
         WIMlandmarkOnAnnotationSpace: plist<VisibleBox>
         WIMuserPos                  : plist<VisibleBox>
         teleportRay                 : Ray3d
+
+        totalCompass                : plist<Compass>
         
     }
 
@@ -151,6 +166,8 @@ module Model =
             WIMlandmarkOnAnnotationSpace= PList.empty
             WIMuserPos                  = PList.empty
             teleportRay                 = Ray3d.Invalid
+
+            totalCompass                = PList.empty
         }
 
     let initMainReset = 

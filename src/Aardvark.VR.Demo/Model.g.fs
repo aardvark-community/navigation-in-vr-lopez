@@ -47,6 +47,52 @@ module Mutable =
                 }
     
     
+    type MCompass(__initial : Demo.Main.Compass) =
+        inherit obj()
+        let mutable __current : Aardvark.Base.Incremental.IModRef<Demo.Main.Compass> = Aardvark.Base.Incremental.EqModRef<Demo.Main.Compass>(__initial) :> Aardvark.Base.Incremental.IModRef<Demo.Main.Compass>
+        let _trafo = ResetMod.Create(__initial.trafo)
+        let _text = ResetMod.Create(__initial.text)
+        
+        member x.trafo = _trafo :> IMod<_>
+        member x.text = _text :> IMod<_>
+        
+        member x.Current = __current :> IMod<_>
+        member x.Update(v : Demo.Main.Compass) =
+            if not (System.Object.ReferenceEquals(__current.Value, v)) then
+                __current.Value <- v
+                
+                ResetMod.Update(_trafo,v.trafo)
+                ResetMod.Update(_text,v.text)
+                
+        
+        static member Create(__initial : Demo.Main.Compass) : MCompass = MCompass(__initial)
+        static member Update(m : MCompass, v : Demo.Main.Compass) = m.Update(v)
+        
+        override x.ToString() = __current.Value.ToString()
+        member x.AsString = sprintf "%A" __current.Value
+        interface IUpdatable<Demo.Main.Compass> with
+            member x.Update v = x.Update v
+    
+    
+    
+    [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
+    module Compass =
+        [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
+        module Lens =
+            let trafo =
+                { new Lens<Demo.Main.Compass, Aardvark.Base.Trafo3d>() with
+                    override x.Get(r) = r.trafo
+                    override x.Set(r,v) = { r with trafo = v }
+                    override x.Update(r,f) = { r with trafo = f r.trafo }
+                }
+            let text =
+                { new Lens<Demo.Main.Compass, System.String>() with
+                    override x.Get(r) = r.text
+                    override x.Set(r,v) = { r with text = v }
+                    override x.Update(r,f) = { r with text = f r.text }
+                }
+    
+    
     type MModel(__initial : Demo.Main.Model) =
         inherit obj()
         let mutable __current : Aardvark.Base.Incremental.IModRef<Demo.Main.Model> = Aardvark.Base.Incremental.EqModRef<Demo.Main.Model>(__initial) :> Aardvark.Base.Incremental.IModRef<Demo.Main.Model>
@@ -83,6 +129,7 @@ module Mutable =
         let _WIMlandmarkOnAnnotationSpace = MList.Create(__initial.WIMlandmarkOnAnnotationSpace, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _WIMuserPos = MList.Create(__initial.WIMuserPos, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _teleportRay = ResetMod.Create(__initial.teleportRay)
+        let _totalCompass = MList.Create(__initial.totalCompass, (fun v -> MCompass.Create(v)), (fun (m,v) -> MCompass.Update(m, v)), (fun v -> v))
         
         member x.text = _text :> IMod<_>
         member x.vr = _vr :> IMod<_>
@@ -118,6 +165,7 @@ module Mutable =
         member x.WIMlandmarkOnAnnotationSpace = _WIMlandmarkOnAnnotationSpace :> alist<_>
         member x.WIMuserPos = _WIMuserPos :> alist<_>
         member x.teleportRay = _teleportRay :> IMod<_>
+        member x.totalCompass = _totalCompass :> alist<_>
         
         member x.Current = __current :> IMod<_>
         member x.Update(v : Demo.Main.Model) =
@@ -157,6 +205,7 @@ module Mutable =
                 MList.Update(_WIMlandmarkOnAnnotationSpace, v.WIMlandmarkOnAnnotationSpace)
                 MList.Update(_WIMuserPos, v.WIMuserPos)
                 ResetMod.Update(_teleportRay,v.teleportRay)
+                MList.Update(_totalCompass, v.totalCompass)
                 
         
         static member Create(__initial : Demo.Main.Model) : MModel = MModel(__initial)
@@ -376,4 +425,10 @@ module Mutable =
                     override x.Get(r) = r.teleportRay
                     override x.Set(r,v) = { r with teleportRay = v }
                     override x.Update(r,f) = { r with teleportRay = f r.teleportRay }
+                }
+            let totalCompass =
+                { new Lens<Demo.Main.Model, Aardvark.Base.plist<Demo.Main.Compass>>() with
+                    override x.Get(r) = r.totalCompass
+                    override x.Set(r,v) = { r with totalCompass = v }
+                    override x.Update(r,f) = { r with totalCompass = f r.totalCompass }
                 }
