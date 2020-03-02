@@ -50,7 +50,7 @@ module Demo =
         let view (m : MCameraControllerState) =
             let frustum = Frustum.perspective 60.0 0.1 1000.0 1.0 |> Mod.constant
             FreeFlyController.controlledControl m id frustum (AttributeMap.ofList att) sg
-
+            
         let app =
             {
                 initial = FreeFlyController.initial
@@ -132,16 +132,18 @@ module Demo =
                     let newModel = 
                         model 
                         |> WIMOpc.updateMiniMap kind p
-
+                    
                     newModel
                     |> WIMOpc.editMiniMap kind p
-                    
                 | Menu.MenuState.WIMLandmarks -> 
                     model
                     |> PlaceLandmark.placingOnWIM kind p
                 | Menu.MenuState.Teleportation -> 
                     model 
                     |> Teleport.hitRay kind p
+                | Menu.MenuState.DroneMode -> 
+                    model 
+                    |> DroneControlCenter.moveDrone kind p
                 | _ -> model
             
             let controllerMenuUpdate = MenuApp.update model.controllerInfos state vr newModel.menuModel (MenuAction.UpdateControllerPose (kind, p))
@@ -274,6 +276,13 @@ module Demo =
 
                     let testRay = Ray3d(origin, controllDir)
                     {newModel with teleportRay = testRay}
+                | Menu.MenuState.DroneMode -> 
+                    let newDrone = 
+                        OpcUtilities.mkDrone id.pose.deviceToWorld 1
+                    let updateDrones = 
+                        {newModel.droneControl with drone = newDrone}
+                    {newModel with droneControl = updateDrones}
+                        
                 | _ -> newModel
                     
             | None -> newModel
@@ -474,6 +483,16 @@ module Demo =
             |> defaultEffect
             |> Sg.noEvents
 
+        let drones = 
+            m.droneControl.drone
+            |> AList.toASet 
+            |> ASet.map (fun b -> 
+                mkFlag m b 
+               )
+            |> Sg.set
+            |> defaultEffect
+            |> Sg.noEvents
+
         let userPosOnWIM = 
             m.WIMuserPos
             |> AList.toASet 
@@ -621,6 +640,7 @@ module Demo =
         let transformedSgs = 
             [
                 landmarksOnAnnotationSpace
+                drones
                 //landmarksFromStart
             ]
             |> Sg.ofList
@@ -725,6 +745,7 @@ module Demo =
             WIMlandmarkOnAnnotationSpace= PList.empty
             WIMuserPos                  = PList.empty
             teleportRay                 = Ray3d.Invalid
+            droneControl                = Drone.initial
 
             totalCompass                = PList.empty
         }

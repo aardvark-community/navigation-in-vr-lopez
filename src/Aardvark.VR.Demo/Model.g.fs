@@ -47,6 +47,61 @@ module Mutable =
                 }
     
     
+    type MDrone(__initial : Demo.Main.Drone) =
+        inherit obj()
+        let mutable __current : Aardvark.Base.Incremental.IModRef<Demo.Main.Drone> = Aardvark.Base.Incremental.EqModRef<Demo.Main.Drone>(__initial) :> Aardvark.Base.Incremental.IModRef<Demo.Main.Drone>
+        let _drone = MList.Create(__initial.drone, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
+        let _screen = MList.Create(__initial.screen, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
+        let _droneCamera = ResetMod.Create(__initial.droneCamera)
+        
+        member x.drone = _drone :> alist<_>
+        member x.screen = _screen :> alist<_>
+        member x.droneCamera = _droneCamera :> IMod<_>
+        
+        member x.Current = __current :> IMod<_>
+        member x.Update(v : Demo.Main.Drone) =
+            if not (System.Object.ReferenceEquals(__current.Value, v)) then
+                __current.Value <- v
+                
+                MList.Update(_drone, v.drone)
+                MList.Update(_screen, v.screen)
+                ResetMod.Update(_droneCamera,v.droneCamera)
+                
+        
+        static member Create(__initial : Demo.Main.Drone) : MDrone = MDrone(__initial)
+        static member Update(m : MDrone, v : Demo.Main.Drone) = m.Update(v)
+        
+        override x.ToString() = __current.Value.ToString()
+        member x.AsString = sprintf "%A" __current.Value
+        interface IUpdatable<Demo.Main.Drone> with
+            member x.Update v = x.Update v
+    
+    
+    
+    [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
+    module Drone =
+        [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
+        module Lens =
+            let drone =
+                { new Lens<Demo.Main.Drone, Aardvark.Base.plist<Demo.VisibleBox>>() with
+                    override x.Get(r) = r.drone
+                    override x.Set(r,v) = { r with drone = v }
+                    override x.Update(r,f) = { r with drone = f r.drone }
+                }
+            let screen =
+                { new Lens<Demo.Main.Drone, Aardvark.Base.plist<Demo.VisibleBox>>() with
+                    override x.Get(r) = r.screen
+                    override x.Set(r,v) = { r with screen = v }
+                    override x.Update(r,f) = { r with screen = f r.screen }
+                }
+            let droneCamera =
+                { new Lens<Demo.Main.Drone, Aardvark.Base.Camera>() with
+                    override x.Get(r) = r.droneCamera
+                    override x.Set(r,v) = { r with droneCamera = v }
+                    override x.Update(r,f) = { r with droneCamera = f r.droneCamera }
+                }
+    
+    
     type MCompass(__initial : Demo.Main.Compass) =
         inherit obj()
         let mutable __current : Aardvark.Base.Incremental.IModRef<Demo.Main.Compass> = Aardvark.Base.Incremental.EqModRef<Demo.Main.Compass>(__initial) :> Aardvark.Base.Incremental.IModRef<Demo.Main.Compass>
@@ -129,6 +184,7 @@ module Mutable =
         let _WIMlandmarkOnAnnotationSpace = MList.Create(__initial.WIMlandmarkOnAnnotationSpace, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _WIMuserPos = MList.Create(__initial.WIMuserPos, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _teleportRay = ResetMod.Create(__initial.teleportRay)
+        let _droneControl = MDrone.Create(__initial.droneControl)
         let _totalCompass = MList.Create(__initial.totalCompass, (fun v -> MCompass.Create(v)), (fun (m,v) -> MCompass.Update(m, v)), (fun v -> v))
         
         member x.text = _text :> IMod<_>
@@ -165,6 +221,7 @@ module Mutable =
         member x.WIMlandmarkOnAnnotationSpace = _WIMlandmarkOnAnnotationSpace :> alist<_>
         member x.WIMuserPos = _WIMuserPos :> alist<_>
         member x.teleportRay = _teleportRay :> IMod<_>
+        member x.droneControl = _droneControl
         member x.totalCompass = _totalCompass :> alist<_>
         
         member x.Current = __current :> IMod<_>
@@ -205,6 +262,7 @@ module Mutable =
                 MList.Update(_WIMlandmarkOnAnnotationSpace, v.WIMlandmarkOnAnnotationSpace)
                 MList.Update(_WIMuserPos, v.WIMuserPos)
                 ResetMod.Update(_teleportRay,v.teleportRay)
+                MDrone.Update(_droneControl, v.droneControl)
                 MList.Update(_totalCompass, v.totalCompass)
                 
         
@@ -425,6 +483,12 @@ module Mutable =
                     override x.Get(r) = r.teleportRay
                     override x.Set(r,v) = { r with teleportRay = v }
                     override x.Update(r,f) = { r with teleportRay = f r.teleportRay }
+                }
+            let droneControl =
+                { new Lens<Demo.Main.Model, Demo.Main.Drone>() with
+                    override x.Get(r) = r.droneControl
+                    override x.Set(r,v) = { r with droneControl = v }
+                    override x.Update(r,f) = { r with droneControl = f r.droneControl }
                 }
             let totalCompass =
                 { new Lens<Demo.Main.Model, Aardvark.Base.plist<Demo.Main.Compass>>() with

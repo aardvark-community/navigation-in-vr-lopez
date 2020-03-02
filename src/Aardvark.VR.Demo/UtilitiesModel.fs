@@ -115,6 +115,15 @@ module VisibleBox =
                 id = System.Guid.NewGuid().ToString()
                 geometry = Box3d.FromSize(V3d(0.01, 0.01, 0.15))
         }
+    let createDrone (color : C4b) (position : V3d) = 
+        {
+            initial 
+                with
+                color = color
+                trafo = Trafo3d.Translation(position)
+                id = System.Guid.NewGuid().ToString()
+                geometry = Box3d.FromSize(V3d(0.15, 0.15, 0.01))
+        }
 
 
 [<DomainType>]

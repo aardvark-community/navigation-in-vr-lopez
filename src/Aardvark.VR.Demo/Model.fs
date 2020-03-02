@@ -28,6 +28,21 @@ type Polygon =
     }
 
 [<DomainType>]
+type Drone = 
+    {
+        drone   : plist<VisibleBox>
+        screen  : plist<VisibleBox>
+        droneCamera : Camera
+    }
+module Drone = 
+    let initial = 
+        {
+            drone   = PList.empty
+            screen  = PList.empty
+            droneCamera = Camera.create (CameraView.ofTrafo(Trafo3d.Identity)) (Frustum.ofTrafo(Trafo3d.Identity))
+        }
+
+[<DomainType>]
 type Compass = 
     {
         trafo   : Trafo3d
@@ -91,6 +106,7 @@ type Model =
         WIMlandmarkOnAnnotationSpace: plist<VisibleBox>
         WIMuserPos                  : plist<VisibleBox>
         teleportRay                 : Ray3d
+        droneControl                : Drone
 
         totalCompass                : plist<Compass>
         
@@ -166,6 +182,7 @@ module Model =
             WIMlandmarkOnAnnotationSpace= PList.empty
             WIMuserPos                  = PList.empty
             teleportRay                 = Ray3d.Invalid
+            droneControl                = Drone.initial
 
             totalCompass                = PList.empty
         }

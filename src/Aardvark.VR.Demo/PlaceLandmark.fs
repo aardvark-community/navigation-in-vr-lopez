@@ -11,6 +11,7 @@ module PlaceLandmark =
     open Model
     open OpenTK
     open Aardvark.Base.MapExtImplementation
+    open Demo
 
     
     
@@ -56,7 +57,7 @@ module PlaceLandmark =
             newModel
         | None -> newModel
 
-    let placingOnWIM kind p model : Model = 
+    let placingOnWIM kind p model : Model =         
         let newControllersPosition = 
             model 
             |> OpcUtilities.updateControllersInfo kind p
