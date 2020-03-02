@@ -262,8 +262,17 @@ module Demo =
                         workSpaceTrafo               = Trafo3d.Identity
                     }
                 | Menu.MenuState.Teleportation -> 
-                    let dir = V3d.Subtract(V3d(id.pose.deviceToWorld.GetModelOrigin().X + 1000000000.0, id.pose.deviceToWorld.GetModelOrigin().Y, id.pose.deviceToWorld.GetModelOrigin().Z), id.pose.deviceToWorld.GetModelOrigin())
-                    let testRay = Ray3d(id.pose.deviceToWorld.GetModelOrigin(), dir.Normalized)
+                    //let dir = V3d.IOO //V3d.Subtract(V3d(id.pose.deviceToWorld.GetModelOrigin().X + 1000000000.0, id.pose.deviceToWorld.GetModelOrigin().Y, id.pose.deviceToWorld.GetModelOrigin().Z), id.pose.deviceToWorld.GetModelOrigin())
+                    
+                    let controllTrafo = id.pose.deviceToWorld
+                    //let startRay = Line3d(V3d.Zero, V3d.ZAxis * 10000.0)
+                    let origin = controllTrafo.Forward.TransformPos V3d.Zero
+                    let controllDir = controllTrafo.Forward.TransformDir V3d.YAxis
+
+                    //let controllDir = controllTrafo.GetViewDirectionLH()
+                    //let origin = controllTrafo.GetModelOrigin()
+
+                    let testRay = Ray3d(origin, controllDir)
                     {newModel with teleportRay = testRay}
                 | _ -> newModel
                     
