@@ -628,7 +628,7 @@ module Demo =
 
         let WIMtransformedSgs = 
             [
-                landmarksOnWIM 
+                landmarksOnWIM
                 userPosOnWIM 
             ]
             |> Sg.ofList

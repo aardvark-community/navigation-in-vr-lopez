@@ -99,9 +99,26 @@ module WIMOpc =
                 )
             | None -> PList.empty
         
-        {newModel with WIMuserPos = newWIMuserPos}
+        let updateWIMLandmark = 
+            newModel.landmarkOnAnnotationSpace
+            |> PList.map (fun landmark -> 
+                let newLmkC = landmark.trafo * newModel.workSpaceTrafo.Inverse * newModel.WIMworkSpaceTrafo
+                let rtLmkC = newLmkC.GetOrthoNormalOrientation()
+                let rotLmkC = Rot3d.FromFrame(rtLmkC.Forward.C0.XYZ, rtLmkC.Forward.C1.XYZ, rtLmkC.Forward.C2.XYZ)
+                let rotationLmkC = rotLmkC.GetEulerAngles()
 
+                let translationLmkC = newLmkC.GetModelOrigin()
 
+                let scaleLmkC = V3d(0.5, 0.5, 0.5)
+
+                {landmark with trafo = Trafo3d.FromComponents(scaleLmkC, rotationLmkC, translationLmkC)} //landmark.trafo * model.workSpaceTrafo.Inverse * newWorkSpace}
+            )
+
+        {newModel with 
+            WIMuserPos                      = newWIMuserPos;
+            WIMlandmarkOnAnnotationSpace    = updateWIMLandmark
+        }
+        
     let updateMiniMap kind p model : Model = 
         let controllerPos = 
             let cp = model.menuModel.controllerMenuSelector
@@ -119,15 +136,15 @@ module WIMOpc =
         let minimapScale = V3d(0.0025, 0.0025, 0.0025)
 
         let minimapPos = //minimapCoordinateSystem
-            Trafo3d.FromComponents(minimapScale, minimapRotation, minimapTrans)
-        
+            Trafo3d.FromComponents(minimapScale, V3d.Zero, minimapTrans)
         
         let newWorkSpace = minimapPos
         let newAnnotationSpace = model.initAnnotationSpaceTrafo * newWorkSpace
         let newOpcSpace = model.initOpcSpaceTrafo * newWorkSpace
         
+
         {model with 
             WIMopcSpaceTrafo                = newOpcSpace;
             WIMannotationSpaceTrafo         = newAnnotationSpace;
-            WIMworkSpaceTrafo               = newWorkSpace
+            WIMworkSpaceTrafo               = newWorkSpace;
         }

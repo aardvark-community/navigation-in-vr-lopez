@@ -42,7 +42,6 @@ module PlaceLandmark =
                     match landMarkOnController with 
                     | Some landmark ->
                         let updateLandmark = {landmark with trafo = id.pose.deviceToWorld * newModel.workSpaceTrafo.Inverse}
-                        printfn "landmark pos: %s" (updateLandmark.trafo.GetModelOrigin().ToString())
                         let newlandMarkOnAnnotationSpace = 
                             newModel.landmarkOnAnnotationSpace
                             |> PList.prepend updateLandmark
