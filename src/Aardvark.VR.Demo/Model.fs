@@ -39,7 +39,7 @@ module Drone =
         {
             drone   = PList.empty
             screen  = PList.empty
-            droneCamera = CameraView.lookAt V3d.Zero V3d.Zero V3d.IOO
+            droneCamera = CameraView.lookAt (V3d.III * 3.0) V3d.Zero V3d.OOI
         }
 
 [<DomainType>]

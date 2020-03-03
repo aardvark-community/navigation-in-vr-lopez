@@ -284,8 +284,6 @@ module Demo =
                     let updateDrones = 
                         {newModel.droneControl with drone = newDrone}
                     {newModel with droneControl = updateDrones}
-                        
-                | _ -> newModel
                     
             | None -> newModel
 
@@ -466,7 +464,7 @@ module Demo =
             button [ style "position: fixed; bottom: 5px; right: 5px"; onClick (fun () -> ToggleVR) ] text
         ]
     
-    let vr' (info : VrSystemInfo) (m : MModel) = 
+    let vr' (runtime : IRuntime) (info : VrSystemInfo) (m : MModel) = 
         let defaultEffect (msg : ISg<_>)=    
             msg
             |> Sg.effect [
@@ -637,6 +635,55 @@ module Demo =
                 |> Sg.trafo c.trafo
             )
             |> Sg.set
+
+        let signature =
+            runtime.CreateFramebufferSignature [
+                DefaultSemantic.Colors, { format = RenderbufferFormat.Rgba8; samples = 1 }
+                DefaultSemantic.Depth, { format = RenderbufferFormat.Depth24Stencil8; samples = 1 }
+            ]
+        
+        let size = V2i(1024,1024) |> Mod.init 
+
+        let offscreenTask = 
+            //Sg.box (Mod.constant(C4b.Red)) (Mod.constant(Box3d.Unit))
+            //|> Sg.trafo (Mod.constant(Trafo3d.Identity))
+            //|> Sg.shader {
+            //        do! DefaultSurfaces.trafo
+            //        do! DefaultSurfaces.simpleLighting
+            //    }
+            m.droneControl.drone
+            |> AList.toASet 
+            |> ASet.map (fun b -> 
+                mkFlag m b 
+               )
+            |> Sg.set
+            |> defaultEffect
+            |> Sg.noEvents
+            // attach a constant view trafo (which makes our box visible)
+            |> Sg.viewTrafo (
+                    CameraView.lookAt (V3d.III * 3.0) V3d.Zero V3d.OOI 
+                        |> CameraView.viewTrafo 
+                        |> Mod.constant
+                )
+            // since our render target size is dynamic, we compute a proj trafo using standard techniques
+            |> Sg.projTrafo (size |> Mod.map (fun actualSize -> 
+                    Frustum.perspective 60.0 0.01 10.0 (float actualSize.X / float actualSize.Y) |> Frustum.projTrafo
+                    )
+                )
+            // next, we use Sg.compile in order to turn a scene graph into a render task (a nice composable alias for runtime.CompileRender)
+            |> Sg.compile runtime signature 
+
+        let offscreenTexture =
+            RenderTask.renderToColor size offscreenTask
+
+        let showSecondCamera = 
+            Sg.box (Mod.constant C4b.White) (Mod.constant Box3d.Unit)
+            |> Sg.diffuseTexture offscreenTexture
+            |> Sg.shader {
+                do! DefaultSurfaces.trafo
+                do! DefaultSurfaces.diffuseTexture
+                do! DefaultSurfaces.simpleLighting
+            }
             
 
         let transformedSgs = 
@@ -663,6 +710,7 @@ module Demo =
                 menuApp
                 landmarks
                 throwRayLine
+                showSecondCamera
                 //compass
             ] |> Sg.ofList
 
@@ -751,7 +799,7 @@ module Demo =
 
             totalCompass                = PList.empty
         }
-    let app =
+    let app (runtime : IRuntime) =
         {
             unpersist = Unpersist.instance
             initial = initial
@@ -759,7 +807,7 @@ module Demo =
             threads = threads
             input = input 
             ui = ui'
-            vr = vr'
+            vr = vr' runtime
             pauseScene = Some pause
         }
 
