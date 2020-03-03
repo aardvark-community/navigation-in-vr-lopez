@@ -278,7 +278,9 @@ module Demo =
                     {newModel with teleportRay = testRay}
                 | Menu.MenuState.DroneMode -> 
                     let newDrone = 
-                        OpcUtilities.mkDrone id.pose.deviceToWorld 1
+                        if newModel.droneControl.drone.Count.Equals(0) then 
+                            OpcUtilities.mkDrone id.pose.deviceToWorld 1
+                        else newModel.droneControl.drone
                     let updateDrones = 
                         {newModel.droneControl with drone = newDrone}
                     {newModel with droneControl = updateDrones}

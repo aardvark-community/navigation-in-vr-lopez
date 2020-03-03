@@ -24,13 +24,15 @@ module DroneControlCenter =
         
         match newCP with 
         | Some id -> 
-            match id.sideButtonPressed with 
+            match id.backButtonPressed with 
             | true -> 
-                let controllDir = id.pose.deviceToWorld.GetViewDirectionLH()
+                let controllDir = id.pose.deviceToWorld.Forward.C1
+                printfn "orientation? %s" (controllDir.ToString())
                 let moveDrone = 
                     newModel.droneControl.drone
                     |> PList.map (fun drone -> 
-                        {drone with trafo = drone.trafo * Trafo3d.Translation(V3d.YAxis + 0.002) * newModel.workSpaceTrafo.Inverse}
+                        let newTrafo = drone.trafo.GetModelOrigin() + V3d(controllDir.X, controllDir.Y, controllDir.Z) * 0.005
+                        {drone with trafo = Trafo3d.Translation(newTrafo) }
                     )
                 
                 let updateDrones = 

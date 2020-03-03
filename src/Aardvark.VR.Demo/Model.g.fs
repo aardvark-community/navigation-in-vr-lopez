@@ -95,7 +95,7 @@ module Mutable =
                     override x.Update(r,f) = { r with screen = f r.screen }
                 }
             let droneCamera =
-                { new Lens<Demo.Main.Drone, Aardvark.Base.Camera>() with
+                { new Lens<Demo.Main.Drone, Aardvark.Base.CameraView>() with
                     override x.Get(r) = r.droneCamera
                     override x.Set(r,v) = { r with droneCamera = v }
                     override x.Update(r,f) = { r with droneCamera = f r.droneCamera }

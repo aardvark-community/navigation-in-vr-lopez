@@ -32,14 +32,14 @@ type Drone =
     {
         drone   : plist<VisibleBox>
         screen  : plist<VisibleBox>
-        droneCamera : Camera
+        droneCamera : CameraView
     }
 module Drone = 
     let initial = 
         {
             drone   = PList.empty
             screen  = PList.empty
-            droneCamera = Camera.create (CameraView.ofTrafo(Trafo3d.Identity)) (Frustum.ofTrafo(Trafo3d.Identity))
+            droneCamera = CameraView.lookAt V3d.Zero V3d.Zero V3d.IOO
         }
 
 [<DomainType>]
