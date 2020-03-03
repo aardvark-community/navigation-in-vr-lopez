@@ -644,6 +644,20 @@ module Demo =
         
         let size = V2i(1024,1024) |> Mod.init 
 
+        let testtt = 
+            let firstDrone = 
+                m.droneControl.drone
+                |> AList.toPList
+                |> PList.tryFirst
+ 
+            let dronePos = 
+                match firstDrone with 
+                | Some d -> d.trafo
+                | None -> Mod.constant Trafo3d.Identity
+            
+            dronePos.GetValue().GetModelOrigin()
+            
+
         let offscreenTask = 
             //Sg.box (Mod.constant(C4b.Red)) (Mod.constant(Box3d.Unit))
             //|> Sg.trafo (Mod.constant(Trafo3d.Identity))
@@ -661,10 +675,10 @@ module Demo =
             |> Sg.noEvents
             // attach a constant view trafo (which makes our box visible)
             |> Sg.viewTrafo (
-                    CameraView.lookAt (V3d.III * 3.0) V3d.Zero V3d.OOI 
-                        |> CameraView.viewTrafo 
-                        |> Mod.constant
-                )
+                CameraView.lookAt (V3d.III * 3.0) V3d.Zero V3d.OOI 
+                    |> CameraView.viewTrafo 
+                    |> Mod.constant
+            )
             // since our render target size is dynamic, we compute a proj trafo using standard techniques
             |> Sg.projTrafo (size |> Mod.map (fun actualSize -> 
                     Frustum.perspective 60.0 0.01 10.0 (float actualSize.X / float actualSize.Y) |> Frustum.projTrafo
