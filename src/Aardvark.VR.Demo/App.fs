@@ -230,26 +230,30 @@ module Demo =
                         landmarkOnController = newLandmark
                         //WIMopcSpaceTrafo = Trafo3d.Translation(V3d(1000000.0, 1000000.0, 1000000.0))
                         //WIMlandmarkOnAnnotationSpace = PList.empty
+                        //droneControl = Drone.initial;
+                        //WIMuserPos = PList.empty
                     }
                 | Menu.MenuState.Scale -> 
-                    let newModel = 
-                        newModel
-                        |> NavigationOpc.initialSceneInfo
+                    let newModel = newModel |> NavigationOpc.initialSceneInfo
                     {newModel with 
                         landmarkOnController = PList.empty;
-                        WIMopcSpaceTrafo = Trafo3d.Translation(V3d(1000000.0, 1000000.0, 1000000.0)) 
-                        WIMlandmarkOnAnnotationSpace = PList.empty
+                        WIMopcSpaceTrafo = Trafo3d.Translation(V3d(1000000.0, 1000000.0, 1000000.0)); 
+                        WIMlandmarkOnAnnotationSpace = PList.empty;
+                        droneControl = Drone.initial;
+                        WIMuserPos = PList.empty
                     }
                 | Menu.MenuState.NodeBased -> 
                     newModel
                 | Menu.MenuState.WIM -> 
-                    let newUserPosWIM = 
-                        OpcUtilities.mkFlagsUser Trafo3d.Identity 1 
+                    let newUserPosWIM = OpcUtilities.mkFlagsUser Trafo3d.Identity 1 
                     
                     let newModel = {newModel with WIMuserPos = newUserPosWIM}
 
-                    newModel 
-                    |> WIMOpc.showMiniMap
+                    let newModel = newModel |> WIMOpc.showMiniMap
+                    
+                    {newModel with 
+                        droneControl = Drone.initial;
+                    }
                 | Menu.MenuState.WIMLandmarks ->
                     let newLandmark = OpcUtilities.mkFlags id.pose.deviceToWorld 1
                     {newModel with landmarkOnController = newLandmark}
@@ -257,32 +261,39 @@ module Demo =
                     {newModel with 
                         landmarkOnController         = PList.empty;
                         landmarkOnAnnotationSpace    = PList.empty;
-                        WIMopcSpaceTrafo             = Trafo3d.Translation(V3d(1000000.0, 1000000.0, 1000000.0)) 
-                        WIMlandmarkOnAnnotationSpace = PList.empty
-                        opcSpaceTrafo                = Trafo3d.FromBasis(V3d(0.0138907544072255, 0.0370928394273679, 0.410690910035505), V3d(0.11636514267386, 0.393870197365478, -0.0395094556451799), V3d(-0.395603213079913, 0.117157783795495, 0.0027988969790869), V3d(-57141.4217354136, 16979.9987604353, -1399135.09579421))
-                        annotationSpaceTrafo         = Trafo3d.Identity
-                        workSpaceTrafo               = Trafo3d.Identity
+                        WIMopcSpaceTrafo             = Trafo3d.Translation(V3d(1000000.0, 1000000.0, 1000000.0));
+                        WIMlandmarkOnAnnotationSpace = PList.empty;
+                        WIMuserPos                   = PList.empty;
+                        opcSpaceTrafo                = Trafo3d.FromBasis(V3d(0.0138907544072255, 0.0370928394273679, 0.410690910035505), V3d(0.11636514267386, 0.393870197365478, -0.0395094556451799), V3d(-0.395603213079913, 0.117157783795495, 0.0027988969790869), V3d(-57141.4217354136, 16979.9987604353, -1399135.09579421));
+                        annotationSpaceTrafo         = Trafo3d.Identity;
+                        workSpaceTrafo               = Trafo3d.Identity;
+                        droneControl                 = Drone.initial
                     }
                 | Menu.MenuState.Teleportation -> 
-                    //let dir = V3d.IOO //V3d.Subtract(V3d(id.pose.deviceToWorld.GetModelOrigin().X + 1000000000.0, id.pose.deviceToWorld.GetModelOrigin().Y, id.pose.deviceToWorld.GetModelOrigin().Z), id.pose.deviceToWorld.GetModelOrigin())
-                    
                     let controllTrafo = id.pose.deviceToWorld
-                    //let startRay = Line3d(V3d.Zero, V3d.ZAxis * 10000.0)
+
                     let origin = controllTrafo.Forward.TransformPos V3d.Zero
                     let controllDir = controllTrafo.Forward.TransformDir V3d.YAxis
-
+                    
+                    //the next lines are the same as the previous ones
                     //let controllDir = controllTrafo.GetViewDirectionLH()
                     //let origin = controllTrafo.GetModelOrigin()
 
                     let testRay = Ray3d(origin, controllDir)
                     {newModel with teleportRay = testRay}
                 | Menu.MenuState.DroneMode -> 
+                    //let testtttt = 
+                    //    match id.sideButtonPressed with 
+                    //    | true -> 
+                    //        let trrrr = Aardvark.Vr.VrSystemInfo
+                    //    | false -> newModel
+                    
                     let newDrone = 
                         if newModel.droneControl.drone.Count.Equals(0) then 
                             OpcUtilities.mkDrone id.pose.deviceToWorld 1
                         else newModel.droneControl.drone
-                    let updateDrones = 
-                        {newModel.droneControl with drone = newDrone}
+                    let updateDrones = {newModel.droneControl with drone = newDrone}
+
                     {newModel with droneControl = updateDrones}
                     
             | None -> newModel
@@ -644,21 +655,19 @@ module Demo =
         
         let size = V2i(1024,1024) |> Mod.init 
 
-
         let dronetrafo  =
             m.droneControl.drone
             |> AList.toMod
             |> Mod.bind 
                 (fun s -> 
                     s |> Seq.tryHead 
-                      |> Option.map (fun d -> d.trafo) 
-                      |> (Option.defaultValue (Mod.constant Trafo3d.Identity))
+                        |> Option.map (fun d -> d.trafo) 
+                        |> (Option.defaultValue (Mod.constant Trafo3d.Identity))
                 )
-        let dronePos = 
-            dronetrafo |> Mod.map (fun t -> t.GetModelOrigin())
+        
+        let dronePos = dronetrafo |> Mod.map (fun t -> t.GetModelOrigin())
             
-        let droneDir = 
-            dronetrafo |> Mod.map (fun t -> t.Forward.C1.XYZ)
+        let droneDir = dronetrafo |> Mod.map (fun t -> t.Forward.C3.XYZ)
 
         let offscreenTask = 
             opcs
@@ -683,16 +692,24 @@ module Demo =
         let offscreenTexture =
             RenderTask.renderToColor size offscreenTask
 
+        let secondCameraTrafo = 
+            m.menuModel.menu 
+            |> Mod.map (fun ms -> 
+                match ms with 
+                | Menu.MenuState.DroneMode -> Trafo3d.Identity //change this camera position to be something close to the user even if they move their position
+                | _ -> Trafo3d.Translation(V3d.One * 1000000.0)
+            )
+
         let showSecondCamera = 
-            Sg.box (Mod.constant C4b.White) (Mod.constant Box3d.Unit)
+            Sg.box (Mod.constant C4b.White) (Mod.constant (Box3d.FromSize(V3d(0.1, 3.0, 3.0))))
             |> Sg.diffuseTexture offscreenTexture
             |> Sg.shader {
                 do! DefaultSurfaces.trafo
                 do! DefaultSurfaces.diffuseTexture
                 do! DefaultSurfaces.simpleLighting
             }
-            
-
+            |> Sg.trafo secondCameraTrafo
+        
         let transformedSgs = 
             [
                 landmarksOnAnnotationSpace
@@ -708,8 +725,6 @@ module Demo =
                 userPosOnWIM 
             ]
             |> Sg.ofList
-            //|> Sg.trafo m.WIMannotationSpaceTrafo
-            // i dont understand why in this case i dont have to translate back as in the other cases...
 
         let notTransformedSgs =
             [

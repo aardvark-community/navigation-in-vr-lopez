@@ -37,7 +37,7 @@ module DroneControlCenter =
                             let newTrafo = drone.trafo.GetModelOrigin() + V3d(controllDir.X, controllDir.Y, controllDir.Z) * 0.05
                             {drone with trafo = Trafo3d.Translation(newTrafo) }
                         )
-                
+
                     let updateDrones = 
                         {newModel.droneControl with drone = moveDrone}
                 
@@ -49,26 +49,28 @@ module DroneControlCenter =
                 let dronePos = newModel.droneControl.drone |> PList.tryFirst
                 match hmdPos, dronePos with 
                 | Some hmd, Some dPos -> 
-                    //let newPose : Pose = {Aardvark.Vr.Pose with deviceToWorld = dPos.trafo}
-                    //let newHmdPose : Hmd = {Hmd with pose = newPose}
-                    //let newVrState : VrState = {VrState with display = newHmdPose}
-                    let newCameraPos = {newModel.cameraState with moveVec = dPos.trafo.GetModelOrigin()}
+                    let newPose : Pose = 
+                        {
+                            deviceToWorld   = dPos.trafo;
+                            velocity        = V3d.One;
+                            angularVelocity = V3d.One;
+                            isValid         = true
+                        }
+                    let newHmdPose : Hmd = {newModel.vrStateCamera.display with pose = newPose}
+                    let newVrState : VrState = {newModel.vrStateCamera with display = newHmdPose}
+
                     let updateControllerInfo = 
                         newModel.controllerInfos
                         |> HMap.update ControllerKind.HMD (fun h -> 
                             match h with 
                             | Some x -> 
-                                let updateHmdPose = 
-                                    {hmd.pose with deviceToWorld = dPos.trafo}
-                                //let updateHmd = {hmd with pose = updateHmdPose}
-                                //updateHmd
+                                let updateHmdPose = {hmd.pose with deviceToWorld = dPos.trafo}
                                 {x with pose = updateHmdPose}
                             | None -> ControllerInfo.initial
                         ) 
                     {newModel with 
                         controllerInfos = updateControllerInfo; 
-                        cameraState     = newCameraPos;
-                        //vrStateCamera   = newVrState
+                        vrStateCamera   = newVrState
                     }
                 | _, _ -> newModel 
             | false -> newModel 
