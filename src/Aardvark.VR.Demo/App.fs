@@ -644,44 +644,37 @@ module Demo =
         
         let size = V2i(1024,1024) |> Mod.init 
 
-        let testtt = 
-            let firstDrone = 
-                m.droneControl.drone
-                |> AList.toPList
-                |> PList.tryFirst
- 
-            let dronePos = 
-                match firstDrone with 
-                | Some d -> d.trafo
-                | None -> Mod.constant Trafo3d.Identity
+
+        let dronetrafo  =
+            m.droneControl.drone
+            |> AList.toMod
+            |> Mod.bind 
+                (fun s -> 
+                    s |> Seq.tryHead 
+                      |> Option.map (fun d -> d.trafo) 
+                      |> (Option.defaultValue (Mod.constant Trafo3d.Identity))
+                )
+        let dronePos = 
+            dronetrafo |> Mod.map (fun t -> t.GetModelOrigin())
             
-            dronePos.GetValue().GetModelOrigin()
-            
+        let droneDir = 
+            dronetrafo |> Mod.map (fun t -> t.Forward.C1.XYZ)
 
         let offscreenTask = 
-            //Sg.box (Mod.constant(C4b.Red)) (Mod.constant(Box3d.Unit))
-            //|> Sg.trafo (Mod.constant(Trafo3d.Identity))
-            //|> Sg.shader {
-            //        do! DefaultSurfaces.trafo
-            //        do! DefaultSurfaces.simpleLighting
-            //    }
-            m.droneControl.drone
-            |> AList.toASet 
-            |> ASet.map (fun b -> 
-                mkFlag m b 
-               )
-            |> Sg.set
-            |> defaultEffect
+            opcs
             |> Sg.noEvents
             // attach a constant view trafo (which makes our box visible)
             |> Sg.viewTrafo (
-                CameraView.lookAt (V3d.III * 3.0) V3d.Zero V3d.OOI 
+                Mod.map2 (fun p d -> 
+                let loc = p
+                let cen = p + d
+                CameraView.lookAt loc cen V3d.OOI 
                     |> CameraView.viewTrafo 
-                    |> Mod.constant
+                ) dronePos droneDir
             )
             // since our render target size is dynamic, we compute a proj trafo using standard techniques
             |> Sg.projTrafo (size |> Mod.map (fun actualSize -> 
-                    Frustum.perspective 60.0 0.01 10.0 (float actualSize.X / float actualSize.Y) |> Frustum.projTrafo
+                    Frustum.perspective 110.0 0.1 1000.0 (float actualSize.X / float actualSize.Y) |> Frustum.projTrafo
                     )
                 )
             // next, we use Sg.compile in order to turn a scene graph into a render task (a nice composable alias for runtime.CompileRender)
@@ -766,21 +759,23 @@ module Demo =
 
         let startOpcTrafo = Trafo3d.FromBasis(V3d(0.0138907544072255, 0.0370928394273679, 0.410690910035505), V3d(0.11636514267386, 0.393870197365478, -0.0395094556451799), V3d(-0.395603213079913, 0.117157783795495, 0.0027988969790869), V3d(-57141.4217354136, 16979.9987604353, -1399135.09579421))
         {
-            text                = "some text"
-            vr                  = false
+            text                        = "some text"
+            vr                          = false
 
-            ControllerPosition      = V3d.OOO
-            controllerInfos         = HMap.empty
-            offsetToCenter          = V3d.One
-            cameraState             = cameraStateInit
+            vrStateCamera               = VrState.empty
+
+            ControllerPosition          = V3d.OOO
+            controllerInfos             = HMap.empty
+            offsetToCenter              = V3d.One
+            cameraState                 = cameraStateInit
             
-            patchHierarchies        = patchHierarchiesInit
-            boundingBox             = boundingBoxInit
-            opcInfos                = opcInfosInit
-            opcAttributes           = SurfaceAttributes.initModel "C:\Users\lopez\Desktop\VictoriaCrater\HiRISE_VictoriaCrater_SuperResolution"
-            mainFrustum             = Frustum.perspective 60.0 0.01 1000.0 1.0
-            rotateBox               = rotateBoxInit
-            pickingModel            = OpcViewer.Base.Picking.PickingModel.initial
+            patchHierarchies            = patchHierarchiesInit
+            boundingBox                 = boundingBoxInit
+            opcInfos                    = opcInfosInit
+            opcAttributes               = SurfaceAttributes.initModel "C:\Users\lopez\Desktop\VictoriaCrater\HiRISE_VictoriaCrater_SuperResolution"
+            mainFrustum                 = Frustum.perspective 60.0 0.01 1000.0 1.0
+            rotateBox                   = rotateBoxInit
+            pickingModel                = OpcViewer.Base.Picking.PickingModel.initial
 
             offsetControllerDistance    = 1.0
 

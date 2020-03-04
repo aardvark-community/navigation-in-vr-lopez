@@ -63,6 +63,8 @@ type Model =
         
         cameraState         : CameraControllerState
 
+        vrStateCamera       : VrState
+
         ControllerPosition  : V3d
         offsetToCenter      : V3d
         
@@ -138,6 +140,8 @@ module Model =
         {
             text                = "some text"
             vr                  = false
+            
+            vrStateCamera       = VrState.empty
 
             ControllerPosition      = V3d.OOO
             controllerInfos         = HMap.empty

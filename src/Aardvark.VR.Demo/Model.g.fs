@@ -154,6 +154,7 @@ module Mutable =
         let _text = ResetMod.Create(__initial.text)
         let _vr = ResetMod.Create(__initial.vr)
         let _cameraState = Aardvark.UI.Primitives.Mutable.MCameraControllerState.Create(__initial.cameraState)
+        let _vrStateCamera = Aardvark.Vr.Mutable.MVrState.Create(__initial.vrStateCamera)
         let _ControllerPosition = ResetMod.Create(__initial.ControllerPosition)
         let _offsetToCenter = ResetMod.Create(__initial.offsetToCenter)
         let _controllerInfos = MMap.Create(__initial.controllerInfos, (fun v -> Demo.Mutable.MControllerInfo.Create(v)), (fun (m,v) -> Demo.Mutable.MControllerInfo.Update(m, v)), (fun v -> v))
@@ -190,6 +191,7 @@ module Mutable =
         member x.text = _text :> IMod<_>
         member x.vr = _vr :> IMod<_>
         member x.cameraState = _cameraState
+        member x.vrStateCamera = _vrStateCamera
         member x.ControllerPosition = _ControllerPosition :> IMod<_>
         member x.offsetToCenter = _offsetToCenter :> IMod<_>
         member x.controllerInfos = _controllerInfos :> amap<_,_>
@@ -232,6 +234,7 @@ module Mutable =
                 ResetMod.Update(_text,v.text)
                 ResetMod.Update(_vr,v.vr)
                 Aardvark.UI.Primitives.Mutable.MCameraControllerState.Update(_cameraState, v.cameraState)
+                Aardvark.Vr.Mutable.MVrState.Update(_vrStateCamera, v.vrStateCamera)
                 ResetMod.Update(_ControllerPosition,v.ControllerPosition)
                 ResetMod.Update(_offsetToCenter,v.offsetToCenter)
                 MMap.Update(_controllerInfos, v.controllerInfos)
@@ -297,6 +300,12 @@ module Mutable =
                     override x.Get(r) = r.cameraState
                     override x.Set(r,v) = { r with cameraState = v }
                     override x.Update(r,f) = { r with cameraState = f r.cameraState }
+                }
+            let vrStateCamera =
+                { new Lens<Demo.Main.Model, Aardvark.Vr.VrState>() with
+                    override x.Get(r) = r.vrStateCamera
+                    override x.Set(r,v) = { r with vrStateCamera = v }
+                    override x.Update(r,f) = { r with vrStateCamera = f r.vrStateCamera }
                 }
             let ControllerPosition =
                 { new Lens<Demo.Main.Model, Aardvark.Base.V3d>() with
