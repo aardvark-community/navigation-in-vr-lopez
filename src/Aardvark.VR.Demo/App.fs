@@ -294,7 +294,10 @@ module Demo =
                         else newModel.droneControl.drone
                     let updateDrones = {newModel.droneControl with drone = newDrone}
 
-                    {newModel with droneControl = updateDrones}
+                    let newModel = {newModel with droneControl = updateDrones}
+
+                    newModel
+                    |> DroneControlCenter.moveUserToDronePos
                     
             | None -> newModel
 
@@ -776,8 +779,6 @@ module Demo =
         {
             text                        = "some text"
             vr                          = false
-
-            vrStateCamera               = VrState.empty
 
             ControllerPosition          = V3d.OOO
             controllerInfos             = HMap.empty

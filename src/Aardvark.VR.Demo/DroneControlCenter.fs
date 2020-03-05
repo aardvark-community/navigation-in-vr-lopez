@@ -26,53 +26,48 @@ module DroneControlCenter =
         
         match newCP with 
         | Some id -> 
-            let newModel = 
-                match id.backButtonPressed with 
-                | true -> 
-                    let controllDir = id.pose.deviceToWorld.Forward.C1
-                    printfn "orientation? %s" (controllDir.ToString())
-                    let moveDrone = 
-                        newModel.droneControl.drone
-                        |> PList.map (fun drone -> 
-                            let newTrafo = drone.trafo.GetModelOrigin() + V3d(controllDir.X, controllDir.Y, controllDir.Z) * 0.05
-                            {drone with trafo = Trafo3d.Translation(newTrafo) }
-                        )
+            //let newModel = 
+            match id.backButtonPressed with 
+            | true -> 
+                let controllDir = id.pose.deviceToWorld.Forward.C1
+                printfn "orientation? %s" (controllDir.ToString())
+                let moveDrone = 
+                    newModel.droneControl.drone
+                    |> PList.map (fun drone -> 
+                        let newTrafo = drone.trafo.GetModelOrigin() + V3d(controllDir.X, controllDir.Y, controllDir.Z) * 0.05
+                        {drone with trafo = Trafo3d.Translation(newTrafo) }
+                    )
 
-                    let updateDrones = 
-                        {newModel.droneControl with drone = moveDrone}
+                let updateDrones = 
+                    {newModel.droneControl with drone = moveDrone}
                 
-                    {newModel with droneControl = updateDrones}
-                | false -> newModel
+                {newModel with droneControl = updateDrones}
+            | false -> newModel
+        | None -> newModel 
+
+
+    let moveUserToDronePos model : Model =
+        let controllerPos = model.menuModel.controllerMenuSelector
+        let newCP = model.controllerInfos |> HMap.tryFind controllerPos.kind
+        
+        match newCP with 
+        | Some id -> 
             match id.sideButtonPressed with 
             | true -> 
-                let hmdPos = newModel.controllerInfos |> HMap.tryFind ControllerKind.HMD
-                let dronePos = newModel.droneControl.drone |> PList.tryFirst
-                match hmdPos, dronePos with 
-                | Some hmd, Some dPos -> 
-                    let newPose : Pose = 
-                        {
-                            deviceToWorld   = dPos.trafo;
-                            velocity        = V3d.One;
-                            angularVelocity = V3d.One;
-                            isValid         = true
-                        }
-                    let newHmdPose : Hmd = {newModel.vrStateCamera.display with pose = newPose}
-                    let newVrState : VrState = {newModel.vrStateCamera with display = newHmdPose}
-
-                    let updateControllerInfo = 
-                        newModel.controllerInfos
-                        |> HMap.update ControllerKind.HMD (fun h -> 
-                            match h with 
-                            | Some x -> 
-                                let updateHmdPose = {hmd.pose with deviceToWorld = dPos.trafo}
-                                {x with pose = updateHmdPose}
-                            | None -> ControllerInfo.initial
-                        ) 
-                    {newModel with 
-                        controllerInfos = updateControllerInfo; 
-                        vrStateCamera   = newVrState
+                let dronePos = model.droneControl.drone |> PList.tryFirst
+                match dronePos with 
+                | Some dPos -> 
+                    let newDronePos = dPos.trafo * model.workSpaceTrafo.Inverse * model.annotationSpaceTrafo //drone pos in annotation space
+                    let newWorkSpace = model.initWorkSpaceTrafo * newDronePos.Inverse
+                    let newOpcSpace = model.initOpcSpaceTrafo * newWorkSpace
+                    let newFlagSpace = model.initAnnotationSpaceTrafo * newWorkSpace
+                    {model with 
+                        workSpaceTrafo = newWorkSpace
+                        opcSpaceTrafo = newOpcSpace
+                        annotationSpaceTrafo = newFlagSpace
                     }
-                | _, _ -> newModel 
-            | false -> newModel 
-        | None -> newModel 
+                | None -> model 
+            | false -> model 
+        | None -> model 
+        
 
