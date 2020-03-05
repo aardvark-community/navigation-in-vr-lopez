@@ -282,19 +282,20 @@ module Demo =
                     let testRay = Ray3d(origin, controllDir)
                     {newModel with teleportRay = testRay}
                 | Menu.MenuState.DroneMode -> 
-                    //let testtttt = 
-                    //    match id.sideButtonPressed with 
-                    //    | true -> 
-                    //        let trrrr = Aardvark.Vr.VrSystemInfo
-                    //    | false -> newModel
-                    
                     let newDrone = 
                         if newModel.droneControl.drone.Count.Equals(0) then 
                             OpcUtilities.mkDrone id.pose.deviceToWorld 1
                         else newModel.droneControl.drone
                     let updateDrones = {newModel.droneControl with drone = newDrone}
 
-                    let newModel = {newModel with droneControl = updateDrones}
+                    let newModel = 
+                        {newModel with 
+                            landmarkOnController = PList.empty;
+                            WIMopcSpaceTrafo = Trafo3d.Translation(V3d(1000000.0, 1000000.0, 1000000.0)); 
+                            WIMlandmarkOnAnnotationSpace = PList.empty;
+                            WIMuserPos = PList.empty;
+                            droneControl = updateDrones
+                        }
 
                     newModel
                     |> DroneControlCenter.moveUserToDronePos

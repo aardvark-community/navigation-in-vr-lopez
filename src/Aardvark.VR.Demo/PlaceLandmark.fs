@@ -64,8 +64,6 @@ module PlaceLandmark =
         
         let newModel = { model with controllerInfos = newControllersPosition}
         
-        let ci = newModel.controllerInfos |> HMap.tryFind kind
-        
         let controllerPos = newModel.menuModel.controllerMenuSelector
         let newCP = newModel.controllerInfos |> HMap.tryFind controllerPos.kind
         
