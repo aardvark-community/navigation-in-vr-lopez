@@ -13,8 +13,6 @@ module PlaceLandmark =
     open Aardvark.Base.MapExtImplementation
     open Demo
 
-    
-    
     let placing kind p model : Model = 
         let newControllersPosition = 
             model 

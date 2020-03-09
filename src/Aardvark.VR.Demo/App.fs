@@ -44,6 +44,7 @@ module Demo =
     open OpenTK.Input
     open Aardvark.UI.Extensions
     open OpcViewer.Base.Shader
+    open Aardvark.Base
     
     let show  (att : list<string * AttributeValue<_>>) (sg : ISg<_>) =
 
@@ -132,9 +133,10 @@ module Demo =
                     let newModel = 
                         model 
                         |> WIMOpc.updateMiniMap kind p
-                    
+
                     newModel
                     |> WIMOpc.editMiniMap kind p
+                    
                 | Menu.MenuState.WIMLandmarks -> 
                     model
                     |> PlaceLandmark.placingOnWIM kind p
@@ -445,6 +447,20 @@ module Demo =
                 //do! DefaultSurfaces.simpleLighting
                 }  
 
+    let mkCylinder (model : MModel) (cylinder : MVisibleCylinder) = 
+        let pos = cylinder.trafo
+        let color = Mod.constant C4b.Yellow
+        let rad = cylinder.radius
+
+        Sg.cylinder 50 color rad (Mod.constant 100.0)
+            |> Sg.noEvents
+            |> Sg.trafo(pos)
+            |> Sg.shader {
+                do! DefaultSurfaces.trafo
+                do! DefaultSurfaces.vertexColor
+                //do! DefaultSurfaces.simpleLighting
+            }
+
     let ui' (info : VrSystemInfo) (m : MModel) = 
         let text = m.vr |> Mod.map (function true -> "Stop VR" | false -> "Start VR")
 
@@ -714,10 +730,49 @@ module Demo =
             }
             |> Sg.trafo secondCameraTrafo
         
+        let droneCylinder = 
+            let color = 
+                let hsv = HSVf((1.0 - 60.0) * 0.625, 1.0, 1.0)
+                let col = C4f(hsv.ToC3f(), 0.5f).ToC4b()
+                Mod.constant col
+
+            let rad = Mod.constant 0.20
+
+            let dTrafo = 
+                dronetrafo
+                |> Mod.map (fun t -> 
+                    Trafo3d.Translation(V3d(t.GetModelOrigin().X, t.GetModelOrigin().Y, t.GetModelOrigin().Z - 50.0))
+                )
+
+            let mkDisappear = 
+                let menuMode = m.menuModel.menu
+                
+                adaptive {
+                    let! newMenuMode = menuMode
+                    match newMenuMode with 
+                    | MenuState.DroneMode -> return true 
+                    | _ -> return false
+                }
+
+            Sg.cylinder 50 color rad (Mod.constant 100.0)
+            |> Sg.noEvents
+            |> Sg.trafo(dTrafo)
+            |> Sg.shader {
+                do! DefaultSurfaces.trafo
+                do! DefaultSurfaces.vertexColor
+                //do! DefaultSurfaces.simpleLighting
+            }
+            |> defaultEffect
+            |> Sg.blendMode (Mod.constant BlendMode.Blend)
+            |> Sg.cullMode (Mod.constant CullMode.Front)
+            |> Sg.pass (RenderPass.after "" RenderPassOrder.Arbitrary RenderPass.main)
+            |> Sg.onOff mkDisappear
+
         let transformedSgs = 
             [
                 landmarksOnAnnotationSpace
                 drones
+                droneCylinder
                 //landmarksFromStart
             ]
             |> Sg.ofList
@@ -725,7 +780,7 @@ module Demo =
 
         let WIMtransformedSgs = 
             [
-                landmarksOnWIM
+                landmarksOnWIM 
                 userPosOnWIM 
             ]
             |> Sg.ofList

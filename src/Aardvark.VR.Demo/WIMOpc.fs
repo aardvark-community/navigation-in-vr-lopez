@@ -98,7 +98,7 @@ module WIMOpc =
                     {lmkC with trafo = Trafo3d.FromComponents(scaleLmkC, rotationLmkC, translationLmkC)}
                 )
             | None -> PList.empty
-        
+
         let updateWIMLandmark = 
             newModel.landmarkOnAnnotationSpace
             |> PList.map (fun landmark -> 
@@ -126,9 +126,7 @@ module WIMOpc =
             match newCp with
             | Some id -> id.pose
             | None -> Aardvark.Vr.Pose.none
-        
-        //let minimapCoordinateSystem = controllerPos.deviceToWorld //Trafo3d.FromBasis(minimapX, minimapY, minimapZ, controllerPos.deviceToWorld.GetModelOrigin())
-
+            
         let minimapRt = controllerPos.deviceToWorld.GetOrthoNormalOrientation()
         let minimapRot = Rot3d.FromFrame(minimapRt.Forward.C0.XYZ, minimapRt.Forward.C1.XYZ, minimapRt.Forward.C2.XYZ)
         let minimapRotation = minimapRot.GetEulerAngles()

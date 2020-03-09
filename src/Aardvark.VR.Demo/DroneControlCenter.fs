@@ -63,34 +63,33 @@ module DroneControlCenter =
                     let newOpcSpace = model.initOpcSpaceTrafo * newWorkSpace
                     let newFlagSpace = model.initAnnotationSpaceTrafo * newWorkSpace
 
-                    let model = 
-                        { model with 
-                            workSpaceTrafo              = newWorkSpace
-                            opcSpaceTrafo               = newOpcSpace
-                            annotationSpaceTrafo        = newFlagSpace
-                        }
+                    { model with 
+                        workSpaceTrafo              = newWorkSpace
+                        opcSpaceTrafo               = newOpcSpace
+                        annotationSpaceTrafo        = newFlagSpace
+                    }
                     //model
                     //update WIM space trafos
                     //TO CONTINUE FROM HERE CHECK WHY THE CONTROLLER IS NOT PLACED IN THE RIGHT POSITION OF THE WIM
-                    let newDronePosWIM = id.pose.deviceToWorld * model.workSpaceTrafo.Inverse * model.WIMworkSpaceTrafo
-                    let minimapRt = newDronePosWIM.GetOrthoNormalOrientation() 
-                    let minimapRot = Rot3d.FromFrame(minimapRt.Forward.C0.XYZ, minimapRt.Forward.C1.XYZ, minimapRt.Forward.C2.XYZ)
-                    let minimapRotation = minimapRot.GetEulerAngles()
-                    let minimapTrans = newDronePosWIM.GetModelOrigin() 
-                    let minimapScale = V3d(0.0025, 0.0025, 0.0025)
+                    //let newDronePosWIM = id.pose.deviceToWorld * model.workSpaceTrafo.Inverse * model.WIMworkSpaceTrafo
+                    //let minimapRt = newDronePosWIM.GetOrthoNormalOrientation() 
+                    //let minimapRot = Rot3d.FromFrame(minimapRt.Forward.C0.XYZ, minimapRt.Forward.C1.XYZ, minimapRt.Forward.C2.XYZ)
+                    //let minimapRotation = minimapRot.GetEulerAngles()
+                    //let minimapTrans = newDronePosWIM.GetModelOrigin() 
+                    //let minimapScale = V3d(0.0025, 0.0025, 0.0025)
 
-                    let minimapPos = //minimapCoordinateSystem
-                        Trafo3d.FromComponents(minimapScale, V3d.Zero, minimapTrans)
+                    //let minimapPos = //minimapCoordinateSystem
+                    //    Trafo3d.FromComponents(minimapScale, V3d.Zero, minimapTrans)
         
-                    let newWorkSpaceWIM = minimapPos * newDronePosWIM.Inverse
-                    let newAnnotationSpaceWIM = model.initAnnotationSpaceTrafo * newWorkSpaceWIM
-                    let newOpcSpaceWIM = model.initOpcSpaceTrafo * newWorkSpaceWIM
+                    //let newWorkSpaceWIM = minimapPos * newDronePosWIM.Inverse
+                    //let newAnnotationSpaceWIM = model.initAnnotationSpaceTrafo * newWorkSpaceWIM
+                    //let newOpcSpaceWIM = model.initOpcSpaceTrafo * newWorkSpaceWIM
 
-                    {model with 
-                        WIMworkSpaceTrafo           = newWorkSpaceWIM
-                        WIMannotationSpaceTrafo     = newAnnotationSpaceWIM
-                        WIMopcSpaceTrafo            = newOpcSpaceWIM
-                    }
+                    //{model with 
+                    //    WIMworkSpaceTrafo           = newWorkSpaceWIM
+                    //    WIMannotationSpaceTrafo     = newAnnotationSpaceWIM
+                    //    WIMopcSpaceTrafo            = newOpcSpaceWIM
+                    //}
                 | None -> model 
             | false -> model 
         | None -> model 
