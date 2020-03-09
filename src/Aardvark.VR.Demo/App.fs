@@ -414,12 +414,22 @@ module Demo =
         | _ -> 
             []
 
-    let mkControllerBox (cp : MPose) =
-        Sg.cone' 20 C4b.Cyan 0.5 5.0 
+    let mkControllerBox (cp : IMod<Trafo3d>) =
+        let newTrafo = 
+            cp
+            |> Mod.map (fun t -> 
+                let tt = V3d(t.GetModelOrigin().X, t.GetModelOrigin().Y, t.GetModelOrigin().Z)
+                let r = t.GetOrthoNormalOrientation()
+                let rr = Rot3d.FromFrame(r.Forward.C0.XYZ, r.Forward.C1.XYZ, r.Forward.C2.XYZ)
+                let rrr = rr.GetEulerAngles()
+                let s = V3d.One
+                Trafo3d.FromComponents(s, rrr, tt)
+            )
+        Sg.cone' 20 C4b.Red 0.5 5.0 
             |> Sg.noEvents
             |> Sg.scale 0.01
             |> Sg.trafo (Mod.constant (Trafo3d.RotationInDegrees(V3d(-90.0,90.0,0.0))))
-            |> Sg.trafo cp.deviceToWorld
+            |> Sg.trafo newTrafo
     
     let mkFlag (model : MModel) (box : MVisibleBox) =
         let color = mkColor model box
@@ -534,6 +544,15 @@ module Demo =
             |> defaultEffect
             |> Sg.noEvents
         
+        let userConeOnWim = 
+            m.WIMuserPos
+            |> AList.toASet
+            |> ASet.map (fun b -> 
+                mkControllerBox b.trafo
+            )
+            |> Sg.set
+            |> defaultEffect
+
         let landmarksOnAnnotationSpace = 
             m.landmarkOnAnnotationSpace
             |> AList.toASet 
@@ -781,7 +800,8 @@ module Demo =
         let WIMtransformedSgs = 
             [
                 landmarksOnWIM 
-                userPosOnWIM 
+                //userPosOnWIM 
+                userConeOnWim
             ]
             |> Sg.ofList
 
