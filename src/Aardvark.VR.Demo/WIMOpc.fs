@@ -91,11 +91,12 @@ module WIMOpc =
                     let rtLmkC = newLmkC.GetOrthoNormalOrientation()
                     let rotLmkC = Rot3d.FromFrame(rtLmkC.Forward.C0.XYZ, rtLmkC.Forward.C1.XYZ, rtLmkC.Forward.C2.XYZ)
                     let rotationLmkC = rotLmkC.GetEulerAngles()
+                    let rotationLmkC1 = V3d(0.0, 0.0, rotationLmkC.Z)
 
                     let translationLmkC = newLmkC.GetModelOrigin()
 
                     let scaleLmkC = V3d(0.5, 0.5, 0.5)
-                    {lmkC with trafo = Trafo3d.FromComponents(scaleLmkC, rotationLmkC, translationLmkC)}
+                    {lmkC with trafo = Trafo3d.FromComponents(scaleLmkC, rotationLmkC1, translationLmkC)}
                 )
             | None -> PList.empty
 

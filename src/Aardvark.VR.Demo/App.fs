@@ -418,7 +418,7 @@ module Demo =
         let newTrafo = 
             cp
             |> Mod.map (fun t -> 
-                let tt = V3d(t.GetModelOrigin().X, t.GetModelOrigin().Y, t.GetModelOrigin().Z)
+                let tt = V3d(t.GetModelOrigin().X, t.GetModelOrigin().Y, t.GetModelOrigin().Z + 0.07)
                 let r = t.GetOrthoNormalOrientation()
                 let rr = Rot3d.FromFrame(r.Forward.C0.XYZ, r.Forward.C1.XYZ, r.Forward.C2.XYZ)
                 let rrr = rr.GetEulerAngles()
@@ -800,7 +800,7 @@ module Demo =
         let WIMtransformedSgs = 
             [
                 landmarksOnWIM 
-                //userPosOnWIM 
+                userPosOnWIM 
                 userConeOnWim
             ]
             |> Sg.ofList
@@ -810,7 +810,7 @@ module Demo =
                 deviceSgs
                 menuApp
                 landmarks
-                throwRayLine
+                //throwRayLine
                 showSecondCamera
                 //compass
             ] |> Sg.ofList
