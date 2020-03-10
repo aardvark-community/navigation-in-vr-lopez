@@ -66,7 +66,7 @@ type VisibleBox = {
     geometry : Box3d
     color : C4b
     trafo : Trafo3d
-    flagHovered : bool
+    isHovered : bool
     [<TreatAsValue>]
     id : string
 }
@@ -79,7 +79,7 @@ module VisibleBox =
             geometry  = Box3d.FromSize(V3d(0.10, 0.5, 0.05))//Box3d.FromCenterAndSize(V3d.Zero, V3d.One)
             color = C4b.Red
             trafo = Trafo3d.Identity
-            flagHovered = false
+            isHovered = false
             //size = V3d.One
             id = ""
         }

@@ -125,13 +125,13 @@ module Mutable =
         let _geometry = ResetMod.Create(__initial.geometry)
         let _color = ResetMod.Create(__initial.color)
         let _trafo = ResetMod.Create(__initial.trafo)
-        let _flagHovered = ResetMod.Create(__initial.flagHovered)
+        let _isHovered = ResetMod.Create(__initial.isHovered)
         let _id = ResetMod.Create(__initial.id)
         
         member x.geometry = _geometry :> IMod<_>
         member x.color = _color :> IMod<_>
         member x.trafo = _trafo :> IMod<_>
-        member x.flagHovered = _flagHovered :> IMod<_>
+        member x.isHovered = _isHovered :> IMod<_>
         member x.id = _id :> IMod<_>
         
         member x.Current = __current :> IMod<_>
@@ -142,7 +142,7 @@ module Mutable =
                 ResetMod.Update(_geometry,v.geometry)
                 ResetMod.Update(_color,v.color)
                 ResetMod.Update(_trafo,v.trafo)
-                ResetMod.Update(_flagHovered,v.flagHovered)
+                ResetMod.Update(_isHovered,v.isHovered)
                 _id.Update(v.id)
                 
         
@@ -178,11 +178,11 @@ module Mutable =
                     override x.Set(r,v) = { r with trafo = v }
                     override x.Update(r,f) = { r with trafo = f r.trafo }
                 }
-            let flagHovered =
+            let isHovered =
                 { new Lens<Demo.VisibleBox, System.Boolean>() with
-                    override x.Get(r) = r.flagHovered
-                    override x.Set(r,v) = { r with flagHovered = v }
-                    override x.Update(r,f) = { r with flagHovered = f r.flagHovered }
+                    override x.Get(r) = r.isHovered
+                    override x.Set(r,v) = { r with isHovered = v }
+                    override x.Update(r,f) = { r with isHovered = f r.isHovered }
                 }
             let id =
                 { new Lens<Demo.VisibleBox, System.String>() with

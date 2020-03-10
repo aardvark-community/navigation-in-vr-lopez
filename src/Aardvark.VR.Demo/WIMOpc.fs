@@ -115,10 +115,33 @@ module WIMOpc =
                 {landmark with trafo = Trafo3d.FromComponents(scaleLmkC, rotationLmkC, translationLmkC)} //landmark.trafo * model.workSpaceTrafo.Inverse * newWorkSpace}
             )
 
-        {newModel with 
-            WIMuserPos                      = newWIMuserPos;
-            WIMlandmarkOnAnnotationSpace    = updateWIMLandmark
-        }
+        let newModel = 
+            {newModel with 
+                WIMuserPos                      = newWIMuserPos;
+                WIMlandmarkOnAnnotationSpace    = updateWIMLandmark
+            }
+
+        let checkWIMuserHover = 
+            let secondCon = 
+                if controllerPos.kind.Equals(ControllerKind.ControllerA) then
+                    newModel.controllerInfos |> HMap.tryFind ControllerKind.ControllerB
+                else newModel.controllerInfos |> HMap.tryFind ControllerKind.ControllerA
+            match secondCon with 
+            | Some con2 -> 
+                newModel.WIMuserPos
+                |> PList.choosei (fun _ u -> 
+                    let dist = V3d.Distance(u.trafo.GetModelOrigin(), con2.pose.deviceToWorld.GetModelOrigin())
+                    if (dist <= 0.1) then 
+                        Some {u with color = C4b.Blue; isHovered = true}
+                    else Some {u with color = C4b.Red; isHovered = false}
+                )
+            | None -> newModel.WIMuserPos 
+        
+        let newModel = {newModel with WIMuserPos = checkWIMuserHover}
+
+
+
+        newModel 
         
     let updateMiniMap kind p model : Model = 
         let controllerPos = 
