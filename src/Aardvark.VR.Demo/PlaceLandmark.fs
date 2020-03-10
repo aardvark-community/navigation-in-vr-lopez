@@ -12,6 +12,7 @@ module PlaceLandmark =
     open OpenTK
     open Aardvark.Base.MapExtImplementation
     open Demo
+    open Demo.Menu
 
     let placing kind p model : Model = 
         let newControllersPosition = 
@@ -74,39 +75,39 @@ module PlaceLandmark =
                         |> PList.map (fun landmark -> {landmark with trafo = id.pose.deviceToWorld})
 
                     match id.backButtonPressed with 
-                        | true -> 
-                            let landMarkOnController = 
-                                newModel.landmarkOnController
-                                |> PList.tryFirst
+                    | true -> 
+                        let landMarkOnController = 
+                            newModel.landmarkOnController
+                            |> PList.tryFirst
 
-                            match landMarkOnController with 
-                            | Some landmark ->
-                                let updateLandmark = 
-                                    {landmark with 
-                                        trafo = id.pose.deviceToWorld * newModel.WIMworkSpaceTrafo.Inverse
-                                    }
-                                let newlandMarkOnAnnotationSpace = 
-                                    newModel.landmarkOnAnnotationSpace
-                                    |> PList.prepend updateLandmark
-                            
-                                let updateWIMLandmark = 
-                                    {landmark with 
-                                        trafo = id.pose.deviceToWorld 
-                                    }
-                                let newlandMarkOnWIMAnnotationSpace = 
-                                    newModel.WIMlandmarkOnAnnotationSpace
-                                    |> PList.prepend updateWIMLandmark
-
-                                {newModel with 
-                                    landmarkOnController = PList.empty; 
-                                    WIMlandmarkOnAnnotationSpace = newlandMarkOnWIMAnnotationSpace;
-                                    landmarkOnAnnotationSpace = newlandMarkOnAnnotationSpace
+                        match landMarkOnController with 
+                        | Some landmark ->
+                            let updateLandmark = 
+                                {landmark with 
+                                    trafo = id.pose.deviceToWorld * newModel.WIMworkSpaceTrafo.Inverse
                                 }
-                            | None -> newModel
-                        | false -> 
+                            let newlandMarkOnAnnotationSpace = 
+                                newModel.landmarkOnAnnotationSpace
+                                |> PList.prepend updateLandmark
+                            
+                            let updateWIMLandmark = 
+                                {landmark with 
+                                    trafo = id.pose.deviceToWorld 
+                                }
+                            let newlandMarkOnWIMAnnotationSpace = 
+                                newModel.WIMlandmarkOnAnnotationSpace
+                                |> PList.prepend updateWIMLandmark
+
                             {newModel with 
-                                landmarkOnController = updateLandmarkPos
+                                landmarkOnController = PList.empty; 
+                                WIMlandmarkOnAnnotationSpace = newlandMarkOnWIMAnnotationSpace;
+                                landmarkOnAnnotationSpace = newlandMarkOnAnnotationSpace
                             }
+                        | None -> newModel
+                    | false -> 
+                        {newModel with 
+                            landmarkOnController = updateLandmarkPos
+                        }
                 newModel
             | None -> newModel
 
@@ -135,21 +136,73 @@ module PlaceLandmark =
                 match con2.backButtonPressed with 
                 | true -> 
                     newModel.WIMuserPos 
-                    |> PList.map (fun uPos -> 
-                        let newUPos = con2.pose.deviceToWorld * newModel.workSpaceTrafo.Inverse * newModel.WIMworkSpaceTrafo
-                        let rtUPos = newUPos.GetOrthoNormalOrientation()
-                        let rotUPos = Rot3d.FromFrame(rtUPos.Forward.C0.XYZ, rtUPos.Forward.C1.XYZ, rtUPos.Forward.C2.XYZ)
-                        let rotationUPos = rotUPos.GetEulerAngles()
-                        let rotationUPos1 = V3d(0.0, 0.0, rotationUPos.Z)
-
-                        let translationUPos = newUPos.GetModelOrigin()
-
-                        let scaleUPos = V3d(0.5, 0.5, 0.5)
-                        {uPos with trafo = con2.pose.deviceToWorld}//Trafo3d.FromComponents(scaleUPos, rotationUPos1, translationUPos)}
+                    |> PList.map (fun uPos -> {uPos with trafo = con2.pose.deviceToWorld}//Trafo3d.FromComponents(scaleUPos, rotationUPos1, translationUPos)}
                     )
                 | false -> newModel.WIMuserPos
             | None -> newModel.WIMuserPos
             
         {newModel with WIMuserPos = changeWIMuserPosWithCon2}
+
+    let moveUserToNewPosOnAnnotationSpace model : Model = 
+        let controllerPos = model.menuModel.controllerMenuSelector
+
+        let secondCon = 
+            if controllerPos.kind.Equals(ControllerKind.ControllerA) then
+                model.controllerInfos |> HMap.tryFind ControllerKind.ControllerB
+            else model.controllerInfos |> HMap.tryFind ControllerKind.ControllerA
+
+        match secondCon with 
+        | Some con2 -> 
+            let upWIM = model.WIMuserPos |> PList.tryFirst
+            let newRealWorldPos = model.userPosOnAnnotationSpace |> PList.tryFirst
+            let model = 
+                match upWIM with 
+                | Some pos -> 
+                    let updatePosAnnSpace = 
+                        {pos with trafo = con2.pose.deviceToWorld * model.WIMworkSpaceTrafo.Inverse}
+                    match model.menuModel.menu with
+                    | MenuState.WIMLandmarks -> 
+
+                        let newPosAnnSpaceList = 
+                            model.userPosOnAnnotationSpace
+                            |> PList.prepend updatePosAnnSpace
+
+                        {model with userPosOnAnnotationSpace = newPosAnnSpaceList}
+                    
+                    | _ -> model
+                | None -> model 
+            match newRealWorldPos with 
+            | Some pos -> 
+                let updatePosAnnSpace = 
+                    {pos with trafo = pos.trafo * model.WIMworkSpaceTrafo.Inverse}
+                match model.menuModel.menu with
+                | MenuState.Scale -> 
+                    match con2.sideButtonPressed with 
+                    | true -> 
+                        ////
+                        //let newLmkC = landmark.trafo * newModel.workSpaceTrafo.Inverse * newModel.WIMworkSpaceTrafo
+                        //let rtLmkC = newLmkC.GetOrthoNormalOrientation()
+                        //let rotLmkC = Rot3d.FromFrame(rtLmkC.Forward.C0.XYZ, rtLmkC.Forward.C1.XYZ, rtLmkC.Forward.C2.XYZ)
+                        //let rotationLmkC = rotLmkC.GetEulerAngles()
+                        //let translationLmkC = newLmkC.GetModelOrigin()
+                        //let scaleLmkC = V3d(0.5, 0.5, 0.5)
+                        ////
+
+                        let transportUserPos = updatePosAnnSpace.trafo * model.workSpaceTrafo.Inverse * model.annotationSpaceTrafo
+
+                        let newWorkSpace = model.initWorkSpaceTrafo * transportUserPos.Inverse
+                        let newOpcSpace = model.initOpcSpaceTrafo * newWorkSpace
+                        let newFlagSpace = model.initAnnotationSpaceTrafo * newWorkSpace
+                    
+                        {model with 
+                            workSpaceTrafo              = newWorkSpace
+                            opcSpaceTrafo               = newOpcSpace
+                            annotationSpaceTrafo        = newFlagSpace
+                        }
+                    | false -> model
+                | _ -> model
+            | None -> model 
+        | None -> model
+         
         
         

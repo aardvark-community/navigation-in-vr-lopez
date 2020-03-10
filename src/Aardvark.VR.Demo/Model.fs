@@ -105,6 +105,7 @@ type Model =
         WIMlandmarkOnController     : plist<VisibleBox>
         WIMlandmarkOnAnnotationSpace: plist<VisibleBox>
         WIMuserPos                  : plist<VisibleBox>
+        userPosOnAnnotationSpace    : plist<VisibleBox>
         teleportRay                 : Ray3d
         droneControl                : Drone
 
@@ -181,6 +182,7 @@ module Model =
             WIMlandmarkOnController     = PList.empty
             WIMlandmarkOnAnnotationSpace= PList.empty
             WIMuserPos                  = PList.empty
+            userPosOnAnnotationSpace    = PList.empty
             teleportRay                 = Ray3d.Invalid
             droneControl                = Drone.initial
 
