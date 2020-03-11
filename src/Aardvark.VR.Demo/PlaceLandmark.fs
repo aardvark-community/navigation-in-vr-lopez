@@ -123,8 +123,8 @@ module PlaceLandmark =
                 |> PList.choosei (fun _ u -> 
                     let dist = V3d.Distance(u.trafo.GetModelOrigin(), con2.pose.deviceToWorld.GetModelOrigin())
                     if (dist <= 0.1) then 
-                        Some {u with color = C4b.Blue; isHovered = true}
-                    else Some {u with color = C4b.Red; isHovered = false}
+                        Some {u with isHovered = true}
+                    else Some {u with isHovered = false}
                 )
             | None -> newModel.WIMuserPos 
         
@@ -153,56 +153,126 @@ module PlaceLandmark =
 
         match secondCon with 
         | Some con2 -> 
-            let upWIM = model.WIMuserPos |> PList.tryFirst
-            let newRealWorldPos = model.userPosOnAnnotationSpace |> PList.tryFirst
-            let model = 
+            match con2.backButtonPressed with 
+            | true -> 
+                model
+            | false -> 
+                let upWIM = model.WIMuserPos |> PList.tryFirst
                 match upWIM with 
                 | Some pos -> 
-                    let updatePosAnnSpace = 
-                        {pos with trafo = con2.pose.deviceToWorld * model.WIMworkSpaceTrafo.Inverse}
-                    match model.menuModel.menu with
-                    | MenuState.WIMLandmarks -> 
-
-                        let newPosAnnSpaceList = 
-                            model.userPosOnAnnotationSpace
-                            |> PList.prepend updatePosAnnSpace
-
-                        {model with userPosOnAnnotationSpace = newPosAnnSpaceList}
-                    
-                    | _ -> model
-                | None -> model 
-            match newRealWorldPos with 
-            | Some pos -> 
-                let updatePosAnnSpace = 
-                    {pos with trafo = pos.trafo * model.WIMworkSpaceTrafo.Inverse}
-                match model.menuModel.menu with
-                | MenuState.Scale -> 
-                    match con2.sideButtonPressed with 
+                    match pos.isHovered with //this part is still not taken into account
                     | true -> 
-                        ////
-                        //let newLmkC = landmark.trafo * newModel.workSpaceTrafo.Inverse * newModel.WIMworkSpaceTrafo
-                        //let rtLmkC = newLmkC.GetOrthoNormalOrientation()
-                        //let rotLmkC = Rot3d.FromFrame(rtLmkC.Forward.C0.XYZ, rtLmkC.Forward.C1.XYZ, rtLmkC.Forward.C2.XYZ)
-                        //let rotationLmkC = rotLmkC.GetEulerAngles()
-                        //let translationLmkC = newLmkC.GetModelOrigin()
-                        //let scaleLmkC = V3d(0.5, 0.5, 0.5)
-                        ////
+                        match model.menuModel.menu with
+                        | MenuState.WIMLandmarks -> 
+                            let vbPosAnnSpace = {pos with trafo = con2.pose.deviceToWorld * model.WIMworkSpaceTrafo.Inverse}
+                            let updatePosAnnSpace = 
+                                {pos with trafo = vbPosAnnSpace.trafo; color = C4b.Yellow}
+                                |> PList.single
+                                //user position in real world
+                            let updatePosWIMspace = 
+                                {pos with trafo = con2.pose.deviceToWorld }
+                                |> PList.single
 
-                        let transportUserPos = updatePosAnnSpace.trafo * model.workSpaceTrafo.Inverse * model.annotationSpaceTrafo
+                            //let newPosAnnSpaceList = updatePosAnnSpace
+                                //model.userPosOnAnnotationSpace
+                                //|> PList.prepend updatePosAnnSpace
 
-                        let newWorkSpace = model.initWorkSpaceTrafo * transportUserPos.Inverse
-                        let newOpcSpace = model.initOpcSpaceTrafo * newWorkSpace
-                        let newFlagSpace = model.initAnnotationSpaceTrafo * newWorkSpace
+                            let transportUserPos = vbPosAnnSpace.trafo * model.WIMworkSpaceTrafo * model.workSpaceTrafo.Inverse * model.annotationSpaceTrafo
+                            let newWorkSpace = model.initWorkSpaceTrafo * transportUserPos.Inverse
+                            let newOpcSpace = model.initOpcSpaceTrafo * newWorkSpace
+                            let newFlagSpace = model.initAnnotationSpaceTrafo * newWorkSpace
+
+                            {model with 
+                                userPosOnAnnotationSpace    = updatePosAnnSpace;
+                                WIMuserPos                  = updatePosWIMspace
+                                workSpaceTrafo              = newWorkSpace
+                                opcSpaceTrafo               = newOpcSpace
+                                annotationSpaceTrafo        = newFlagSpace
+                            }
                     
-                        {model with 
-                            workSpaceTrafo              = newWorkSpace
-                            opcSpaceTrafo               = newOpcSpace
-                            annotationSpaceTrafo        = newFlagSpace
-                        }
+                        | _ -> model
                     | false -> model
-                | _ -> model
-            | None -> model 
+                | None -> model 
+        
         | None -> model
+        
+        
+        
+        //match secondCon with 
+        //| Some con2 -> 
+        //    let upWIM = model.WIMuserPos |> PList.tryFirst
+        //    let model = 
+        //        match upWIM with 
+        //        | Some pos -> 
+        //            let updatePosAnnSpace = 
+        //                {pos with trafo = con2.pose.deviceToWorld * model.workSpaceTrafo.Inverse}
+        //                //user position in real world
+        //            match model.menuModel.menu with
+        //            | MenuState.WIMLandmarks -> 
+
+        //                let newPosAnnSpaceList = 
+        //                    model.userPosOnAnnotationSpace
+        //                    |> PList.prepend updatePosAnnSpace
+
+        //                {model with userPosOnAnnotationSpace = newPosAnnSpaceList}
+                    
+        //            | _ -> model
+        //        | None -> model 
+        //    let newRealWorldPos = model.userPosOnAnnotationSpace |> PList.tryFirst
+        //    match newRealWorldPos with 
+        //    | Some pos -> 
+        //        let updatePosAnnSpace = 
+        //            {pos with trafo = pos.trafo}
+        //        match model.menuModel.menu with
+        //        | MenuState.Scale -> 
+        //            match con2.sideButtonPressed with 
+        //            | true -> 
+
+        //                let s, r, t = updatePosAnnSpace.trafo.Decompose()
+        //                let ss, rr, tt = pos.trafo.Decompose()
+        //                printfn "t: %s" (t.ToString())
+        //                printfn " tt: %s" (tt.ToString())
+        //                printfn "pos: %s" (pos.trafo.GetModelOrigin().ToString())
+        //                let tttttt = pos.trafo * model.workSpaceTrafo.Inverse * model.annotationSpaceTrafo
+        //                printfn "ttttttt: %s" (tttttt.GetModelOrigin().ToString())
+
+
+        //                let transportUserPos = updatePosAnnSpace.trafo * model.workSpaceTrafo.Inverse * model.annotationSpaceTrafo
+        //                let transportUserPosWIMInv = updatePosAnnSpace.trafo * model.WIMworkSpaceTrafo.Inverse * model.annotationSpaceTrafo
+        //                let transportUserPosNoAnn = updatePosAnnSpace.trafo * model.workSpaceTrafo.Inverse 
+        //                let testttt = updatePosAnnSpace.trafo * model.workSpaceTrafo * model.WIMworkSpaceTrafo.Inverse
+        //                let test1 = updatePosAnnSpace.trafo.Inverse * model.workSpaceTrafo.Inverse * model.annotationSpaceTrafo
+        //                let test2 = updatePosAnnSpace.trafo.Inverse * model.workSpaceTrafo * model.WIMworkSpaceTrafo.Inverse
+        //                let test3 = updatePosAnnSpace.trafo.Inverse * model.workSpaceTrafo.Inverse * model.WIMworkSpaceTrafo.Inverse
+        //                let newworkspacewim = model.initWorkSpaceTrafo * transportUserPosWIMInv.Inverse
+        //                printfn "workspace trafo: %s" (model.workSpaceTrafo.GetModelOrigin().ToString())
+        //                printfn "update pos ann trafo: %s" (updatePosAnnSpace.trafo.GetModelOrigin().ToString())
+        //                printfn "update pos ann trafo wim inverse: %s" (transportUserPosWIMInv.GetModelOrigin().ToString())
+        //                printfn "transport trafo: %s" (transportUserPos.GetModelOrigin().ToString())
+        //                printfn "transport trafo No Ann: %s" (transportUserPosNoAnn.GetModelOrigin().ToString())
+        //                printfn "controller pos: %s" (con2.pose.deviceToWorld.GetModelOrigin().ToString())
+        //                printfn "test: %s" (testttt.GetModelOrigin().ToString())
+        //                printfn "test1: %s" (test1.GetModelOrigin().ToString())
+        //                printfn "test2: %s" (test2.GetModelOrigin().ToString())
+        //                printfn "test3: %s" (test3.GetModelOrigin().ToString())
+                        
+        //                let newWorkSpace = model.initWorkSpaceTrafo * transportUserPos.Inverse
+        //                let newOpcSpace = model.initOpcSpaceTrafo * newWorkSpace
+        //                let newFlagSpace = model.initAnnotationSpaceTrafo * newWorkSpace
+        //                printfn "newowrkspace trafo: %s" (newWorkSpace.GetModelOrigin().ToString())
+        //                printfn "newowrkspace wim trafo: %s" (newworkspacewim.GetModelOrigin().ToString())
+        //                printfn "newopcspace trafo: %s" (newOpcSpace.GetModelOrigin().ToString())
+        //                printfn "newflagspace trafo: %s" (newFlagSpace.GetModelOrigin().ToString())
+                    
+        //                {model with 
+        //                    workSpaceTrafo              = newWorkSpace
+        //                    opcSpaceTrafo               = newOpcSpace
+        //                    annotationSpaceTrafo        = newFlagSpace
+        //                }
+        //            | false -> model
+        //        | _ -> model
+        //    | None -> model 
+        //| None -> model
          
         
         

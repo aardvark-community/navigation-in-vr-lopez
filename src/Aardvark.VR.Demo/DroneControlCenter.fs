@@ -30,7 +30,6 @@ module DroneControlCenter =
             match id.backButtonPressed with 
             | true -> 
                 let controllDir = id.pose.deviceToWorld.Forward.C1
-                printfn "orientation? %s" (controllDir.ToString())
                 let moveDrone = 
                     newModel.droneControl.drone
                     |> PList.map (fun drone -> 
@@ -62,6 +61,13 @@ module DroneControlCenter =
                     let newWorkSpace = model.initWorkSpaceTrafo * newDronePos.Inverse
                     let newOpcSpace = model.initOpcSpaceTrafo * newWorkSpace
                     let newFlagSpace = model.initAnnotationSpaceTrafo * newWorkSpace
+
+                    printfn "controller pos: %s" (id.pose.deviceToWorld.GetModelOrigin().ToString())
+                    printfn "dronepos: %s" (dPos.trafo.GetModelOrigin().ToString())
+                    printfn "newDronePos: %s" (newDronePos.GetModelOrigin().ToString())
+                    printfn "newWorkSpace: %s" (newWorkSpace.GetModelOrigin().ToString())
+                    printfn "newOpcSpace: %s" (newOpcSpace.GetModelOrigin().ToString())
+                    printfn "newFlagSpace: %s" (newFlagSpace.GetModelOrigin().ToString())
 
                     { model with 
                         workSpaceTrafo              = newWorkSpace
