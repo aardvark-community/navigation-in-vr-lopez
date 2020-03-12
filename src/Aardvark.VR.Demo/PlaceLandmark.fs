@@ -140,8 +140,27 @@ module PlaceLandmark =
                     )
                 | false -> newModel.WIMuserPos
             | None -> newModel.WIMuserPos
+
+        let changeUserPosWithCon2OnAnnotationSpace = 
+            match secondCon with 
+            | Some con2 -> 
+                match con2.backButtonPressed with 
+                | true -> 
+                    newModel.userPosOnAnnotationSpace
+                    |> PList.map (fun uPosAS -> 
+                        //let newTrafo = con2.pose.deviceToWorld.GetModelOrigin() + model.wim
+                        {uPosAS with 
+                            trafo = con2.pose.deviceToWorld * newModel.WIMworkSpaceTrafo.Inverse
+                            color = C4b.Yellow
+                        }
+                    )
+                | false -> newModel.userPosOnAnnotationSpace
+            | None -> newModel.userPosOnAnnotationSpace
             
-        {newModel with WIMuserPos = changeWIMuserPosWithCon2}
+        {newModel with 
+            WIMuserPos = changeWIMuserPosWithCon2
+            userPosOnAnnotationSpace = changeUserPosWithCon2OnAnnotationSpace
+        }
 
     let moveUserToNewPosOnAnnotationSpace model : Model = 
         let controllerPos = model.menuModel.controllerMenuSelector
@@ -158,32 +177,38 @@ module PlaceLandmark =
                 model
             | false -> 
                 let upWIM = model.WIMuserPos |> PList.tryFirst
-                match upWIM with 
-                | Some pos -> 
+                let upAnn = model.userPosOnAnnotationSpace |> PList.tryFirst
+                match upWIM, upAnn with 
+                | Some pos, Some annPos -> 
                     match pos.isHovered with //this part is still not taken into account
                     | true -> 
                         match model.menuModel.menu with
                         | MenuState.WIMLandmarks -> 
-                            let vbPosAnnSpace = {pos with trafo = con2.pose.deviceToWorld * model.WIMworkSpaceTrafo.Inverse}
+                            let vbPosAnnSpace = annPos//{pos with trafo = con2.pose.deviceToWorld * model.WIMworkSpaceTrafo.Inverse}
                             let updatePosAnnSpace = 
-                                {pos with trafo = vbPosAnnSpace.trafo; color = C4b.Yellow}
+                                {annPos with trafo = vbPosAnnSpace.trafo; color = C4b.Yellow}
                                 |> PList.single
                                 //user position in real world
+                            
                             let updatePosWIMspace = 
                                 {pos with trafo = con2.pose.deviceToWorld }
                                 |> PList.single
+                                //user position in wim
 
-                            //let newPosAnnSpaceList = updatePosAnnSpace
-                                //model.userPosOnAnnotationSpace
-                                //|> PList.prepend updatePosAnnSpace
+                            let newPos = annPos.trafo.GetModelOrigin()
+                            let oldPos = model.workSpaceTrafo.GetModelOrigin()
+                            let shift = newPos// - oldPos
+                            let shiftTrafo = Trafo3d.Translation(shift).Inverse
 
-                            let transportUserPos = vbPosAnnSpace.trafo * model.WIMworkSpaceTrafo * model.workSpaceTrafo.Inverse * model.annotationSpaceTrafo
-                            let newWorkSpace = model.initWorkSpaceTrafo * transportUserPos.Inverse
+                            printfn "old pos: %A new pos: %A with shift: %A" oldPos newPos shift
+
+                            //let transportUserPos = annPos.trafo.Inverse * model.workSpaceTrafo //* model.annotationSpaceTrafo 
+                            let newWorkSpace = model.initWorkSpaceTrafo * shiftTrafo
                             let newOpcSpace = model.initOpcSpaceTrafo * newWorkSpace
                             let newFlagSpace = model.initAnnotationSpaceTrafo * newWorkSpace
 
                             {model with 
-                                userPosOnAnnotationSpace    = updatePosAnnSpace;
+                                //userPosOnAnnotationSpace    = updatePosAnnSpace;
                                 WIMuserPos                  = updatePosWIMspace
                                 workSpaceTrafo              = newWorkSpace
                                 opcSpaceTrafo               = newOpcSpace
@@ -192,7 +217,7 @@ module PlaceLandmark =
                     
                         | _ -> model
                     | false -> model
-                | None -> model 
+                | _, _ -> model 
         
         | None -> model
         
@@ -209,13 +234,10 @@ module PlaceLandmark =
         //                //user position in real world
         //            match model.menuModel.menu with
         //            | MenuState.WIMLandmarks -> 
-
         //                let newPosAnnSpaceList = 
         //                    model.userPosOnAnnotationSpace
         //                    |> PList.prepend updatePosAnnSpace
-
         //                {model with userPosOnAnnotationSpace = newPosAnnSpaceList}
-                    
         //            | _ -> model
         //        | None -> model 
         //    let newRealWorldPos = model.userPosOnAnnotationSpace |> PList.tryFirst
@@ -235,8 +257,6 @@ module PlaceLandmark =
         //                printfn "pos: %s" (pos.trafo.GetModelOrigin().ToString())
         //                let tttttt = pos.trafo * model.workSpaceTrafo.Inverse * model.annotationSpaceTrafo
         //                printfn "ttttttt: %s" (tttttt.GetModelOrigin().ToString())
-
-
         //                let transportUserPos = updatePosAnnSpace.trafo * model.workSpaceTrafo.Inverse * model.annotationSpaceTrafo
         //                let transportUserPosWIMInv = updatePosAnnSpace.trafo * model.WIMworkSpaceTrafo.Inverse * model.annotationSpaceTrafo
         //                let transportUserPosNoAnn = updatePosAnnSpace.trafo * model.workSpaceTrafo.Inverse 

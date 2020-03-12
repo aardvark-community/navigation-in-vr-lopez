@@ -33,7 +33,7 @@ module DroneControlCenter =
                 let moveDrone = 
                     newModel.droneControl.drone
                     |> PList.map (fun drone -> 
-                        let newTrafo = drone.trafo.GetModelOrigin() + V3d(controllDir.X, controllDir.Y, controllDir.Z) * 0.05
+                        let newTrafo = drone.trafo.GetModelOrigin() + controllDir.XYZ * 0.05
                         {drone with trafo = Trafo3d.Translation(newTrafo) }
                     )
 

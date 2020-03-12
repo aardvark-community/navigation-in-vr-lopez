@@ -262,15 +262,15 @@ module Demo =
                     }
                 | Menu.MenuState.WIMLandmarks ->
                     let newLandmark = OpcUtilities.mkFlags id.pose.deviceToWorld 1
-                    //let newUserPos = 
-                    //    if newModel.userPosOnAnnotationSpace.Count.Equals(0) then 
-                    //        OpcUtilities.mkFlags id.pose.deviceToWorld 1
-                    //    else newModel.userPosOnAnnotationSpace
+                    let newUserPos = 
+                        if newModel.userPosOnAnnotationSpace.Count.Equals(0) then 
+                            OpcUtilities.mkFlags id.pose.deviceToWorld 1
+                        else newModel.userPosOnAnnotationSpace
 
                     let newModel = 
                         {newModel with 
                             landmarkOnController = newLandmark
-                            //userPosOnAnnotationSpace = newUserPos
+                            userPosOnAnnotationSpace = newUserPos
                         }
                     newModel 
                     |> PlaceLandmark.moveUserToNewPosOnAnnotationSpace
