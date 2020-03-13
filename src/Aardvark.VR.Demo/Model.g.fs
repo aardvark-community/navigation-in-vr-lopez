@@ -183,6 +183,7 @@ module Mutable =
         let _WIMlandmarkOnController = MList.Create(__initial.WIMlandmarkOnController, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _WIMlandmarkOnAnnotationSpace = MList.Create(__initial.WIMlandmarkOnAnnotationSpace, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _WIMuserPos = MList.Create(__initial.WIMuserPos, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
+        let _WIMinitialUserPos = MList.Create(__initial.WIMinitialUserPos, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _userPosOnAnnotationSpace = MList.Create(__initial.userPosOnAnnotationSpace, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _teleportRay = ResetMod.Create(__initial.teleportRay)
         let _droneControl = MDrone.Create(__initial.droneControl)
@@ -221,6 +222,7 @@ module Mutable =
         member x.WIMlandmarkOnController = _WIMlandmarkOnController :> alist<_>
         member x.WIMlandmarkOnAnnotationSpace = _WIMlandmarkOnAnnotationSpace :> alist<_>
         member x.WIMuserPos = _WIMuserPos :> alist<_>
+        member x.WIMinitialUserPos = _WIMinitialUserPos :> alist<_>
         member x.userPosOnAnnotationSpace = _userPosOnAnnotationSpace :> alist<_>
         member x.teleportRay = _teleportRay :> IMod<_>
         member x.droneControl = _droneControl
@@ -263,6 +265,7 @@ module Mutable =
                 MList.Update(_WIMlandmarkOnController, v.WIMlandmarkOnController)
                 MList.Update(_WIMlandmarkOnAnnotationSpace, v.WIMlandmarkOnAnnotationSpace)
                 MList.Update(_WIMuserPos, v.WIMuserPos)
+                MList.Update(_WIMinitialUserPos, v.WIMinitialUserPos)
                 MList.Update(_userPosOnAnnotationSpace, v.userPosOnAnnotationSpace)
                 ResetMod.Update(_teleportRay,v.teleportRay)
                 MDrone.Update(_droneControl, v.droneControl)
@@ -480,6 +483,12 @@ module Mutable =
                     override x.Get(r) = r.WIMuserPos
                     override x.Set(r,v) = { r with WIMuserPos = v }
                     override x.Update(r,f) = { r with WIMuserPos = f r.WIMuserPos }
+                }
+            let WIMinitialUserPos =
+                { new Lens<Demo.Main.Model, Aardvark.Base.plist<Demo.VisibleBox>>() with
+                    override x.Get(r) = r.WIMinitialUserPos
+                    override x.Set(r,v) = { r with WIMinitialUserPos = v }
+                    override x.Update(r,f) = { r with WIMinitialUserPos = f r.WIMinitialUserPos }
                 }
             let userPosOnAnnotationSpace =
                 { new Lens<Demo.Main.Model, Aardvark.Base.plist<Demo.VisibleBox>>() with

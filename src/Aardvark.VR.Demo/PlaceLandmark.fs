@@ -14,6 +14,19 @@ module PlaceLandmark =
     open Demo
     open Demo.Menu
 
+    let createNewTrafo con : Trafo3d = 
+        let con2Pos = con.pose.deviceToWorld// * newModel.workSpaceTrafo.Inverse * newModel.WIMworkSpaceTrafo
+        let r = con2Pos.GetOrthoNormalOrientation()
+        let rot = Rot3d.FromFrame(r.Forward.C0.XYZ, r.Forward.C1.XYZ, r.Forward.C2.XYZ)
+        let rotation = rot.GetEulerAngles()
+        let rotation1 = V3d(0.0, 0.0, rotation.Z)
+
+        let translation = con2Pos.GetModelOrigin()
+
+        let scale = V3d(0.5, 0.5, 0.5)
+                        
+        Trafo3d.FromComponents(scale, rotation1, translation)
+
     let placing kind p model : Model = 
         let newControllersPosition = 
             model 
@@ -136,7 +149,9 @@ module PlaceLandmark =
                 match con2.backButtonPressed with 
                 | true -> 
                     newModel.WIMuserPos 
-                    |> PList.map (fun uPos -> {uPos with trafo = con2.pose.deviceToWorld}//Trafo3d.FromComponents(scaleUPos, rotationUPos1, translationUPos)}
+                    |> PList.map (fun uPos -> 
+                        let newTrafo = createNewTrafo con2
+                        {uPos with trafo = newTrafo}//Trafo3d.FromComponents(scaleUPos, rotationUPos1, translationUPos)}
                     )
                 | false -> newModel.WIMuserPos
             | None -> newModel.WIMuserPos
@@ -148,9 +163,9 @@ module PlaceLandmark =
                 | true -> 
                     newModel.userPosOnAnnotationSpace
                     |> PList.map (fun uPosAS -> 
-                        //let newTrafo = con2.pose.deviceToWorld.GetModelOrigin() + model.wim
+                        let newTrafo = createNewTrafo con2
                         {uPosAS with 
-                            trafo = con2.pose.deviceToWorld * newModel.WIMworkSpaceTrafo.Inverse
+                            trafo = newTrafo * newModel.WIMworkSpaceTrafo.Inverse
                             color = C4b.Yellow
                         }
                     )
@@ -170,11 +185,28 @@ module PlaceLandmark =
                 model.controllerInfos |> HMap.tryFind ControllerKind.ControllerB
             else model.controllerInfos |> HMap.tryFind ControllerKind.ControllerA
 
+
+
         match secondCon with 
         | Some con2 -> 
             match con2.backButtonPressed with 
             | true -> 
-                model
+                let upInitialWIM = model.WIMinitialUserPos |> PList.tryFirst
+                match upInitialWIM with
+                | Some p -> 
+                    let newTrafo = createNewTrafo con2
+                    let updateInitialWIM = {p with trafo = newTrafo; color = C4b.Cyan}
+                    let newInitialList = 
+                        model.WIMinitialUserPos 
+                        |> PList.prepend updateInitialWIM
+                
+                    {model with WIMinitialUserPos = newInitialList}
+                | None -> model
+                
+                
+                
+                
+                
             | false -> 
                 let upWIM = model.WIMuserPos |> PList.tryFirst
                 let upAnn = model.userPosOnAnnotationSpace |> PList.tryFirst
@@ -184,25 +216,14 @@ module PlaceLandmark =
                     | true -> 
                         match model.menuModel.menu with
                         | MenuState.WIMLandmarks -> 
-                            let vbPosAnnSpace = annPos//{pos with trafo = con2.pose.deviceToWorld * model.WIMworkSpaceTrafo.Inverse}
-                            let updatePosAnnSpace = 
-                                {annPos with trafo = vbPosAnnSpace.trafo; color = C4b.Yellow}
-                                |> PList.single
-                                //user position in real world
-                            
-                            let updatePosWIMspace = 
-                                {pos with trafo = con2.pose.deviceToWorld }
+                            let updatePosWIMspace =                                 
+                                let newTrafo = createNewTrafo con2
+                                {pos with trafo = newTrafo}
                                 |> PList.single
                                 //user position in wim
 
-                            let newPos = annPos.trafo.GetModelOrigin()
-                            let oldPos = model.workSpaceTrafo.GetModelOrigin()
-                            let shift = newPos// - oldPos
-                            let shiftTrafo = Trafo3d.Translation(shift).Inverse
+                            let shiftTrafo = Trafo3d.Translation(annPos.trafo.GetModelOrigin()).Inverse
 
-                            printfn "old pos: %A new pos: %A with shift: %A" oldPos newPos shift
-
-                            //let transportUserPos = annPos.trafo.Inverse * model.workSpaceTrafo //* model.annotationSpaceTrafo 
                             let newWorkSpace = model.initWorkSpaceTrafo * shiftTrafo
                             let newOpcSpace = model.initOpcSpaceTrafo * newWorkSpace
                             let newFlagSpace = model.initAnnotationSpaceTrafo * newWorkSpace
@@ -220,79 +241,4 @@ module PlaceLandmark =
                 | _, _ -> model 
         
         | None -> model
-        
-        
-        
-        //match secondCon with 
-        //| Some con2 -> 
-        //    let upWIM = model.WIMuserPos |> PList.tryFirst
-        //    let model = 
-        //        match upWIM with 
-        //        | Some pos -> 
-        //            let updatePosAnnSpace = 
-        //                {pos with trafo = con2.pose.deviceToWorld * model.workSpaceTrafo.Inverse}
-        //                //user position in real world
-        //            match model.menuModel.menu with
-        //            | MenuState.WIMLandmarks -> 
-        //                let newPosAnnSpaceList = 
-        //                    model.userPosOnAnnotationSpace
-        //                    |> PList.prepend updatePosAnnSpace
-        //                {model with userPosOnAnnotationSpace = newPosAnnSpaceList}
-        //            | _ -> model
-        //        | None -> model 
-        //    let newRealWorldPos = model.userPosOnAnnotationSpace |> PList.tryFirst
-        //    match newRealWorldPos with 
-        //    | Some pos -> 
-        //        let updatePosAnnSpace = 
-        //            {pos with trafo = pos.trafo}
-        //        match model.menuModel.menu with
-        //        | MenuState.Scale -> 
-        //            match con2.sideButtonPressed with 
-        //            | true -> 
-
-        //                let s, r, t = updatePosAnnSpace.trafo.Decompose()
-        //                let ss, rr, tt = pos.trafo.Decompose()
-        //                printfn "t: %s" (t.ToString())
-        //                printfn " tt: %s" (tt.ToString())
-        //                printfn "pos: %s" (pos.trafo.GetModelOrigin().ToString())
-        //                let tttttt = pos.trafo * model.workSpaceTrafo.Inverse * model.annotationSpaceTrafo
-        //                printfn "ttttttt: %s" (tttttt.GetModelOrigin().ToString())
-        //                let transportUserPos = updatePosAnnSpace.trafo * model.workSpaceTrafo.Inverse * model.annotationSpaceTrafo
-        //                let transportUserPosWIMInv = updatePosAnnSpace.trafo * model.WIMworkSpaceTrafo.Inverse * model.annotationSpaceTrafo
-        //                let transportUserPosNoAnn = updatePosAnnSpace.trafo * model.workSpaceTrafo.Inverse 
-        //                let testttt = updatePosAnnSpace.trafo * model.workSpaceTrafo * model.WIMworkSpaceTrafo.Inverse
-        //                let test1 = updatePosAnnSpace.trafo.Inverse * model.workSpaceTrafo.Inverse * model.annotationSpaceTrafo
-        //                let test2 = updatePosAnnSpace.trafo.Inverse * model.workSpaceTrafo * model.WIMworkSpaceTrafo.Inverse
-        //                let test3 = updatePosAnnSpace.trafo.Inverse * model.workSpaceTrafo.Inverse * model.WIMworkSpaceTrafo.Inverse
-        //                let newworkspacewim = model.initWorkSpaceTrafo * transportUserPosWIMInv.Inverse
-        //                printfn "workspace trafo: %s" (model.workSpaceTrafo.GetModelOrigin().ToString())
-        //                printfn "update pos ann trafo: %s" (updatePosAnnSpace.trafo.GetModelOrigin().ToString())
-        //                printfn "update pos ann trafo wim inverse: %s" (transportUserPosWIMInv.GetModelOrigin().ToString())
-        //                printfn "transport trafo: %s" (transportUserPos.GetModelOrigin().ToString())
-        //                printfn "transport trafo No Ann: %s" (transportUserPosNoAnn.GetModelOrigin().ToString())
-        //                printfn "controller pos: %s" (con2.pose.deviceToWorld.GetModelOrigin().ToString())
-        //                printfn "test: %s" (testttt.GetModelOrigin().ToString())
-        //                printfn "test1: %s" (test1.GetModelOrigin().ToString())
-        //                printfn "test2: %s" (test2.GetModelOrigin().ToString())
-        //                printfn "test3: %s" (test3.GetModelOrigin().ToString())
-                        
-        //                let newWorkSpace = model.initWorkSpaceTrafo * transportUserPos.Inverse
-        //                let newOpcSpace = model.initOpcSpaceTrafo * newWorkSpace
-        //                let newFlagSpace = model.initAnnotationSpaceTrafo * newWorkSpace
-        //                printfn "newowrkspace trafo: %s" (newWorkSpace.GetModelOrigin().ToString())
-        //                printfn "newowrkspace wim trafo: %s" (newworkspacewim.GetModelOrigin().ToString())
-        //                printfn "newopcspace trafo: %s" (newOpcSpace.GetModelOrigin().ToString())
-        //                printfn "newflagspace trafo: %s" (newFlagSpace.GetModelOrigin().ToString())
-                    
-        //                {model with 
-        //                    workSpaceTrafo              = newWorkSpace
-        //                    opcSpaceTrafo               = newOpcSpace
-        //                    annotationSpaceTrafo        = newFlagSpace
-        //                }
-        //            | false -> model
-        //        | _ -> model
-        //    | None -> model 
-        //| None -> model
-         
-        
         

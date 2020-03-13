@@ -237,17 +237,13 @@ module Demo =
                     }
                 | Menu.MenuState.Scale -> 
                     let newModel = newModel |> NavigationOpc.initialSceneInfo
-                    let newModel = 
-                        {newModel with 
-                            landmarkOnController = PList.empty;
-                            WIMopcSpaceTrafo = Trafo3d.Translation(V3d(1000000.0, 1000000.0, 1000000.0)); 
-                            WIMlandmarkOnAnnotationSpace = PList.empty;
-                            droneControl = Drone.initial;
-                            WIMuserPos = PList.empty
-                        }
-                    
-                    newModel 
-                    |> PlaceLandmark.moveUserToNewPosOnAnnotationSpace
+                    {newModel with 
+                        landmarkOnController = PList.empty;
+                        WIMopcSpaceTrafo = Trafo3d.Translation(V3d(1000000.0, 1000000.0, 1000000.0)); 
+                        WIMlandmarkOnAnnotationSpace = PList.empty;
+                        droneControl = Drone.initial;
+                        WIMuserPos = PList.empty
+                    }
                 | Menu.MenuState.NodeBased -> 
                     newModel
                 | Menu.MenuState.WIM -> 
@@ -266,11 +262,14 @@ module Demo =
                         if newModel.userPosOnAnnotationSpace.Count.Equals(0) then 
                             OpcUtilities.mkFlags id.pose.deviceToWorld 1
                         else newModel.userPosOnAnnotationSpace
+                    let newInitialUserPosWIM = 
+                        OpcUtilities.mkFlags (Trafo3d.Translation(V3d.One * 1000000.0)) 1
 
                     let newModel = 
                         {newModel with 
                             landmarkOnController = newLandmark
                             userPosOnAnnotationSpace = newUserPos
+                            WIMinitialUserPos = newInitialUserPosWIM
                         }
                     newModel 
                     |> PlaceLandmark.moveUserToNewPosOnAnnotationSpace
@@ -430,7 +429,7 @@ module Demo =
         | _ -> 
             []
 
-    let mkControllerBox (cp : IMod<Trafo3d>) =
+    let mkControllerBox (cp : IMod<Trafo3d>) (color : C4b) =
         let newTrafo = 
             cp
             |> Mod.map (fun t -> 
@@ -441,7 +440,7 @@ module Demo =
                 let s = V3d.One
                 Trafo3d.FromComponents(s, rrr, tt)
             )
-        Sg.cone' 20 C4b.Red 0.5 5.0 
+        Sg.cone' 20 color 0.5 5.0 
             |> Sg.noEvents
             |> Sg.scale 0.01
             |> Sg.trafo (Mod.constant (Trafo3d.RotationInDegrees(V3d(-90.0,90.0,0.0))))
@@ -560,6 +559,34 @@ module Demo =
             |> defaultEffect
             |> Sg.noEvents
 
+        let userConeOnWim = 
+            m.WIMuserPos
+            |> AList.toASet
+            |> ASet.map (fun b -> 
+                mkControllerBox b.trafo C4b.Red
+            )
+            |> Sg.set
+            |> defaultEffect
+
+        let initialUserPosOnWIM = 
+            m.WIMinitialUserPos
+            |> AList.toASet 
+            |> ASet.map (fun b -> 
+                mkFlag m b 
+               )
+            |> Sg.set
+            |> defaultEffect
+            |> Sg.noEvents
+
+        let initialUserConeOnWim = 
+            m.WIMinitialUserPos
+            |> AList.toASet
+            |> ASet.map (fun b -> 
+                mkControllerBox b.trafo C4b.Cyan
+            )
+            |> Sg.set
+            |> defaultEffect
+
         let userPosOnAnnotationSpace =  
             m.userPosOnAnnotationSpace
             |> AList.toASet 
@@ -569,15 +596,6 @@ module Demo =
             |> Sg.set
             |> defaultEffect
             |> Sg.noEvents
-        
-        let userConeOnWim = 
-            m.WIMuserPos
-            |> AList.toASet
-            |> ASet.map (fun b -> 
-                mkControllerBox b.trafo
-            )
-            |> Sg.set
-            |> defaultEffect
 
         let landmarksOnAnnotationSpace = 
             m.landmarkOnAnnotationSpace
@@ -829,6 +847,8 @@ module Demo =
                 userPosOnWIM 
                 userPosOnAnnotationSpace |> Sg.trafo m.annotationSpaceTrafo
                 userConeOnWim
+                initialUserPosOnWIM
+                //initialUserConeOnWim
             ]
             |> Sg.ofList
 
@@ -922,6 +942,7 @@ module Demo =
             WIMlandmarkOnController     = PList.empty
             WIMlandmarkOnAnnotationSpace= PList.empty
             WIMuserPos                  = PList.empty
+            WIMinitialUserPos           = PList.empty
             userPosOnAnnotationSpace    = PList.empty
             teleportRay                 = Ray3d.Invalid
             droneControl                = Drone.initial
