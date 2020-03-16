@@ -13,6 +13,7 @@ module PlaceLandmark =
     open Aardvark.Base.MapExtImplementation
     open Demo
     open Demo.Menu
+    open ProviderImplementation.ProvidedTypes.AssemblyReader
 
     let createNewTrafo con : Trafo3d = 
         let con2Pos = con.pose.deviceToWorld// * newModel.workSpaceTrafo.Inverse * newModel.WIMworkSpaceTrafo
@@ -185,8 +186,6 @@ module PlaceLandmark =
                 model.controllerInfos |> HMap.tryFind ControllerKind.ControllerB
             else model.controllerInfos |> HMap.tryFind ControllerKind.ControllerA
 
-
-
         match secondCon with 
         | Some con2 -> 
             match con2.backButtonPressed with 
@@ -203,10 +202,6 @@ module PlaceLandmark =
                     {model with WIMinitialUserPos = newInitialList}
                 | None -> model
                 
-                
-                
-                
-                
             | false -> 
                 let upWIM = model.WIMuserPos |> PList.tryFirst
                 let upAnn = model.userPosOnAnnotationSpace |> PList.tryFirst
@@ -222,14 +217,16 @@ module PlaceLandmark =
                                 |> PList.single
                                 //user position in wim
 
-                            let shiftTrafo = Trafo3d.Translation(annPos.trafo.GetModelOrigin()).Inverse
+                            let conRotation = con2.pose.deviceToWorld.GetOrthoNormalOrientation()
+
+                            let shiftTrafo = Trafo3d.Translation(annPos.trafo.GetModelOrigin()).Inverse * conRotation.Inverse 
+                            //is takes all possible rotation of controller into account, we only want the z rotation
 
                             let newWorkSpace = model.initWorkSpaceTrafo * shiftTrafo
                             let newOpcSpace = model.initOpcSpaceTrafo * newWorkSpace
                             let newFlagSpace = model.initAnnotationSpaceTrafo * newWorkSpace
 
                             {model with 
-                                //userPosOnAnnotationSpace    = updatePosAnnSpace;
                                 WIMuserPos                  = updatePosWIMspace
                                 workSpaceTrafo              = newWorkSpace
                                 opcSpaceTrafo               = newOpcSpace

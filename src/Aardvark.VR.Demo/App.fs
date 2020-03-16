@@ -588,6 +588,32 @@ module Demo =
             |> defaultEffect
 
         let userPosOnAnnotationSpace =  
+
+            let mkDisappear = 
+                let menuMode = m.menuModel.menu
+                let controllerPos = m.menuModel.controllerMenuSelector
+                let con2 = 
+                    if controllerPos.kind.Equals(ControllerKind.ControllerA) then
+                        m.controllerInfos |> AMap.tryFind ControllerKind.ControllerB
+                    else m.controllerInfos |> AMap.tryFind ControllerKind.ControllerA
+                let con2backButton = 
+                    con2 
+                    |> Mod.bind (fun c -> 
+                        match c with 
+                        | Some cc -> cc.backButtonPressed
+                        | None -> Mod.constant false
+                    )
+
+                adaptive {
+                    let! con2bb = con2backButton
+                    let! newMenuMode = menuMode
+                    
+                    match newMenuMode, con2bb with 
+                    | MenuState.WIMLandmarks, true -> 
+                        return true
+                    |  _, _ -> return false
+                }
+
             m.userPosOnAnnotationSpace
             |> AList.toASet 
             |> ASet.map (fun b -> 
@@ -596,6 +622,7 @@ module Demo =
             |> Sg.set
             |> defaultEffect
             |> Sg.noEvents
+            |> Sg.onOff mkDisappear
 
         let landmarksOnAnnotationSpace = 
             m.landmarkOnAnnotationSpace
