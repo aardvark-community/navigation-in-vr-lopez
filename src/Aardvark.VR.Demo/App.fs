@@ -45,6 +45,7 @@ module Demo =
     open Aardvark.UI.Extensions
     open OpcViewer.Base.Shader
     open Aardvark.Base
+    open Aardvark.Base.MultimethodTest
     
     let show  (att : list<string * AttributeValue<_>>) (sg : ISg<_>) =
 
@@ -803,11 +804,29 @@ module Demo =
             RenderTask.renderToColor size offscreenTask
 
         let secondCameraTrafo = 
+            let updateHmdTrafo = 
+                let hmd = m.controllerInfos |> AMap.tryFind ControllerKind.HMD
+                let hmdTrafo = 
+                    hmd
+                    |> Mod.bind (fun h -> 
+                        match h with 
+                        | Some hh -> hh.pose.deviceToWorld
+                        | None -> Mod.constant Trafo3d.Identity
+                    )
+                adaptive {
+                    let! newHmd = hmdTrafo
+                    return Trafo3d.Translation(newHmd.GetModelOrigin() + V3d(2.0, 0.0, 0.0))
+                }
+            
+                
             m.menuModel.menu 
-            |> Mod.map (fun ms -> 
+            |> Mod.bind (fun ms -> 
                 match ms with 
-                | Menu.MenuState.DroneMode -> Trafo3d.Identity //change this camera position to be something close to the user even if they move their position
-                | _ -> Trafo3d.Translation(V3d.One * 1000000.0)
+                | Menu.MenuState.DroneMode -> 
+                    updateHmdTrafo
+                    
+                    //Trafo3d.Identity //change this camera position to be something close to the user even if they move their position
+                | _ -> Mod.constant(Trafo3d.Translation(V3d.One * 1000000.0))
             )
 
         let showSecondCamera = 
@@ -816,9 +835,26 @@ module Demo =
             |> Sg.shader {
                 do! DefaultSurfaces.trafo
                 do! DefaultSurfaces.diffuseTexture
-                do! DefaultSurfaces.simpleLighting
+                //do! DefaultSurfaces.simpleLighting
             }
             |> Sg.trafo secondCameraTrafo
+        
+        let borderSecondCamera = 
+            let newTrafoCamera = 
+                secondCameraTrafo
+                |> Mod.map (fun c -> 
+                    Trafo3d.Translation(V3d(c.GetModelOrigin()) + V3d(0.2, 0.0, 0.0))
+                )
+            Sg.box (Mod.constant C4b.Red) (Mod.constant (Box3d.FromSize(V3d(0.05, 3.1, 3.1))))
+            |> Sg.noEvents
+            |> Sg.trafo newTrafoCamera
+            |> Sg.shader {
+                do! DefaultSurfaces.trafo
+                do! DefaultSurfaces.vertexColor
+                //do! DefaultSurfaces.simpleLighting
+            }
+            |> defaultEffect
+            //|> Sg.fillMode (Mod.constant FillMode.Fill)
         
         let droneCylinder = 
             let color = 
@@ -886,6 +922,7 @@ module Demo =
                 landmarks
                 //throwRayLine
                 showSecondCamera
+                borderSecondCamera
                 //compass
             ] |> Sg.ofList
 
