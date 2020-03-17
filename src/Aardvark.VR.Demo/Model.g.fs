@@ -53,10 +53,12 @@ module Mutable =
         let _drone = MList.Create(__initial.drone, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _screen = MList.Create(__initial.screen, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _droneCamera = ResetMod.Create(__initial.droneCamera)
+        let _cameraPosition = ResetMod.Create(__initial.cameraPosition)
         
         member x.drone = _drone :> alist<_>
         member x.screen = _screen :> alist<_>
         member x.droneCamera = _droneCamera :> IMod<_>
+        member x.cameraPosition = _cameraPosition :> IMod<_>
         
         member x.Current = __current :> IMod<_>
         member x.Update(v : Demo.Main.Drone) =
@@ -66,6 +68,7 @@ module Mutable =
                 MList.Update(_drone, v.drone)
                 MList.Update(_screen, v.screen)
                 ResetMod.Update(_droneCamera,v.droneCamera)
+                ResetMod.Update(_cameraPosition,v.cameraPosition)
                 
         
         static member Create(__initial : Demo.Main.Drone) : MDrone = MDrone(__initial)
@@ -99,6 +102,12 @@ module Mutable =
                     override x.Get(r) = r.droneCamera
                     override x.Set(r,v) = { r with droneCamera = v }
                     override x.Update(r,f) = { r with droneCamera = f r.droneCamera }
+                }
+            let cameraPosition =
+                { new Lens<Demo.Main.Drone, Aardvark.Base.Trafo3d>() with
+                    override x.Get(r) = r.cameraPosition
+                    override x.Set(r,v) = { r with cameraPosition = v }
+                    override x.Update(r,f) = { r with cameraPosition = f r.cameraPosition }
                 }
     
     

@@ -145,6 +145,21 @@ module Demo =
                     model 
                     |> Teleport.hitRay kind p
                 | Menu.MenuState.DroneMode -> 
+                    
+                    let controllerPos = model.menuModel.controllerMenuSelector
+                    let userHMD = model.controllerInfos |> HMap.tryFind ControllerKind.HMD
+                    let conPos = model.controllerInfos |> HMap.tryFind controllerPos.kind
+                    let newHMDTrafo = 
+                        match userHMD, conPos with 
+                        | Some HMDpos, Some cPos ->     
+                            let hmdDir = HMDpos.pose.deviceToWorld.Forward.C1
+
+                            Trafo3d.Translation(HMDpos.pose.deviceToWorld.GetModelOrigin() + hmdDir.XYZ) * Trafo3d.Translation(V3d(2.0, -1.5, -1.5))// * Trafo3d.Translation(HMDpos.pose.deviceToWorld.Forward.TransformDir V3d.YAxis) 
+                        | _, _ -> Trafo3d.Identity
+                    
+                    let updateDrone = {model.droneControl with cameraPosition = newHMDTrafo}
+                    let model = {model with droneControl = updateDrone}
+
                     model 
                     |> DroneControlCenter.moveDrone kind p
                 | _ -> model
@@ -274,7 +289,6 @@ module Demo =
                         }
                     newModel 
                     |> PlaceLandmark.moveUserToNewPosOnAnnotationSpace
-                    
                 | Menu.MenuState.Reset -> 
                     {newModel with 
                         landmarkOnController         = PList.empty;
@@ -805,20 +819,33 @@ module Demo =
 
         let secondCameraTrafo = 
             let updateHmdTrafo = 
+                let concon = m.menuModel.controllerMenuSelector
+                let conKind = m.controllerInfos |> AMap.tryFind (concon.kind.GetValue())
+                let controllerPos = 
+                    conKind 
+                    |> Mod.map (fun ck -> 
+                        match ck with
+                        | Some pos -> pos.pose
+                        | None -> m.menuModel.controllerMenuSelector.pose
+                    )
+
                 let hmd = m.controllerInfos |> AMap.tryFind ControllerKind.HMD
-                let hmdTrafo = 
-                    hmd
-                    |> Mod.bind (fun h -> 
-                        match h with 
+                adaptive {
+                    let! newHmdTest = hmd
+                    //let! newHmd = hmdTrafo
+                    let! hmdTrafo = 
+                        match newHmdTest with 
                         | Some hh -> hh.pose.deviceToWorld
                         | None -> Mod.constant Trafo3d.Identity
-                    )
-                adaptive {
-                    let! newHmd = hmdTrafo
-                    return Trafo3d.Translation(newHmd.GetModelOrigin() + V3d(2.0, 0.0, 0.0))
+
+                        //|> Mod.bind (fun h -> 
+                        //    match h with 
+                        //    | Some hh -> hh.pose.deviceToWorld
+                        //    | None -> Mod.constant Trafo3d.Identity
+                        //)
+                    return Trafo3d.Translation(hmdTrafo.GetModelOrigin() + V3d(2.0, 0.0, 0.0))
                 }
-            
-                
+               
             m.menuModel.menu 
             |> Mod.bind (fun ms -> 
                 match ms with 
@@ -837,17 +864,19 @@ module Demo =
                 do! DefaultSurfaces.diffuseTexture
                 //do! DefaultSurfaces.simpleLighting
             }
-            |> Sg.trafo secondCameraTrafo
+            |> Sg.trafo m.droneControl.cameraPosition
+            //|> Sg.trafo secondCameraTrafo
         
         let borderSecondCamera = 
-            let newTrafoCamera = 
-                secondCameraTrafo
-                |> Mod.map (fun c -> 
-                    Trafo3d.Translation(V3d(c.GetModelOrigin()) + V3d(0.2, 0.0, 0.0))
-                )
+            //let newTrafoCamera = 
+            //    m.droneControl.cameraPosition
+            //    |> Mod.bind (fun c -> 
+            //        c
+            //        //Trafo3d.Translation(V3d(c.GetModelOrigin()) + V3d(0.2, 0.0, 0.0))
+            //    )
             Sg.box (Mod.constant C4b.Red) (Mod.constant (Box3d.FromSize(V3d(0.05, 3.1, 3.1))))
             |> Sg.noEvents
-            |> Sg.trafo newTrafoCamera
+            |> Sg.trafo m.droneControl.cameraPosition
             |> Sg.shader {
                 do! DefaultSurfaces.trafo
                 do! DefaultSurfaces.vertexColor
@@ -922,7 +951,7 @@ module Demo =
                 landmarks
                 //throwRayLine
                 showSecondCamera
-                borderSecondCamera
+                //borderSecondCamera
                 //compass
             ] |> Sg.ofList
 

@@ -30,16 +30,18 @@ type Polygon =
 [<DomainType>]
 type Drone = 
     {
-        drone   : plist<VisibleBox>
-        screen  : plist<VisibleBox>
-        droneCamera : CameraView
+        drone           : plist<VisibleBox>
+        screen          : plist<VisibleBox>
+        droneCamera     : CameraView
+        cameraPosition  : Trafo3d
     }
 module Drone = 
     let initial = 
         {
-            drone   = PList.empty
-            screen  = PList.empty
-            droneCamera = CameraView.lookAt (V3d.III * 3.0) V3d.Zero V3d.OOI
+            drone           = PList.empty
+            screen          = PList.empty
+            droneCamera     = CameraView.lookAt (V3d.III * 3.0) V3d.Zero V3d.OOI
+            cameraPosition  = Trafo3d.Translation(V3d.One * 10000.0)
         }
 
 [<DomainType>]
