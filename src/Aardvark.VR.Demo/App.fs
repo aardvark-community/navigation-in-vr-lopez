@@ -793,9 +793,10 @@ module Demo =
         let dronePos = dronetrafo |> Mod.map (fun t -> t.GetModelOrigin())
             
         let droneDir = dronetrafo |> Mod.map (fun t -> t.Forward.C3.XYZ)
-
+        
         let offscreenTask = 
             opcs
+            |> Sg.andAlso landmarksOnAnnotationSpace
             |> Sg.noEvents
             // attach a constant view trafo (which makes our box visible)
             |> Sg.viewTrafo (
@@ -808,9 +809,9 @@ module Demo =
             )
             // since our render target size is dynamic, we compute a proj trafo using standard techniques
             |> Sg.projTrafo (size |> Mod.map (fun actualSize -> 
-                    Frustum.perspective 110.0 0.1 1000.0 (float actualSize.X / float actualSize.Y) |> Frustum.projTrafo
-                    )
+                Frustum.perspective 110.0 0.1 1000.0 (float actualSize.X / float actualSize.Y) |> Frustum.projTrafo
                 )
+            )
             // next, we use Sg.compile in order to turn a scene graph into a render task (a nice composable alias for runtime.CompileRender)
             |> Sg.compile runtime signature 
 
@@ -866,7 +867,8 @@ module Demo =
             }
             |> Sg.trafo m.droneControl.cameraPosition
             //|> Sg.trafo secondCameraTrafo
-        
+
+       
         let borderSecondCamera = 
             //let newTrafoCamera = 
             //    m.droneControl.cameraPosition
