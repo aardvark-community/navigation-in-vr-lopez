@@ -65,8 +65,17 @@ module CyllinderCenter =
                 WIMworkSpaceTrafo               = newWorkSpace;
             }
 
-        model 
-        |> WIMOpc.editMiniMap kind p
+        let model = 
+            model 
+            |> WIMOpc.editMiniMap kind p
+
+        let model = 
+            model 
+            |> PlaceLandmark.placingOnWIM kind p
+
+        model |> PlaceLandmark.moveUserToNewPosOnAnnotationSpace
+
+
         
 
 
