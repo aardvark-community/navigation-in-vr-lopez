@@ -13,7 +13,7 @@ type MenuState =
 | WIMLandmarks
 | Scale
 | WIM
-| NodeBased
+| Cyllinder
 | Reset
 | Teleportation
 | DroneMode

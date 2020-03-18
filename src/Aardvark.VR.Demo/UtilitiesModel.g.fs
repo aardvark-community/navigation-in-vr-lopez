@@ -282,6 +282,7 @@ module Mutable =
         let _trafo = ResetMod.Create(__initial.trafo)
         let _radius = ResetMod.Create(__initial.radius)
         let _angle = ResetMod.Create(__initial.angle)
+        let _isNotInside = ResetMod.Create(__initial.isNotInside)
         let _id = ResetMod.Create(__initial.id)
         
         member x.geometry = _geometry :> IMod<_>
@@ -289,6 +290,7 @@ module Mutable =
         member x.trafo = _trafo :> IMod<_>
         member x.radius = _radius :> IMod<_>
         member x.angle = _angle :> IMod<_>
+        member x.isNotInside = _isNotInside :> IMod<_>
         member x.id = _id :> IMod<_>
         
         member x.Current = __current :> IMod<_>
@@ -301,6 +303,7 @@ module Mutable =
                 ResetMod.Update(_trafo,v.trafo)
                 ResetMod.Update(_radius,v.radius)
                 ResetMod.Update(_angle,v.angle)
+                ResetMod.Update(_isNotInside,v.isNotInside)
                 _id.Update(v.id)
                 
         
@@ -347,6 +350,12 @@ module Mutable =
                     override x.Get(r) = r.angle
                     override x.Set(r,v) = { r with angle = v }
                     override x.Update(r,f) = { r with angle = f r.angle }
+                }
+            let isNotInside =
+                { new Lens<Demo.VisibleCylinder, System.Boolean>() with
+                    override x.Get(r) = r.isNotInside
+                    override x.Set(r,v) = { r with isNotInside = v }
+                    override x.Update(r,f) = { r with isNotInside = f r.isNotInside }
                 }
             let id =
                 { new Lens<Demo.VisibleCylinder, System.String>() with

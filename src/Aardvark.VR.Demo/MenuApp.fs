@@ -48,6 +48,7 @@ module MenuApp =
                 let box4id = newMenuBoxes |> Seq.item 4
                 let box5id = newMenuBoxes |> Seq.item 5
                 let box6id = newMenuBoxes |> Seq.item 6
+
                 let newMenuBoxes = 
                     newMenuBoxes 
                     |> PList.map (fun idx -> 
@@ -58,7 +59,7 @@ module MenuApp =
                         else if idx.id.Equals(box4id.id) then {idx with id = "Reset"}
                         else if idx.id.Equals(box5id.id) then {idx with id = "Teleportation"}
                         else if idx.id.Equals(box6id.id) then {idx with id = "Drone mode"}
-                        else {idx with id = "Node Based"}
+                        else {idx with id = "Cyllinder"}
                         )
                 {model with mainMenuBoxes = newMenuBoxes; menuButtonPressed = buttonPressed}
     
@@ -116,7 +117,7 @@ module MenuApp =
                             else 
                                 {
                                     model with 
-                                        menu = MenuState.NodeBased
+                                        menu = MenuState.Cyllinder
                                         controllerMenuSelector = menuSelector; 
                                         mainMenuBoxes = PList.empty
                                 }

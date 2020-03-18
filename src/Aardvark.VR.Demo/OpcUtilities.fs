@@ -48,10 +48,10 @@ module OpcUtilities =
             VisibleSphere.createSphere C4b.White (controllerPos.deviceToWorld.GetModelOrigin()) radius)
         |> PList.ofList
 
-    let mkCyllinder (controllerPos : Pose) (number : int) (radius : float) : plist<VisibleCylinder> = 
+    let mkCyllinder (controllerPos : Trafo3d) (number : int) (radius : float) : plist<VisibleCylinder> = 
         [0..number-1]
         |> List.map (fun x -> 
-            VisibleCylinder.createCylinder C4b.White (controllerPos.deviceToWorld.GetModelOrigin()) radius)
+            VisibleCylinder.createCylinder C4b.DarkBlue (controllerPos.GetModelOrigin()) radius)
         |> PList.ofList
 
     let mkPointDraw (controllerPos : Pose) : VisibleBox =

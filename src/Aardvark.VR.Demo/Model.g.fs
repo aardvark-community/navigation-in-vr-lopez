@@ -196,6 +196,7 @@ module Mutable =
         let _userPosOnAnnotationSpace = MList.Create(__initial.userPosOnAnnotationSpace, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _teleportRay = ResetMod.Create(__initial.teleportRay)
         let _droneControl = MDrone.Create(__initial.droneControl)
+        let _cyllinderControl = MList.Create(__initial.cyllinderControl, (fun v -> Demo.Mutable.MVisibleCylinder.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleCylinder.Update(m, v)), (fun v -> v))
         let _totalCompass = MList.Create(__initial.totalCompass, (fun v -> MCompass.Create(v)), (fun (m,v) -> MCompass.Update(m, v)), (fun v -> v))
         
         member x.text = _text :> IMod<_>
@@ -235,6 +236,7 @@ module Mutable =
         member x.userPosOnAnnotationSpace = _userPosOnAnnotationSpace :> alist<_>
         member x.teleportRay = _teleportRay :> IMod<_>
         member x.droneControl = _droneControl
+        member x.cyllinderControl = _cyllinderControl :> alist<_>
         member x.totalCompass = _totalCompass :> alist<_>
         
         member x.Current = __current :> IMod<_>
@@ -278,6 +280,7 @@ module Mutable =
                 MList.Update(_userPosOnAnnotationSpace, v.userPosOnAnnotationSpace)
                 ResetMod.Update(_teleportRay,v.teleportRay)
                 MDrone.Update(_droneControl, v.droneControl)
+                MList.Update(_cyllinderControl, v.cyllinderControl)
                 MList.Update(_totalCompass, v.totalCompass)
                 
         
@@ -516,6 +519,12 @@ module Mutable =
                     override x.Get(r) = r.droneControl
                     override x.Set(r,v) = { r with droneControl = v }
                     override x.Update(r,f) = { r with droneControl = f r.droneControl }
+                }
+            let cyllinderControl =
+                { new Lens<Demo.Main.Model, Aardvark.Base.plist<Demo.VisibleCylinder>>() with
+                    override x.Get(r) = r.cyllinderControl
+                    override x.Set(r,v) = { r with cyllinderControl = v }
+                    override x.Update(r,f) = { r with cyllinderControl = f r.cyllinderControl }
                 }
             let totalCompass =
                 { new Lens<Demo.Main.Model, Aardvark.Base.plist<Demo.Main.Compass>>() with

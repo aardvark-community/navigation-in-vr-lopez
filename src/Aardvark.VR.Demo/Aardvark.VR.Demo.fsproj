@@ -22,6 +22,7 @@
     <Compile Include="WIMOpc.fs" />
     <Compile Include="PlaceLandmark.fs" />
     <Compile Include="DroneControlCenter.fs" />
+    <Compile Include="CyllinderCenter.fs" />
     <Compile Include="Teleport.fs" />
     <Compile Include="NavigationOpc.fs" />
     <Compile Include="App.fs" />

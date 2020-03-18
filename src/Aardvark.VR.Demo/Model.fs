@@ -111,6 +111,7 @@ type Model =
         userPosOnAnnotationSpace    : plist<VisibleBox>
         teleportRay                 : Ray3d
         droneControl                : Drone
+        cyllinderControl            : plist<VisibleCylinder>
 
         totalCompass                : plist<Compass>
         
@@ -189,6 +190,7 @@ module Model =
             userPosOnAnnotationSpace    = PList.empty
             teleportRay                 = Ray3d.Invalid
             droneControl                = Drone.initial
+            cyllinderControl            = PList.empty
 
             totalCompass                = PList.empty
         }

@@ -128,8 +128,13 @@ module Demo =
                 | Menu.MenuState.Scale -> 
                     model 
                     |> NavigationOpc.currentSceneInfo kind p 
-                | Menu.MenuState.NodeBased -> 
+                | Menu.MenuState.Cyllinder -> 
+                    let model = 
+                        model
+                        |> CyllinderCenter.checkInside kind p
+
                     model
+                    |> CyllinderCenter.controlCenter kind p
                 | Menu.MenuState.WIM -> 
                     let newModel = 
                         model 
@@ -151,10 +156,10 @@ module Demo =
                     let conPos = model.controllerInfos |> HMap.tryFind controllerPos.kind
                     let newHMDTrafo = 
                         match userHMD, conPos with 
-                        | Some HMDpos, Some cPos ->     
-                            let hmdDir = HMDpos.pose.deviceToWorld.Forward.C1
+                        | Some hmdPos, Some cPos ->     
+                            let hmdDir = hmdPos.pose.deviceToWorld.Forward.C1
 
-                            Trafo3d.Translation(HMDpos.pose.deviceToWorld.GetModelOrigin() + hmdDir.XYZ) * Trafo3d.Translation(V3d(2.0, -1.5, -1.5))// * Trafo3d.Translation(HMDpos.pose.deviceToWorld.Forward.TransformDir V3d.YAxis) 
+                            Trafo3d.Translation(hmdPos.pose.deviceToWorld.GetModelOrigin() + hmdDir.XYZ) * Trafo3d.Translation(V3d(2.0, -1.5, -1.5))// * Trafo3d.Translation(HMDpos.pose.deviceToWorld.Forward.TransformDir V3d.YAxis) 
                         | _, _ -> Trafo3d.Identity
                     
                     let updateDrone = {model.droneControl with cameraPosition = newHMDTrafo}
@@ -260,8 +265,13 @@ module Demo =
                         droneControl = Drone.initial;
                         WIMuserPos = PList.empty
                     }
-                | Menu.MenuState.NodeBased -> 
-                    newModel
+                | Menu.MenuState.Cyllinder -> 
+                    let newCyllinder = OpcUtilities.mkCyllinder Trafo3d.Identity 1 1.0
+                    let newUserPosWIM = OpcUtilities.mkFlagsUser Trafo3d.Identity 1 
+                    {newModel with 
+                        cyllinderControl = newCyllinder; 
+                        WIMuserPos = newUserPosWIM
+                    }
                 | Menu.MenuState.WIM -> 
                     let newUserPosWIM = OpcUtilities.mkFlagsUser Trafo3d.Identity 1 
                     
@@ -489,7 +499,10 @@ module Demo =
 
     let mkCylinder (model : MModel) (cylinder : MVisibleCylinder) = 
         let pos = cylinder.trafo
-        let color = Mod.constant C4b.Yellow
+        let color = 
+            let hsv = HSVf((1.0 - 60.0) * 0.625, 1.0, 1.0)
+            let col = C4f(hsv.ToC3f(), 0.5f).ToC4b()
+            Mod.constant col
         let rad = cylinder.radius
 
         Sg.cylinder 50 color rad (Mod.constant 100.0)
@@ -542,7 +555,20 @@ module Demo =
                 toEffect DefaultSurfaces.trafo
                 toEffect DefaultSurfaces.vertexColor
                 toEffect DefaultSurfaces.simpleLighting                              
-            ]            
+            ]       
+            
+        let mkDisappearInsideCylinder = 
+                //let getCyl = 
+                m.cyllinderControl
+                |> AList.toMod
+                |> Mod.bind (fun cyl -> 
+                    let getFirstCyllinder = 
+                        cyl
+                        |> PList.tryFirst
+                    match getFirstCyllinder with 
+                    | Some c -> c.isNotInside
+                    | None -> Mod.constant false
+                )
 
         let landmarks = 
             m.landmarkOnController
@@ -658,16 +684,6 @@ module Demo =
             |> Sg.set
             |> defaultEffect
             |> Sg.noEvents
-            
-        //let landmarksFromStart = 
-        //    m.landmarkFromStart
-        //    |> AList.toASet 
-        //    |> ASet.map (fun b -> 
-        //        mkFlag m b 
-        //       )
-        //    |> Sg.set
-        //    |> defaultEffect
-        //    |> Sg.noEvents
 
         let deviceSgs = 
             info.state.devices |> AMap.toASet |> ASet.chooseM (fun (_,d) ->
@@ -924,16 +940,31 @@ module Demo =
             |> Sg.cullMode (Mod.constant CullMode.Front)
             |> Sg.pass (RenderPass.after "" RenderPassOrder.Arbitrary RenderPass.main)
             |> Sg.onOff mkDisappear
+        
+        let cylinderCenterShow =     
+            m.cyllinderControl
+            |> AList.toASet
+            |> ASet.map (fun c -> 
+                mkCylinder m c
+            )
+            |> Sg.set
+            |> defaultEffect
+            //|> Sg.blendMode (Mod.constant BlendMode.Blend)
+            //|> Sg.cullMode (Mod.constant CullMode.Front)
+            //|> Sg.pass (RenderPass.after "" RenderPassOrder.Arbitrary RenderPass.main)
+            |> Sg.onOff mkDisappearInsideCylinder
+            |> Sg.noEvents
 
         let transformedSgs = 
             [
                 landmarksOnAnnotationSpace
                 drones
                 droneCylinder
-                //landmarksFromStart
+                cylinderCenterShow
             ]
             |> Sg.ofList
             |> Sg.trafo m.annotationSpaceTrafo
+
 
         let WIMtransformedSgs = 
             [
@@ -1041,6 +1072,7 @@ module Demo =
             userPosOnAnnotationSpace    = PList.empty
             teleportRay                 = Ray3d.Invalid
             droneControl                = Drone.initial
+            cyllinderControl            = PList.empty
 
             totalCompass                = PList.empty
         }

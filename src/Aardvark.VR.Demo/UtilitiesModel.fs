@@ -162,13 +162,14 @@ module VisibleSphere =
 [<DomainType>]
 type VisibleCylinder = 
     {
-        geometry: Cylinder3d
-        color   : C4b
-        trafo   : Trafo3d
-        radius  : float
-        angle   : string
+        geometry    : Cylinder3d
+        color       : C4b
+        trafo       : Trafo3d
+        radius      : float
+        angle       : string
+        isNotInside    : bool
         [<TreatAsValue>]
-        id      : string
+        id          : string
     }
 
 module VisibleCylinder = 
@@ -178,6 +179,7 @@ module VisibleCylinder =
             color    = C4b.White
             trafo    = Trafo3d.Identity
             radius   = 1.0
+            isNotInside = true 
             angle    = ""
             id       = ""
         }
@@ -188,6 +190,6 @@ module VisibleCylinder =
                 color = color
                 trafo = Trafo3d.Translation(V3d(position.X, position.Y, position.Z))
                 id = System.Guid.NewGuid().ToString()
-                geometry = Cylinder3d(V3d(position.X, position.Y, position.Z), V3d(position.X, position.Y + 0.1, position.Z), radius)
+                geometry = Cylinder3d(V3d(position.X, position.Y - 2.5, position.Z), V3d(position.X, position.Y + 2.5, position.Z), radius)
                 radius = radius
         }
