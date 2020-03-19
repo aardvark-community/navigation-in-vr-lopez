@@ -42,14 +42,19 @@ module CyllinderCenter =
         {model with cyllinderControl = updateCyllinder}
 
     let controlCenter kind p model : Model = 
+        let cp = model.menuModel.controllerMenuSelector
         let controllerPos = 
-            let cp = model.menuModel.controllerMenuSelector
             let newCp = model.controllerInfos |> HMap.tryFind cp.kind
             match newCp with
             | Some id -> id.pose
             | None -> Aardvark.Vr.Pose.none
+
+        let secondCon = 
+            if cp.kind.Equals(ControllerKind.ControllerA) then
+                model.controllerInfos |> HMap.tryFind ControllerKind.ControllerB
+            else model.controllerInfos |> HMap.tryFind ControllerKind.ControllerA
             
-        let minimapTrans = V3d(Trafo3d.Identity.GetModelOrigin().X, Trafo3d.Identity.GetModelOrigin().Y, Trafo3d.Identity.GetModelOrigin().Z + 1.0) //controllerPos.deviceToWorld.GetModelOrigin()
+        let minimapTrans = V3d(Trafo3d.Identity.GetModelOrigin().X - 1.0, Trafo3d.Identity.GetModelOrigin().Y, Trafo3d.Identity.GetModelOrigin().Z + 1.0) //controllerPos.deviceToWorld.GetModelOrigin()
         let minimapScale = V3d(0.0025, 0.0025, 0.0025)
 
         let minimapPos = Trafo3d.FromComponents(minimapScale, V3d.Zero, minimapTrans)
@@ -58,29 +63,26 @@ module CyllinderCenter =
         let newAnnotationSpace = model.initAnnotationSpaceTrafo * newWorkSpace
         let newOpcSpace = model.initOpcSpaceTrafo * newWorkSpace
 
-        let model = 
-            {model with 
-                WIMopcSpaceTrafo                = newOpcSpace;
-                WIMannotationSpaceTrafo         = newAnnotationSpace;
-                WIMworkSpaceTrafo               = newWorkSpace;
-            }
+        let userIsNotInside = 
+            model.cyllinderControl
+            |> PList.tryFirst
+            |> Option.map(fun t -> t.isNotInside)
 
-        let model = 
+        match userIsNotInside with 
+        | Some true -> 
+            let model = 
+                {model with 
+                    WIMopcSpaceTrafo                = newOpcSpace;
+                    WIMannotationSpaceTrafo         = newAnnotationSpace;
+                    WIMworkSpaceTrafo               = newWorkSpace;
+                }
+            //let model = 
             model 
             |> WIMOpc.editMiniMap kind p
-
-        let model = 
+        | _ -> 
+            //let model = 
             model 
             |> PlaceLandmark.placingOnWIM kind p
-
-        model |> PlaceLandmark.moveUserToNewPosOnAnnotationSpace
-
-
-        
-
-
-
-
-
+            //model |> PlaceLandmark.moveUserToNewPosOnAnnotationSpace
 
 

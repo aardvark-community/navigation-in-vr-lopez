@@ -150,7 +150,6 @@ module Demo =
                     model 
                     |> Teleport.hitRay kind p
                 | Menu.MenuState.DroneMode -> 
-                    
                     let controllerPos = model.menuModel.controllerMenuSelector
                     let userHMD = model.controllerInfos |> HMap.tryFind ControllerKind.HMD
                     let conPos = model.controllerInfos |> HMap.tryFind controllerPos.kind
@@ -267,11 +266,28 @@ module Demo =
                     }
                 | Menu.MenuState.Cyllinder -> 
                     let newCyllinder = OpcUtilities.mkCyllinder Trafo3d.Identity 1 1.0
-                    let newUserPosWIM = OpcUtilities.mkFlagsUser Trafo3d.Identity 1 
-                    {newModel with 
-                        cyllinderControl = newCyllinder; 
-                        WIMuserPos = newUserPosWIM
-                    }
+                    let newUserPosWIM = 
+                        if newModel.WIMuserPos.Count.Equals(0) then 
+                            OpcUtilities.mkFlagsUser Trafo3d.Identity 1 
+                        else newModel.WIMuserPos
+                    let newInitialUserPosWIM = 
+                        OpcUtilities.mkFlags (Trafo3d.Translation(V3d.One * 1000000.0)) 1
+                    let newUserPos = 
+                        if newModel.userPosOnAnnotationSpace.Count.Equals(0) then 
+                            OpcUtilities.mkFlags id.pose.deviceToWorld 1
+                        else newModel.userPosOnAnnotationSpace
+                    
+                    let newModel = 
+                        {newModel with 
+                            cyllinderControl    = newCyllinder; 
+                            WIMuserPos          = newUserPosWIM;
+                            userPosOnAnnotationSpace = newUserPos;
+                            WIMinitialUserPos   = newInitialUserPosWIM
+                        }
+
+                    newModel 
+                    |> PlaceLandmark.moveUserToNewPosOnAnnotationSpace
+
                 | Menu.MenuState.WIM -> 
                     let newUserPosWIM = OpcUtilities.mkFlagsUser Trafo3d.Identity 1 
                     
@@ -279,9 +295,7 @@ module Demo =
 
                     let newModel = newModel |> WIMOpc.showMiniMap
                     
-                    {newModel with 
-                        droneControl = Drone.initial;
-                    }
+                    {newModel with droneControl = Drone.initial}
                 | Menu.MenuState.WIMLandmarks ->
                     let newLandmark = OpcUtilities.mkFlags id.pose.deviceToWorld 1
                     let newUserPos = 
@@ -293,9 +307,9 @@ module Demo =
 
                     let newModel = 
                         {newModel with 
-                            landmarkOnController = newLandmark
-                            userPosOnAnnotationSpace = newUserPos
-                            WIMinitialUserPos = newInitialUserPosWIM
+                            landmarkOnController    = newLandmark
+                            userPosOnAnnotationSpace= newUserPos
+                            WIMinitialUserPos       = newInitialUserPosWIM
                         }
                     newModel 
                     |> PlaceLandmark.moveUserToNewPosOnAnnotationSpace
@@ -309,7 +323,8 @@ module Demo =
                         opcSpaceTrafo                = Trafo3d.FromBasis(V3d(0.0138907544072255, 0.0370928394273679, 0.410690910035505), V3d(0.11636514267386, 0.393870197365478, -0.0395094556451799), V3d(-0.395603213079913, 0.117157783795495, 0.0027988969790869), V3d(-57141.4217354136, 16979.9987604353, -1399135.09579421));
                         annotationSpaceTrafo         = Trafo3d.Identity;
                         workSpaceTrafo               = Trafo3d.Identity;
-                        droneControl                 = Drone.initial
+                        droneControl                 = Drone.initial;
+                        cyllinderControl             = PList.empty
                     }
                 | Menu.MenuState.Teleportation -> 
                     let controllTrafo = id.pose.deviceToWorld
@@ -332,11 +347,11 @@ module Demo =
 
                     let newModel = 
                         {newModel with 
-                            landmarkOnController = PList.empty;
-                            WIMopcSpaceTrafo = Trafo3d.Translation(V3d(1000000.0, 1000000.0, 1000000.0)); 
-                            WIMlandmarkOnAnnotationSpace = PList.empty;
-                            WIMuserPos = PList.empty;
-                            droneControl = updateDrones
+                            landmarkOnController            = PList.empty;
+                            WIMopcSpaceTrafo                = Trafo3d.Translation(V3d(1000000.0, 1000000.0, 1000000.0)); 
+                            WIMlandmarkOnAnnotationSpace    = PList.empty;
+                            WIMuserPos                      = PList.empty;
+                            droneControl                    = updateDrones
                         }
 
                     newModel
