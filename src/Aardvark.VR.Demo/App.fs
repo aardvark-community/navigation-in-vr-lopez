@@ -263,9 +263,11 @@ module Demo =
                         WIMlandmarkOnAnnotationSpace = PList.empty;
                         droneControl = Drone.initial;
                         WIMuserPos = PList.empty
+                        cyllinderControl = PList.empty
                     }
                 | Menu.MenuState.Cyllinder -> 
                     let newCyllinder = OpcUtilities.mkCyllinder Trafo3d.Identity 1 1.0
+                    let newLandmark = OpcUtilities.mkFlags id.pose.deviceToWorld 1
                     let newUserPosWIM = 
                         if newModel.WIMuserPos.Count.Equals(0) then 
                             OpcUtilities.mkFlagsUser Trafo3d.Identity 1 
@@ -279,10 +281,11 @@ module Demo =
                     
                     let newModel = 
                         {newModel with 
-                            cyllinderControl    = newCyllinder; 
-                            WIMuserPos          = newUserPosWIM;
-                            userPosOnAnnotationSpace = newUserPos;
-                            WIMinitialUserPos   = newInitialUserPosWIM
+                            cyllinderControl            = newCyllinder; 
+                            landmarkOnController        = newLandmark
+                            WIMuserPos                  = newUserPosWIM;
+                            userPosOnAnnotationSpace    = newUserPos;
+                            WIMinitialUserPos           = newInitialUserPosWIM
                         }
 
                     newModel 
@@ -295,7 +298,7 @@ module Demo =
 
                     let newModel = newModel |> WIMOpc.showMiniMap
                     
-                    {newModel with droneControl = Drone.initial}
+                    {newModel with droneControl = Drone.initial; cyllinderControl = PList.empty}
                 | Menu.MenuState.WIMLandmarks ->
                     let newLandmark = OpcUtilities.mkFlags id.pose.deviceToWorld 1
                     let newUserPos = 
@@ -310,6 +313,8 @@ module Demo =
                             landmarkOnController    = newLandmark
                             userPosOnAnnotationSpace= newUserPos
                             WIMinitialUserPos       = newInitialUserPosWIM
+                            droneControl            = Drone.initial;
+                            cyllinderControl        = PList.empty
                         }
                     newModel 
                     |> PlaceLandmark.moveUserToNewPosOnAnnotationSpace
@@ -337,7 +342,7 @@ module Demo =
                     //let origin = controllTrafo.GetModelOrigin()
 
                     let testRay = Ray3d(origin, controllDir)
-                    {newModel with teleportRay = testRay}
+                    {newModel with teleportRay = testRay; droneControl = Drone.initial; cyllinderControl = PList.empty}
                 | Menu.MenuState.DroneMode -> 
                     let newDrone = 
                         if newModel.droneControl.drone.Count.Equals(0) then 
@@ -352,6 +357,7 @@ module Demo =
                             WIMlandmarkOnAnnotationSpace    = PList.empty;
                             WIMuserPos                      = PList.empty;
                             droneControl                    = updateDrones
+                            cyllinderControl                = PList.empty
                         }
 
                     newModel
