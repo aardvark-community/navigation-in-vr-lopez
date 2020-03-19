@@ -573,17 +573,21 @@ module Demo =
             ]       
             
         let mkDisappearInsideCylinder = 
-                //let getCyl = 
-                m.cyllinderControl
-                |> AList.toMod
-                |> Mod.bind (fun cyl -> 
-                    let getFirstCyllinder = 
-                        cyl
-                        |> PList.tryFirst
-                    match getFirstCyllinder with 
-                    | Some c -> c.isNotInside
-                    | None -> Mod.constant false
-                )
+                let cylBool = 
+                    m.cyllinderControl
+                    |> AList.toMod
+                    |> Mod.bind (fun cyl -> 
+                        let getFirstCyllinder = 
+                            cyl
+                            |> PList.tryFirst
+                        match getFirstCyllinder with 
+                        | Some c -> c.isNotInside
+                        | None -> Mod.constant true
+                    )
+                adaptive {
+                    let! cb = cylBool
+                    return cb
+                }
 
         let landmarks = 
             m.landmarkOnController
@@ -689,6 +693,7 @@ module Demo =
             |> Sg.set
             |> defaultEffect
             |> Sg.noEvents
+            |> Sg.onOff mkDisappearInsideCylinder
 
         let landmarksOnWIM = 
             m.WIMlandmarkOnAnnotationSpace
@@ -741,6 +746,7 @@ module Demo =
                 |> Sg.map OpcViewerMsg
                 |> Sg.noEvents     
                 |> Sg.trafo m.opcSpaceTrafo
+                |> Sg.onOff mkDisappearInsideCylinder
 
         let WIMopcs = 
             m.WIMopcInfos

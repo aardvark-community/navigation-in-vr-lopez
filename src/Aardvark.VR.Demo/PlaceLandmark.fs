@@ -210,7 +210,7 @@ module PlaceLandmark =
                     match pos.isHovered with //this part is still not taken into account
                     | true -> 
                         match model.menuModel.menu with
-                        | MenuState.WIMLandmarks -> 
+                        | MenuState.WIMLandmarks | MenuState.Cyllinder -> 
                             let updatePosWIMspace =                                 
                                 let newTrafo = createNewTrafo con2
                                 {pos with trafo = newTrafo}
@@ -232,28 +232,7 @@ module PlaceLandmark =
                                 opcSpaceTrafo               = newOpcSpace
                                 annotationSpaceTrafo        = newFlagSpace
                             }
-                        | MenuState.Cyllinder -> 
-                            let updatePosWIMspace =                                 
-                                let newTrafo = createNewTrafo con2
-                                {pos with trafo = newTrafo}
-                                |> PList.single
-                                //user position in wim
-
-                            let conRotation = con2.pose.deviceToWorld.GetOrthoNormalOrientation()
-
-                            let shiftTrafo = Trafo3d.Translation(annPos.trafo.GetModelOrigin()).Inverse * conRotation.Inverse 
-                            //is takes all possible rotation of controller into account, we only want the z rotation
-
-                            let newWorkSpace = model.initWorkSpaceTrafo * shiftTrafo
-                            let newOpcSpace = model.initOpcSpaceTrafo * newWorkSpace
-                            let newFlagSpace = model.initAnnotationSpaceTrafo * newWorkSpace
-
-                            {model with 
-                                WIMuserPos                  = updatePosWIMspace
-                                workSpaceTrafo              = newWorkSpace
-                                opcSpaceTrafo               = newOpcSpace
-                                annotationSpaceTrafo        = newFlagSpace
-                            }
+                        
                         | _ -> model
                     | false -> model
                 | _, _ -> model 
