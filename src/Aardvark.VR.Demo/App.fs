@@ -157,7 +157,8 @@ module Demo =
                         | Some hmdPos, Some cPos ->     
                             let hmdDir = hmdPos.pose.deviceToWorld.Forward.C1
 
-                            Trafo3d.Translation(hmdPos.pose.deviceToWorld.GetModelOrigin() + hmdDir.XYZ) * Trafo3d.Translation(V3d(2.0, -1.5, -1.5))// * Trafo3d.Translation(HMDpos.pose.deviceToWorld.Forward.TransformDir V3d.YAxis) 
+                            //Trafo3d.Translation(hmdPos.pose.deviceToWorld.GetModelOrigin() + hmdDir.XYZ) * Trafo3d.Translation(V3d(2.0, -1.5, -1.5))// * Trafo3d.Translation(HMDpos.pose.deviceToWorld.Forward.TransformDir V3d.YAxis) 
+                            Trafo3d.Translation(cPos.pose.deviceToWorld.GetModelOrigin()) //* Trafo3d.Translation(V3d(2.0, -1.5, -1.5))// * Trafo3d.Translation(HMDpos.pose.deviceToWorld.Forward.TransformDir V3d.YAxis) 
                         | _, _ -> Trafo3d.Identity
                     
                     let updateDrone = {model.droneControl with cameraPosition = newHMDTrafo}
