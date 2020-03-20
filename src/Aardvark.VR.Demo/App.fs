@@ -142,7 +142,6 @@ module Demo =
 
                     newModel
                     |> WIMOpc.editMiniMap kind p
-                    
                 | Menu.MenuState.WIMLandmarks -> 
                     model
                     |> PlaceLandmark.placingOnWIM kind p
@@ -290,7 +289,6 @@ module Demo =
 
                     newModel 
                     |> PlaceLandmark.moveUserToNewPosOnAnnotationSpace
-
                 | Menu.MenuState.WIM -> 
                     let newUserPosWIM = OpcUtilities.mkFlagsUser Trafo3d.Identity 1 
                     
@@ -342,7 +340,22 @@ module Demo =
                     //let origin = controllTrafo.GetModelOrigin()
 
                     let testRay = Ray3d(origin, controllDir)
-                    {newModel with teleportRay = testRay; droneControl = Drone.initial; cyllinderControl = PList.empty}
+                    let newModel = {newModel with teleportRay = testRay; droneControl = Drone.initial; cyllinderControl = PList.empty}
+                    
+                    match id.backButtonPressed with 
+                    | true -> newModel 
+                    | false -> 
+                        let controllDir = controllTrafo.Forward.C1
+                        let newWorkSpace = Trafo3d.Translation(newModel.workSpaceTrafo.GetModelOrigin() + controllDir.XYZ * 5.0).Inverse
+                        let newOpcSpace = model.initOpcSpaceTrafo * newWorkSpace
+                        let newFlagSpace = model.initAnnotationSpaceTrafo * newWorkSpace
+
+                        {newModel with 
+                            workSpaceTrafo          = newWorkSpace
+                            opcSpaceTrafo           = newOpcSpace
+                            annotationSpaceTrafo    = newFlagSpace
+                        }
+
                 | Menu.MenuState.DroneMode -> 
                     let newDrone = 
                         if newModel.droneControl.drone.Count.Equals(0) then 

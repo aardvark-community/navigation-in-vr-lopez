@@ -33,7 +33,7 @@ module OpcUtilities =
     let mkDrone (controllerPos : Trafo3d) (number : int) : plist<VisibleBox> = 
         [0..number-1]
         |> List.map (fun x -> 
-            VisibleBox.createDrone C4b.Yellow (controllerPos.GetModelOrigin()))
+            VisibleBox.createDrone C4b.Red (controllerPos.GetModelOrigin()))
         |> PList.ofList
 
     let mkFlagsUser (controllerPos : Trafo3d) (number : int) : plist<VisibleBox> = 
