@@ -158,7 +158,7 @@ module Demo =
                             let hmdDir = hmdPos.pose.deviceToWorld.Forward.C1
 
                             //Trafo3d.Translation(hmdPos.pose.deviceToWorld.GetModelOrigin() + hmdDir.XYZ) * Trafo3d.Translation(V3d(2.0, -1.5, -1.5))// * Trafo3d.Translation(HMDpos.pose.deviceToWorld.Forward.TransformDir V3d.YAxis) 
-                            Trafo3d.Translation(cPos.pose.deviceToWorld.GetModelOrigin()) //* Trafo3d.Translation(V3d(2.0, -1.5, -1.5))// * Trafo3d.Translation(HMDpos.pose.deviceToWorld.Forward.TransformDir V3d.YAxis) 
+                            Trafo3d.Translation(cPos.pose.deviceToWorld.GetModelOrigin()) * Trafo3d.Translation(V3d(1.5, -1.5, -1.5))// * Trafo3d.Translation(HMDpos.pose.deviceToWorld.Forward.TransformDir V3d.YAxis) 
                         | _, _ -> Trafo3d.Identity
                     
                     let updateDrone = {model.droneControl with cameraPosition = newHMDTrafo}
@@ -927,15 +927,17 @@ module Demo =
 
        
         let borderSecondCamera = 
-            //let newTrafoCamera = 
-            //    m.droneControl.cameraPosition
-            //    |> Mod.bind (fun c -> 
-            //        c
-            //        //Trafo3d.Translation(V3d(c.GetModelOrigin()) + V3d(0.2, 0.0, 0.0))
-            //    )
-            Sg.box (Mod.constant C4b.Red) (Mod.constant (Box3d.FromSize(V3d(0.05, 3.1, 3.1))))
+            let newTrafoCamera = 
+                let camPos = m.droneControl.cameraPosition
+                adaptive {
+                    let! cp = camPos 
+                    return Trafo3d.Translation(cp.GetModelOrigin() + V3d(0.2, -0.25, -0.25))
+                }
+                
+                    //Trafo3d.Translation(V3d(c.GetModelOrigin()) + V3d(0.2, 0.0, 0.0))
+            Sg.box (Mod.constant C4b.Red) (Mod.constant (Box3d.FromSize(V3d(0.05, 3.5, 3.5))))
             |> Sg.noEvents
-            |> Sg.trafo m.droneControl.cameraPosition
+            |> Sg.trafo newTrafoCamera //m.droneControl.cameraPosition
             |> Sg.shader {
                 do! DefaultSurfaces.trafo
                 do! DefaultSurfaces.vertexColor
@@ -1025,7 +1027,7 @@ module Demo =
                 landmarks
                 //throwRayLine
                 showSecondCamera
-                //borderSecondCamera
+                borderSecondCamera
                 //compass
             ] |> Sg.ofList
 
