@@ -125,6 +125,16 @@ module VisibleBox =
                 geometry = Box3d.FromSize(V3d(0.15, 0.15, 0.01))
         }
 
+    let createDroneScreen (color : C4b) (position : V3d) = 
+        {
+            initial 
+                with
+                color = color
+                trafo = Trafo3d.Translation(position)
+                id = System.Guid.NewGuid().ToString()
+                geometry = Box3d.FromSize(V3d(0.1, 3.0, 3.0))
+        }
+
 
 [<DomainType>]
 type VisibleSphere = {

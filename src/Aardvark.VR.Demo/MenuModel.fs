@@ -17,6 +17,7 @@ type MenuState =
 | Reset
 | Teleportation
 | DroneMode
+| HoverDroneScreen
 
 [<DomainType>]
 type MenuModel = 

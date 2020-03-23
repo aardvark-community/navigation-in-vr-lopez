@@ -13,6 +13,7 @@ module DroneControlCenter =
     open OpenTK
     open Aardvark.Base.MapExtImplementation
     open Demo
+    open Demo.Menu
 
     let moveDrone kind p model : Model = 
         let newControllersPosition = 
@@ -72,4 +73,63 @@ module DroneControlCenter =
             | false -> model 
         | None -> model 
         
+
+    let checkHoverScreen kind p model : Model = 
+        let newControllersPosition = 
+            model 
+            |> OpcUtilities.updateControllersInfo kind p
+        
+        let model = { model with controllerInfos = newControllersPosition}
+        
+        let controllerPos = model.menuModel.controllerMenuSelector
+        let newCP = model.controllerInfos |> HMap.tryFind controllerPos.kind
+        let screenVector = 
+            model.droneControl.screen
+            |> PList.tryFirst
+        match newCP, screenVector with 
+        | Some con, Some screen -> 
+            match con.backButtonPressed with 
+            | true -> model 
+            | false -> 
+                let dist = V3d.Distance(con.pose.deviceToWorld.GetModelOrigin(), screen.trafo.GetModelOrigin())
+                if dist <= 0.9 then 
+                    let newMode = {model.menuModel with menu = MenuState.HoverDroneScreen}
+                    {model with menuModel = newMode}
+                else 
+                    let newMode1 = {model.menuModel with menu = MenuState.DroneMode}
+                    {model with menuModel = newMode1}
+        | _, _ -> 
+            model
+
+
+    let moveScreenPos kind p model : Model = 
+        let newControllersPosition = 
+            model 
+            |> OpcUtilities.updateControllersInfo kind p
+        
+        let model = { model with controllerInfos = newControllersPosition}
+        
+        let controllerPos = model.menuModel.controllerMenuSelector
+        let newCP = model.controllerInfos |> HMap.tryFind controllerPos.kind
+        let screenVector = 
+            model.droneControl.screen
+            |> PList.tryFirst 
+        match newCP with 
+        | Some con -> 
+            match con.backButtonPressed with 
+            | true -> 
+                let newScreenPos = 
+                    model.droneControl.screen 
+                    |> PList.map (fun screen -> 
+                        {screen with trafo = Trafo3d.Translation(con.pose.deviceToWorld.GetModelOrigin())}
+                    )
+                    
+                let newDroneCameraPos = 
+                    {model.droneControl with 
+                        cameraPosition = Trafo3d.Translation(con.pose.deviceToWorld.GetModelOrigin())
+                        screen = newScreenPos    
+                    }
+                {model  with droneControl = newDroneCameraPos}
+            | false -> model 
+        | None -> model
 

@@ -41,7 +41,7 @@ module Drone =
             drone           = PList.empty
             screen          = PList.empty
             droneCamera     = CameraView.lookAt (V3d.III * 3.0) V3d.Zero V3d.OOI
-            cameraPosition  = Trafo3d.Translation(V3d.One * 10000.0)
+            cameraPosition  = Trafo3d.Identity
         }
 
 [<DomainType>]

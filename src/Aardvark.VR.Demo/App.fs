@@ -161,15 +161,26 @@ module Demo =
                             Trafo3d.Translation(cPos.pose.deviceToWorld.GetModelOrigin()) * Trafo3d.Translation(V3d(1.5, -1.5, -1.5))// * Trafo3d.Translation(HMDpos.pose.deviceToWorld.Forward.TransformDir V3d.YAxis) 
                         | _, _ -> Trafo3d.Identity
                     
-                    let updateDrone = {model.droneControl with cameraPosition = newHMDTrafo}
-                    let model = {model with droneControl = updateDrone}
+                    //let updateDrone = {model.droneControl with cameraPosition = newHMDTrafo}
+                    //let updateDrone = {model.droneControl with cameraPosition = Trafo3d.Identity}
+                    //let model = {model with droneControl = updateDrone}
+
+                    let model = 
+                        model 
+                        |> DroneControlCenter.checkHoverScreen kind p 
 
                     model 
                     |> DroneControlCenter.moveDrone kind p
+                | Menu.MenuState.HoverDroneScreen ->  
+                    let model = 
+                        model 
+                        |> DroneControlCenter.moveScreenPos kind p
+                    
+                    model 
+                    |> DroneControlCenter.checkHoverScreen kind p 
                 | _ -> model
             
             let controllerMenuUpdate = MenuApp.update model.controllerInfos state vr newModel.menuModel (MenuAction.UpdateControllerPose (kind, p))
-           
             {newModel with 
                 menuModel = controllerMenuUpdate; 
             }
@@ -356,13 +367,23 @@ module Demo =
                             opcSpaceTrafo           = newOpcSpace
                             annotationSpaceTrafo    = newFlagSpace
                         }
-
                 | Menu.MenuState.DroneMode -> 
                     let newDrone = 
                         if newModel.droneControl.drone.Count.Equals(0) then 
                             OpcUtilities.mkDrone id.pose.deviceToWorld 1
                         else newModel.droneControl.drone
-                    let updateDrones = {newModel.droneControl with drone = newDrone}
+                    
+                    let newDroneScreen = 
+                        if newModel.droneControl.screen.Count.Equals(0) then 
+                            VisibleBox.createDroneScreen C4b.Red (newModel.droneControl.cameraPosition.GetModelOrigin())
+                            |> PList.single
+                        else newModel.droneControl.screen
+
+                    let updateDrones = 
+                        {newModel.droneControl with 
+                            drone = newDrone; 
+                            screen = newDroneScreen
+                        }
 
                     let newModel = 
                         {newModel with 
@@ -376,6 +397,8 @@ module Demo =
 
                     newModel
                     |> DroneControlCenter.moveUserToDronePos
+                
+                | _ -> newModel
                     
             | None -> newModel
 
@@ -808,26 +831,6 @@ module Demo =
                 ]
             |> Sg.pass (RenderPass.after "lines" RenderPassOrder.Arbitrary RenderPass.main)
             |> Sg.depthTest (Mod.constant DepthTestMode.None)
-        
-        let compass = 
-            let north = "N"
-            Sg.textWithConfig { TextConfig.Default with renderStyle = RenderStyle.Billboard; align = TextAlignment.Center; flipViewDependent = true } (Mod.constant(north))
-            |> Sg.noEvents
-            |> Sg.scale 0.05
-            |> Sg.scale 50.0
-            |> Sg.trafo(Mod.constant(Trafo3d.Identity))
-
-        let compass1 = 
-            m.totalCompass
-            |> AList.toASet
-            |> ASet.map (fun c -> 
-                Sg.textWithConfig { TextConfig.Default with renderStyle = RenderStyle.Billboard; align = TextAlignment.Center; flipViewDependent = true } c.text
-                |> Sg.noEvents
-                |> Sg.scale 0.05
-                |> Sg.scale 50.0
-                |> Sg.trafo c.trafo
-            )
-            |> Sg.set
 
         let signature =
             runtime.CreateFramebufferSignature [
@@ -875,46 +878,16 @@ module Demo =
         let offscreenTexture =
             RenderTask.renderToColor size offscreenTask
 
-        let secondCameraTrafo = 
-            let updateHmdTrafo = 
-                let concon = m.menuModel.controllerMenuSelector
-                let conKind = m.controllerInfos |> AMap.tryFind (concon.kind.GetValue())
-                let controllerPos = 
-                    conKind 
-                    |> Mod.map (fun ck -> 
-                        match ck with
-                        | Some pos -> pos.pose
-                        | None -> m.menuModel.controllerMenuSelector.pose
-                    )
-
-                let hmd = m.controllerInfos |> AMap.tryFind ControllerKind.HMD
-                adaptive {
-                    let! newHmdTest = hmd
-                    //let! newHmd = hmdTrafo
-                    let! hmdTrafo = 
-                        match newHmdTest with 
-                        | Some hh -> hh.pose.deviceToWorld
-                        | None -> Mod.constant Trafo3d.Identity
-
-                        //|> Mod.bind (fun h -> 
-                        //    match h with 
-                        //    | Some hh -> hh.pose.deviceToWorld
-                        //    | None -> Mod.constant Trafo3d.Identity
-                        //)
-                    return Trafo3d.Translation(hmdTrafo.GetModelOrigin() + V3d(2.0, 0.0, 0.0))
-                }
-               
-            m.menuModel.menu 
-            |> Mod.bind (fun ms -> 
-                match ms with 
-                | Menu.MenuState.DroneMode -> 
-                    updateHmdTrafo
-                    
-                    //Trafo3d.Identity //change this camera position to be something close to the user even if they move their position
-                | _ -> Mod.constant(Trafo3d.Translation(V3d.One * 1000000.0))
-            )
-
         let showSecondCamera = 
+            let mkDisappear = 
+                let menuMode = m.menuModel.menu
+                
+                adaptive {
+                    let! newMenuMode = menuMode
+                    match newMenuMode with 
+                    | MenuState.DroneMode | MenuState.HoverDroneScreen -> return true 
+                    | _ -> return false
+                }
             Sg.box (Mod.constant C4b.White) (Mod.constant (Box3d.FromSize(V3d(0.1, 3.0, 3.0))))
             |> Sg.diffuseTexture offscreenTexture
             |> Sg.shader {
@@ -923,10 +896,19 @@ module Demo =
                 //do! DefaultSurfaces.simpleLighting
             }
             |> Sg.trafo m.droneControl.cameraPosition
-            //|> Sg.trafo secondCameraTrafo
+            |> Sg.onOff mkDisappear
 
        
         let borderSecondCamera = 
+            let mkDisappear = 
+                let menuMode = m.menuModel.menu
+                
+                adaptive {
+                    let! newMenuMode = menuMode
+                    match newMenuMode with 
+                    | MenuState.DroneMode | MenuState.HoverDroneScreen -> return true 
+                    | _ -> return false
+                }
             let newTrafoCamera = 
                 let camPos = m.droneControl.cameraPosition
                 adaptive {
@@ -934,17 +916,16 @@ module Demo =
                     return Trafo3d.Translation(cp.GetModelOrigin() + V3d(0.2, -0.25, -0.25))
                 }
                 
-                    //Trafo3d.Translation(V3d(c.GetModelOrigin()) + V3d(0.2, 0.0, 0.0))
             Sg.box (Mod.constant C4b.Red) (Mod.constant (Box3d.FromSize(V3d(0.05, 3.5, 3.5))))
             |> Sg.noEvents
-            |> Sg.trafo newTrafoCamera //m.droneControl.cameraPosition
+            |> Sg.trafo newTrafoCamera 
             |> Sg.shader {
                 do! DefaultSurfaces.trafo
                 do! DefaultSurfaces.vertexColor
                 //do! DefaultSurfaces.simpleLighting
             }
             |> defaultEffect
-            //|> Sg.fillMode (Mod.constant FillMode.Fill)
+            |> Sg.onOff mkDisappear
         
         let droneCylinder = 
             let color = 
@@ -966,7 +947,7 @@ module Demo =
                 adaptive {
                     let! newMenuMode = menuMode
                     match newMenuMode with 
-                    | MenuState.DroneMode -> return true 
+                    | MenuState.DroneMode | MenuState.HoverDroneScreen -> return true 
                     | _ -> return false
                 }
 
@@ -1028,7 +1009,6 @@ module Demo =
                 //throwRayLine
                 showSecondCamera
                 borderSecondCamera
-                //compass
             ] |> Sg.ofList
 
         Sg.ofList [transformedSgs; WIMtransformedSgs; notTransformedSgs; opcs; WIMopcs]
