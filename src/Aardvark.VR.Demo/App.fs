@@ -143,8 +143,12 @@ module Demo =
                     newModel
                     |> WIMOpc.editMiniMap kind p
                 | Menu.MenuState.WIMLandmarks -> 
+                    let model = 
+                        model
+                        |> PlaceLandmark.placingOnWIM kind p
+                    
                     model
-                    |> PlaceLandmark.placingOnWIM kind p
+                    |> WIMOpc.checkHoverUserWIM kind p
                 | Menu.MenuState.Teleportation -> 
                     model 
                     |> Teleport.hitRay kind p
@@ -160,10 +164,6 @@ module Demo =
                             //Trafo3d.Translation(hmdPos.pose.deviceToWorld.GetModelOrigin() + hmdDir.XYZ) * Trafo3d.Translation(V3d(2.0, -1.5, -1.5))// * Trafo3d.Translation(HMDpos.pose.deviceToWorld.Forward.TransformDir V3d.YAxis) 
                             Trafo3d.Translation(cPos.pose.deviceToWorld.GetModelOrigin()) * Trafo3d.Translation(V3d(1.5, -1.5, -1.5))// * Trafo3d.Translation(HMDpos.pose.deviceToWorld.Forward.TransformDir V3d.YAxis) 
                         | _, _ -> Trafo3d.Identity
-                    
-                    //let updateDrone = {model.droneControl with cameraPosition = newHMDTrafo}
-                    //let updateDrone = {model.droneControl with cameraPosition = Trafo3d.Identity}
-                    //let model = {model with droneControl = updateDrone}
 
                     let model = 
                         model 
@@ -178,8 +178,16 @@ module Demo =
                     
                     model 
                     |> DroneControlCenter.checkHoverScreen kind p 
+                | Menu.MenuState.HoverChangeUserWIM -> 
+                    let model = 
+                        model 
+                        |> WIMOpc.changeUserPosWIM kind p
+                    
+                    model
+                    |> WIMOpc.checkHoverUserWIM kind p
                 | _ -> model
             
+            printfn"mode: %s" (model.menuModel.menu.ToString())
             let controllerMenuUpdate = MenuApp.update model.controllerInfos state vr newModel.menuModel (MenuAction.UpdateControllerPose (kind, p))
             {newModel with 
                 menuModel = controllerMenuUpdate; 
@@ -397,7 +405,10 @@ module Demo =
 
                     newModel
                     |> DroneControlCenter.moveUserToDronePos
-                
+                | Menu.MenuState.HoverChangeUserWIM -> 
+                    
+                    newModel 
+                    //|> WIMOpc.moveUserToAnnotationSpaceFromWIM 
                 | _ -> newModel
                     
             | None -> newModel

@@ -80,103 +80,103 @@ module PlaceLandmark =
         let controllerPos = newModel.menuModel.controllerMenuSelector
         let newCP = newModel.controllerInfos |> HMap.tryFind controllerPos.kind
         
-        let newModel = 
-            match newCP with 
-            | Some id -> 
-                let newModel = 
-                    let updateLandmarkPos = 
+        //let newModel = 
+        match newCP with 
+        | Some id -> 
+            let newModel = 
+                let updateLandmarkPos = 
+                    newModel.landmarkOnController
+                    |> PList.map (fun landmark -> {landmark with trafo = id.pose.deviceToWorld})
+
+                match id.backButtonPressed with 
+                | true -> 
+                    let landMarkOnController = 
                         newModel.landmarkOnController
-                        |> PList.map (fun landmark -> {landmark with trafo = id.pose.deviceToWorld})
+                        |> PList.tryFirst
 
-                    match id.backButtonPressed with 
-                    | true -> 
-                        let landMarkOnController = 
-                            newModel.landmarkOnController
-                            |> PList.tryFirst
-
-                        match landMarkOnController with 
-                        | Some landmark ->
-                            let updateLandmark = 
-                                {landmark with 
-                                    trafo = id.pose.deviceToWorld * newModel.WIMworkSpaceTrafo.Inverse
-                                }
-                            let newlandMarkOnAnnotationSpace = 
-                                newModel.landmarkOnAnnotationSpace
-                                |> PList.prepend updateLandmark
-                            
-                            let updateWIMLandmark = 
-                                {landmark with 
-                                    trafo = id.pose.deviceToWorld 
-                                }
-                            let newlandMarkOnWIMAnnotationSpace = 
-                                newModel.WIMlandmarkOnAnnotationSpace
-                                |> PList.prepend updateWIMLandmark
-
-                            {newModel with 
-                                landmarkOnController = PList.empty; 
-                                WIMlandmarkOnAnnotationSpace = newlandMarkOnWIMAnnotationSpace;
-                                landmarkOnAnnotationSpace = newlandMarkOnAnnotationSpace
+                    match landMarkOnController with 
+                    | Some landmark ->
+                        let updateLandmark = 
+                            {landmark with 
+                                trafo = id.pose.deviceToWorld * newModel.WIMworkSpaceTrafo.Inverse
                             }
-                        | None -> newModel
-                    | false -> 
+                        let newlandMarkOnAnnotationSpace = 
+                            newModel.landmarkOnAnnotationSpace
+                            |> PList.prepend updateLandmark
+                            
+                        let updateWIMLandmark = 
+                            {landmark with 
+                                trafo = id.pose.deviceToWorld 
+                            }
+                        let newlandMarkOnWIMAnnotationSpace = 
+                            newModel.WIMlandmarkOnAnnotationSpace
+                            |> PList.prepend updateWIMLandmark
+
                         {newModel with 
-                            landmarkOnController = updateLandmarkPos
+                            landmarkOnController = PList.empty; 
+                            WIMlandmarkOnAnnotationSpace = newlandMarkOnWIMAnnotationSpace;
+                            landmarkOnAnnotationSpace = newlandMarkOnAnnotationSpace
                         }
-                newModel
-            | None -> newModel
+                    | None -> newModel
+                | false -> 
+                    {newModel with 
+                        landmarkOnController = updateLandmarkPos
+                    }
+            newModel
+        | None -> newModel
 
-        let secondCon = 
-            if controllerPos.kind.Equals(ControllerKind.ControllerA) then
-                newModel.controllerInfos |> HMap.tryFind ControllerKind.ControllerB
-            else newModel.controllerInfos |> HMap.tryFind ControllerKind.ControllerA
+        //let secondCon = 
+        //    if controllerPos.kind.Equals(ControllerKind.ControllerA) then
+        //        newModel.controllerInfos |> HMap.tryFind ControllerKind.ControllerB
+        //    else newModel.controllerInfos |> HMap.tryFind ControllerKind.ControllerA
         
-        let checkWIMuserHover = 
-            match secondCon with 
-            | Some con2 -> 
-                newModel.WIMuserPos
-                |> PList.choosei (fun _ u -> 
-                    let dist = V3d.Distance(u.trafo.GetModelOrigin(), con2.pose.deviceToWorld.GetModelOrigin())
-                    if (dist <= 0.1) then 
-                        Some {u with isHovered = true}
-                    else Some {u with isHovered = false}
-                )
-            | None -> newModel.WIMuserPos 
+        //let checkWIMuserHover = 
+        //    match secondCon with 
+        //    | Some con2 -> 
+        //        newModel.WIMuserPos
+        //        |> PList.choosei (fun _ u -> 
+        //            let dist = V3d.Distance(u.trafo.GetModelOrigin(), con2.pose.deviceToWorld.GetModelOrigin())
+        //            if (dist <= 0.1) then 
+        //                Some {u with isHovered = true}
+        //            else Some {u with isHovered = false}
+        //        )
+        //    | None -> newModel.WIMuserPos 
         
-        let newModel = {newModel with WIMuserPos = checkWIMuserHover}
+        //let newModel = {newModel with WIMuserPos = checkWIMuserHover}
 
-        let changeWIMuserPosWithCon2 = 
-            match secondCon with
-            | Some con2 -> 
-                match con2.backButtonPressed with 
-                | true -> 
-                    newModel.WIMuserPos 
-                    |> PList.map (fun uPos -> 
-                        let newTrafo = createNewTrafo con2
-                        {uPos with trafo = newTrafo}//Trafo3d.FromComponents(scaleUPos, rotationUPos1, translationUPos)}
-                    )
-                | false -> newModel.WIMuserPos
-            | None -> newModel.WIMuserPos
+        //let changeWIMuserPosWithCon2 = 
+        //    match secondCon with
+        //    | Some con2 -> 
+        //        match con2.backButtonPressed with 
+        //        | true -> 
+        //            newModel.WIMuserPos 
+        //            |> PList.map (fun uPos -> 
+        //                let newTrafo = createNewTrafo con2
+        //                {uPos with trafo = newTrafo}//Trafo3d.FromComponents(scaleUPos, rotationUPos1, translationUPos)}
+        //            )
+        //        | false -> newModel.WIMuserPos
+        //    | None -> newModel.WIMuserPos
 
-        let changeUserPosWithCon2OnAnnotationSpace = 
-            match secondCon with 
-            | Some con2 -> 
-                match con2.backButtonPressed with 
-                | true -> 
-                    newModel.userPosOnAnnotationSpace
-                    |> PList.map (fun uPosAS -> 
-                        let newTrafo = createNewTrafo con2
-                        {uPosAS with 
-                            trafo = newTrafo * newModel.WIMworkSpaceTrafo.Inverse
-                            color = C4b.Yellow
-                        }
-                    )
-                | false -> newModel.userPosOnAnnotationSpace
-            | None -> newModel.userPosOnAnnotationSpace
+        //let changeUserPosWithCon2OnAnnotationSpace = 
+        //    match secondCon with 
+        //    | Some con2 -> 
+        //        match con2.backButtonPressed with 
+        //        | true -> 
+        //            newModel.userPosOnAnnotationSpace
+        //            |> PList.map (fun uPosAS -> 
+        //                let newTrafo = createNewTrafo con2
+        //                {uPosAS with 
+        //                    trafo = newTrafo * newModel.WIMworkSpaceTrafo.Inverse
+        //                    color = C4b.Yellow
+        //                }
+        //            )
+        //        | false -> newModel.userPosOnAnnotationSpace
+        //    | None -> newModel.userPosOnAnnotationSpace
             
-        {newModel with 
-            WIMuserPos = changeWIMuserPosWithCon2
-            userPosOnAnnotationSpace = changeUserPosWithCon2OnAnnotationSpace
-        }
+        //{newModel with 
+        //    WIMuserPos = changeWIMuserPosWithCon2
+        //    userPosOnAnnotationSpace = changeUserPosWithCon2OnAnnotationSpace
+        //}
 
     let moveUserToNewPosOnAnnotationSpace model : Model = 
         let controllerPos = model.menuModel.controllerMenuSelector

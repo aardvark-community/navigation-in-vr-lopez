@@ -18,6 +18,7 @@ type MenuState =
 | Teleportation
 | DroneMode
 | HoverDroneScreen
+| HoverChangeUserWIM
 
 [<DomainType>]
 type MenuModel = 

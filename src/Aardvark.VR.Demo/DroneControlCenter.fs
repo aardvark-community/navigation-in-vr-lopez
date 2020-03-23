@@ -111,9 +111,7 @@ module DroneControlCenter =
         
         let controllerPos = model.menuModel.controllerMenuSelector
         let newCP = model.controllerInfos |> HMap.tryFind controllerPos.kind
-        let screenVector = 
-            model.droneControl.screen
-            |> PList.tryFirst 
+ 
         match newCP with 
         | Some con -> 
             match con.backButtonPressed with 
