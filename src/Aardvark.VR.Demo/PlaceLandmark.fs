@@ -129,7 +129,6 @@ module PlaceLandmark =
         //    if controllerPos.kind.Equals(ControllerKind.ControllerA) then
         //        newModel.controllerInfos |> HMap.tryFind ControllerKind.ControllerB
         //    else newModel.controllerInfos |> HMap.tryFind ControllerKind.ControllerA
-        
         //let checkWIMuserHover = 
         //    match secondCon with 
         //    | Some con2 -> 
@@ -141,9 +140,7 @@ module PlaceLandmark =
         //            else Some {u with isHovered = false}
         //        )
         //    | None -> newModel.WIMuserPos 
-        
         //let newModel = {newModel with WIMuserPos = checkWIMuserHover}
-
         //let changeWIMuserPosWithCon2 = 
         //    match secondCon with
         //    | Some con2 -> 
@@ -156,7 +153,6 @@ module PlaceLandmark =
         //            )
         //        | false -> newModel.WIMuserPos
         //    | None -> newModel.WIMuserPos
-
         //let changeUserPosWithCon2OnAnnotationSpace = 
         //    match secondCon with 
         //    | Some con2 -> 
@@ -172,70 +168,76 @@ module PlaceLandmark =
         //            )
         //        | false -> newModel.userPosOnAnnotationSpace
         //    | None -> newModel.userPosOnAnnotationSpace
-            
         //{newModel with 
         //    WIMuserPos = changeWIMuserPosWithCon2
         //    userPosOnAnnotationSpace = changeUserPosWithCon2OnAnnotationSpace
         //}
 
-    let moveUserToNewPosOnAnnotationSpace model : Model = 
-        let controllerPos = model.menuModel.controllerMenuSelector
+    
+    
+    
+    
+    
+    
+    
+    //let moveUserToNewPosOnAnnotationSpace model : Model = 
+    //    let controllerPos = model.menuModel.controllerMenuSelector
 
-        let secondCon = 
-            if controllerPos.kind.Equals(ControllerKind.ControllerA) then
-                model.controllerInfos |> HMap.tryFind ControllerKind.ControllerB
-            else model.controllerInfos |> HMap.tryFind ControllerKind.ControllerA
+    //    let secondCon = 
+    //        if controllerPos.kind.Equals(ControllerKind.ControllerA) then
+    //            model.controllerInfos |> HMap.tryFind ControllerKind.ControllerB
+    //        else model.controllerInfos |> HMap.tryFind ControllerKind.ControllerA
 
-        match secondCon with 
-        | Some con2 -> 
-            match con2.backButtonPressed with 
-            | true -> 
-                let upInitialWIM = model.WIMinitialUserPos |> PList.tryFirst
-                match upInitialWIM with
-                | Some p -> 
-                    let newTrafo = createNewTrafo con2
-                    let updateInitialWIM = {p with trafo = newTrafo; color = C4b.Cyan}
-                    let newInitialList = 
-                        model.WIMinitialUserPos 
-                        |> PList.prepend updateInitialWIM
+    //    match secondCon with 
+    //    | Some con2 -> 
+    //        match con2.backButtonPressed with 
+    //        | true -> 
+    //            let upInitialWIM = model.WIMinitialUserPos |> PList.tryFirst
+    //            match upInitialWIM with
+    //            | Some p -> 
+    //                let newTrafo = createNewTrafo con2
+    //                let updateInitialWIM = {p with trafo = newTrafo; color = C4b.Cyan}
+    //                let newInitialList = 
+    //                    model.WIMinitialUserPos 
+    //                    |> PList.prepend updateInitialWIM
                 
-                    {model with WIMinitialUserPos = newInitialList}
-                | None -> model
+    //                {model with WIMinitialUserPos = newInitialList}
+    //            | None -> model
                 
-            | false -> 
-                let upWIM = model.WIMuserPos |> PList.tryFirst
-                let upAnn = model.userPosOnAnnotationSpace |> PList.tryFirst
-                match upWIM, upAnn with 
-                | Some pos, Some annPos -> 
-                    match pos.isHovered with //this part is still not taken into account
-                    | true -> 
-                        match model.menuModel.menu with
-                        | MenuState.WIMLandmarks | MenuState.Cyllinder -> 
-                            let updatePosWIMspace =                                 
-                                let newTrafo = createNewTrafo con2
-                                {pos with trafo = newTrafo}
-                                |> PList.single
-                                //user position in wim
+    //        | false -> 
+    //            let upWIM = model.WIMuserPos |> PList.tryFirst
+    //            let upAnn = model.userPosOnAnnotationSpace |> PList.tryFirst
+    //            match upWIM, upAnn with 
+    //            | Some pos, Some annPos -> 
+    //                match pos.isHovered with //this part is still not taken into account
+    //                | true -> 
+    //                    match model.menuModel.menu with
+    //                    | MenuState.WIMLandmarks | MenuState.Cyllinder | MenuState.HoverChangeUserWIM -> 
+    //                        let updatePosWIMspace =                                 
+    //                            let newTrafo = createNewTrafo con2
+    //                            {pos with trafo = newTrafo}
+    //                            |> PList.single
+    //                            //user position in wim
 
-                            let conRotation = con2.pose.deviceToWorld.GetOrthoNormalOrientation()
+    //                        let conRotation = con2.pose.deviceToWorld.GetOrthoNormalOrientation()
 
-                            let shiftTrafo = Trafo3d.Translation(annPos.trafo.GetModelOrigin()).Inverse * conRotation.Inverse 
-                            //is takes all possible rotation of controller into account, we only want the z rotation
+    //                        let shiftTrafo = Trafo3d.Translation(annPos.trafo.GetModelOrigin()).Inverse * conRotation.Inverse 
+    //                        //is takes all possible rotation of controller into account, we only want the z rotation
 
-                            let newWorkSpace = model.initWorkSpaceTrafo * shiftTrafo
-                            let newOpcSpace = model.initOpcSpaceTrafo * newWorkSpace
-                            let newFlagSpace = model.initAnnotationSpaceTrafo * newWorkSpace
+    //                        let newWorkSpace = model.initWorkSpaceTrafo * shiftTrafo
+    //                        let newOpcSpace = model.initOpcSpaceTrafo * newWorkSpace
+    //                        let newFlagSpace = model.initAnnotationSpaceTrafo * newWorkSpace
 
-                            {model with 
-                                WIMuserPos                  = updatePosWIMspace
-                                workSpaceTrafo              = newWorkSpace
-                                opcSpaceTrafo               = newOpcSpace
-                                annotationSpaceTrafo        = newFlagSpace
-                            }
+    //                        {model with 
+    //                            WIMuserPos                  = updatePosWIMspace
+    //                            workSpaceTrafo              = newWorkSpace
+    //                            opcSpaceTrafo               = newOpcSpace
+    //                            annotationSpaceTrafo        = newFlagSpace
+    //                        }
                         
-                        | _ -> model
-                    | false -> model
-                | _, _ -> model 
+    //                    | _ -> model
+    //                | false -> model
+    //            | _, _ -> model 
         
-        | None -> model
+    //    | None -> model
         

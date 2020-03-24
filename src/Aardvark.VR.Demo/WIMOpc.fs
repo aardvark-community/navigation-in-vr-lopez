@@ -136,6 +136,12 @@ module WIMOpc =
         }
     
     let updateMiniMap kind p model : Model = 
+        let newControllersPosition = 
+            model 
+            |> OpcUtilities.updateControllersInfo kind p
+        
+        let model = { model with controllerInfos = newControllersPosition}
+
         let controllerPos = 
             let cp = model.menuModel.controllerMenuSelector
             let newCp = model.controllerInfos |> HMap.tryFind cp.kind
@@ -180,7 +186,8 @@ module WIMOpc =
             match con.backButtonPressed with 
             | true -> model 
             | false -> 
-                let dist = V3d.Distance(con.pose.deviceToWorld.GetModelOrigin(), userPos.trafo.GetModelOrigin())
+                let dist = V3d.Distance(userPos.trafo.GetModelOrigin(), con.pose.deviceToWorld.GetModelOrigin())
+                printfn"dist: %A" dist
                 if dist <= 0.1 then 
                     let newMode = {model.menuModel with menu = MenuState.HoverChangeUserWIM}
                     {model with menuModel = newMode}
@@ -199,18 +206,26 @@ module WIMOpc =
         
         let controllerPos = model.menuModel.controllerMenuSelector
         let newCP = model.controllerInfos |> HMap.tryFind controllerPos.kind
-        match newCP with 
-        | Some con -> 
-            match con.backButtonPressed with 
-            | true -> 
-                let newUserPos = 
+        
+        let newUserPos = 
+            match newCP with 
+            | Some con -> 
+                match con.backButtonPressed with 
+                | true -> 
                     model.WIMuserPos
                     |> PList.map (fun pos -> 
                         let newTrafo = createNewTrafo con
                         //{pos with trafo = Trafo3d.Translation(con.pose.deviceToWorld.GetModelOrigin())}
                         {pos with trafo = newTrafo}
                     )
-                let newUserPosOnAnnotationSpace = 
+                | false -> model.WIMuserPos
+            | None -> model.WIMuserPos
+
+        let newUserPosOnAnnotationSpace = 
+            match newCP with 
+            | Some con -> 
+                match con.backButtonPressed with 
+                | true -> 
                     model.userPosOnAnnotationSpace
                     |> PList.map (fun uPosAS -> 
                         let newTrafo = createNewTrafo con
@@ -219,20 +234,96 @@ module WIMOpc =
                             color = C4b.Yellow
                         }
                     )
-            
-                {model with 
-                    WIMuserPos = newUserPos
-                    userPosOnAnnotationSpace = newUserPosOnAnnotationSpace    
-                }
+                | false -> model.userPosOnAnnotationSpace
+            | None -> model.userPosOnAnnotationSpace
+        
+        {model with 
+            WIMuserPos              = newUserPos
+            userPosOnAnnotationSpace= newUserPosOnAnnotationSpace    
+        }
+        
+        //match newCP with 
+        //| Some con -> 
+        //    match con.backButtonPressed with 
+        //    | true -> 
+        //        let newUserPos = 
+        //            model.WIMuserPos
+        //            |> PList.map (fun pos -> 
+        //                let newTrafo = createNewTrafo con
+        //                //{pos with trafo = Trafo3d.Translation(con.pose.deviceToWorld.GetModelOrigin())}
+        //                {pos with trafo = newTrafo}
+        //            )
+        //        let newUserPosOnAnnotationSpace = 
+        //            model.userPosOnAnnotationSpace
+        //            |> PList.map (fun uPosAS -> 
+        //                let newTrafo = createNewTrafo con
+        //                {uPosAS with 
+        //                    trafo = newTrafo * model.WIMworkSpaceTrafo.Inverse
+        //                    color = C4b.Yellow
+        //                }
+        //            )
+        //        {model with 
+        //            WIMuserPos = newUserPos
+        //            userPosOnAnnotationSpace = newUserPosOnAnnotationSpace    
+        //        }
+        //    | false -> 
+        //        let upWIM = model.WIMuserPos |> PList.tryFirst
+        //        let upAnn = model.userPosOnAnnotationSpace |> PList.tryFirst
+        //        match upWIM, upAnn with 
+        //        | Some pos, Some annPos -> 
+        //            match pos.isHovered with //this part is still not taken into account
+        //            | true -> 
+        //                match model.menuModel.menu with
+        //                | MenuState.WIMLandmarks | MenuState.Cyllinder -> 
+        //                    let updatePosWIMspace =                                 
+        //                        let newTrafo = createNewTrafo con
+        //                        {pos with trafo = newTrafo}
+        //                        |> PList.single
+        //                        //user position in wim
+        //                    let conRotation = con.pose.deviceToWorld.GetOrthoNormalOrientation()
+        //                    let shiftTrafo = Trafo3d.Translation(annPos.trafo.GetModelOrigin()).Inverse * conRotation.Inverse 
+        //                    //is takes all possible rotation of controller into account, we only want the z rotation
+        //                    let newWorkSpace = model.initWorkSpaceTrafo * shiftTrafo
+        //                    let newOpcSpace = model.initOpcSpaceTrafo * newWorkSpace
+        //                    let newFlagSpace = model.initAnnotationSpaceTrafo * newWorkSpace
+        //                    {model with 
+        //                        WIMuserPos                  = updatePosWIMspace
+        //                        workSpaceTrafo              = newWorkSpace
+        //                        opcSpaceTrafo               = newOpcSpace
+        //                        annotationSpaceTrafo        = newFlagSpace
+        //                    }
+        //                | _ -> model
+        //            | false -> model
+        //        | _, _ -> model 
+        //| None -> model
+
+
+    let moveUserToAnnotationSpaceFromWIM model : Model = 
+        let controllerPos = model.menuModel.controllerMenuSelector
+        let newCP = model.controllerInfos |> HMap.tryFind controllerPos.kind
+        match newCP with 
+        | Some con -> 
+            match con.backButtonPressed with 
+            | true -> 
+                let upInitialWIM = model.WIMinitialUserPos |> PList.tryFirst
+                match upInitialWIM with
+                | Some p -> 
+                    let newTrafo = createNewTrafo con
+                    let updateInitialWIM = {p with trafo = newTrafo; color = C4b.Cyan}
+                    let newInitialList = 
+                        model.WIMinitialUserPos 
+                        |> PList.prepend updateInitialWIM
+                
+                    {model with WIMinitialUserPos = newInitialList}
+                | None -> model
+                
             | false -> 
                 let upWIM = model.WIMuserPos |> PList.tryFirst
                 let upAnn = model.userPosOnAnnotationSpace |> PList.tryFirst
                 match upWIM, upAnn with 
                 | Some pos, Some annPos -> 
-                    match pos.isHovered with //this part is still not taken into account
-                    | true -> 
                         match model.menuModel.menu with
-                        | MenuState.WIMLandmarks | MenuState.Cyllinder -> 
+                        | MenuState.HoverChangeUserWIM (*| MenuState.WIMLandmarks | MenuState.Cyllinder *) -> 
                             let updatePosWIMspace =                                 
                                 let newTrafo = createNewTrafo con
                                 {pos with trafo = newTrafo}
@@ -256,34 +347,5 @@ module WIMOpc =
                             }
                         
                         | _ -> model
-                    | false -> model
                 | _, _ -> model 
         | None -> model
-
-
-    let moveUserToAnnotationSpaceFromWIM model : Model = 
-        let controllerPos = model.menuModel.controllerMenuSelector
-        let newCP = model.controllerInfos |> HMap.tryFind controllerPos.kind
-        match newCP with 
-        | Some con -> 
-            match con.backButtonPressed with 
-            | true -> 
-                let upInitialWIM = model.WIMinitialUserPos |> PList.tryFirst
-                match upInitialWIM with
-                | Some p -> 
-                    let newTrafo = createNewTrafo con
-                    let updateInitialWIM = {p with trafo = newTrafo; color = C4b.Cyan}
-                    let newInitialList = 
-                        model.WIMinitialUserPos 
-                        |> PList.prepend updateInitialWIM
-                
-                    {model with WIMinitialUserPos = newInitialList}
-                | None -> model
-            | false ->
-            
-                model 
-        | None -> 
-
-
-
-            model

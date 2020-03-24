@@ -145,10 +145,10 @@ module Demo =
                 | Menu.MenuState.WIMLandmarks -> 
                     let model = 
                         model
-                        |> PlaceLandmark.placingOnWIM kind p
+                        |> WIMOpc.checkHoverUserWIM kind p
                     
                     model
-                    |> WIMOpc.checkHoverUserWIM kind p
+                    |> PlaceLandmark.placingOnWIM kind p
                 | Menu.MenuState.Teleportation -> 
                     model 
                     |> Teleport.hitRay kind p
@@ -308,7 +308,7 @@ module Demo =
                         }
 
                     newModel 
-                    |> PlaceLandmark.moveUserToNewPosOnAnnotationSpace
+                    //|> PlaceLandmark.moveUserToNewPosOnAnnotationSpace
                 | Menu.MenuState.WIM -> 
                     let newUserPosWIM = OpcUtilities.mkFlagsUser Trafo3d.Identity 1 
                     
@@ -335,7 +335,7 @@ module Demo =
                             cyllinderControl        = PList.empty
                         }
                     newModel 
-                    |> PlaceLandmark.moveUserToNewPosOnAnnotationSpace
+                    //|> PlaceLandmark.moveUserToNewPosOnAnnotationSpace
                 | Menu.MenuState.Reset -> 
                     {newModel with 
                         landmarkOnController         = PList.empty;
@@ -406,9 +406,24 @@ module Demo =
                     newModel
                     |> DroneControlCenter.moveUserToDronePos
                 | Menu.MenuState.HoverChangeUserWIM -> 
+                    let newUserPos1 = 
+                        if newModel.userPosOnAnnotationSpace.Count.Equals(0) then 
+                            OpcUtilities.mkFlags id.pose.deviceToWorld 1
+                        else newModel.userPosOnAnnotationSpace
+                    //let newInitialUserPosWIM1 = OpcUtilities.mkFlags (Trafo3d.Translation(V3d.One * 1000000.0)) 1
                     
+
+                    let newModel = 
+                        {newModel with 
+                            userPosOnAnnotationSpace= newUserPos1;
+                            //WIMinitialUserPos       = newInitialUserPosWIM1;
+                            droneControl            = Drone.initial;
+                            cyllinderControl        = PList.empty
+                        }
+
                     newModel 
-                    //|> WIMOpc.moveUserToAnnotationSpaceFromWIM 
+                    |> WIMOpc.moveUserToAnnotationSpaceFromWIM 
+                    
                 | _ -> newModel
                     
             | None -> newModel
@@ -706,12 +721,13 @@ module Demo =
             let mkDisappear = 
                 let menuMode = m.menuModel.menu
                 let controllerPos = m.menuModel.controllerMenuSelector
+                let con = m.controllerInfos |> AMap.tryFind (controllerPos.kind.GetValue())
                 let con2 = 
                     if controllerPos.kind.Equals(ControllerKind.ControllerA) then
-                        m.controllerInfos |> AMap.tryFind ControllerKind.ControllerB
-                    else m.controllerInfos |> AMap.tryFind ControllerKind.ControllerA
-                let con2backButton = 
-                    con2 
+                        m.controllerInfos |> AMap.tryFind ControllerKind.ControllerA
+                    else m.controllerInfos |> AMap.tryFind ControllerKind.ControllerB
+                let conBackButton = 
+                    con2
                     |> Mod.bind (fun c -> 
                         match c with 
                         | Some cc -> cc.backButtonPressed
@@ -719,12 +735,13 @@ module Demo =
                     )
 
                 adaptive {
-                    let! con2bb = con2backButton
+                    let! conBB = conBackButton
                     let! newMenuMode = menuMode
                     
-                    match newMenuMode, con2bb with 
+                    match newMenuMode, conBB with 
                     | MenuState.WIMLandmarks, true -> 
                         return true
+                    | MenuState.HoverChangeUserWIM, true -> return true
                     |  _, _ -> return false
                 }
 
@@ -909,7 +926,6 @@ module Demo =
             |> Sg.trafo m.droneControl.cameraPosition
             |> Sg.onOff mkDisappear
 
-       
         let borderSecondCamera = 
             let mkDisappear = 
                 let menuMode = m.menuModel.menu
@@ -999,7 +1015,6 @@ module Demo =
             ]
             |> Sg.ofList
             |> Sg.trafo m.annotationSpaceTrafo
-
 
         let WIMtransformedSgs = 
             [
