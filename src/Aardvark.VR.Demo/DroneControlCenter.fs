@@ -24,18 +24,29 @@ module DroneControlCenter =
         
         let controllerPos = newModel.menuModel.controllerMenuSelector
         let newCP = newModel.controllerInfos |> HMap.tryFind controllerPos.kind
-        
-        match newCP with 
-        | Some id -> 
+        let userHMd = newModel.controllerInfos |> HMap.tryFind ControllerKind.HMD
+        match newCP, userHMd with 
+        | Some id, Some hmd -> 
             //let newModel = 
             match id.backButtonPressed with 
             | true -> 
                 let controllDir = id.pose.deviceToWorld.Forward.C1
+                
+                //let hmdDir = hmd.pose.deviceToWorld.Forward.C1
+                //let hmdRot = hmd.pose.deviceToWorld.GetOrthoNormalOrientation()
+
+                //let hmdRt = hmd.pose.deviceToWorld.GetOrthoNormalOrientation()
+                //let hmdRot = Rot3d.FromFrame(hmdRt.Forward.C0.XYZ, hmdRt.Forward.C1.XYZ, hmdRt.Forward.C2.XYZ)
+                //let hmdRotation = hmdRot.GetEulerAngles()
+                
+                //let newTrafo1 = Trafo3d.FromComponents(V3d.One, hmdRotation, newTrafo)
+
                 let moveDrone = 
                     newModel.droneControl.drone
                     |> PList.map (fun drone -> 
                         let newTrafo = drone.trafo.GetModelOrigin() + controllDir.XYZ * 0.05
                         {drone with trafo = Trafo3d.Translation(newTrafo) }
+                        
                     )
 
                 let updateDrones = 
@@ -43,7 +54,7 @@ module DroneControlCenter =
                 
                 {newModel with droneControl = updateDrones}
             | false -> newModel
-        | None -> newModel 
+        | _, _ -> newModel 
 
 
     let moveUserToDronePos model : Model =
