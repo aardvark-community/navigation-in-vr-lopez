@@ -892,20 +892,11 @@ module Demo =
                     | Some id -> id.pose.deviceToWorld
                     | None -> Mod.constant Trafo3d.Identity
                 )
-
             adaptive {
                 let! hmd = findHMD
-                let hmdDir = hmd.Forward.C1
-                let hmdRot = hmd.GetOrthoNormalOrientation()
-                let hmdRt = hmd.GetOrthoNormalOrientation()
-                let hmdRot = Rot3d.FromFrame(hmdRt.Forward.C0.XYZ, hmdRt.Forward.C1.XYZ, hmdRt.Forward.C2.XYZ)
-
-                //return hmdRot.GetEulerAngles()    
                 return hmd.Forward.C1.XYZ    
             }
             
-            
-
         let offscreenTask = 
             opcs
             |> Sg.andAlso landmarksOnAnnotationSpace
@@ -917,7 +908,7 @@ module Demo =
                 let cen = p + d
                 CameraView.lookAt loc cen V3d.OOI 
                     |> CameraView.viewTrafo 
-                ) dronePos dirHMD
+                ) dronePos droneDir
             )
             // since our render target size is dynamic, we compute a proj trafo using standard techniques
             |> Sg.projTrafo (size |> Mod.map (fun actualSize -> 

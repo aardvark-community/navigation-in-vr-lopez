@@ -32,15 +32,6 @@ module DroneControlCenter =
             | true -> 
                 let controllDir = id.pose.deviceToWorld.Forward.C1
                 
-                //let hmdDir = hmd.pose.deviceToWorld.Forward.C1
-                //let hmdRot = hmd.pose.deviceToWorld.GetOrthoNormalOrientation()
-
-                //let hmdRt = hmd.pose.deviceToWorld.GetOrthoNormalOrientation()
-                //let hmdRot = Rot3d.FromFrame(hmdRt.Forward.C0.XYZ, hmdRt.Forward.C1.XYZ, hmdRt.Forward.C2.XYZ)
-                //let hmdRotation = hmdRot.GetEulerAngles()
-                
-                //let newTrafo1 = Trafo3d.FromComponents(V3d.One, hmdRotation, newTrafo)
-
                 let moveDrone = 
                     newModel.droneControl.drone
                     |> PList.map (fun drone -> 

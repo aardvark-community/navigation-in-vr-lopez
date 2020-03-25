@@ -118,7 +118,7 @@ module WIMOpc =
         let updateWIMLandmark = 
             newModel.landmarkOnAnnotationSpace
             |> PList.map (fun landmark -> 
-                let newLmkC = landmark.trafo * newModel.workSpaceTrafo.Inverse * newModel.WIMworkSpaceTrafo
+                let newLmkC = landmark.trafo //* newModel.workSpaceTrafo.Inverse * newModel.WIMworkSpaceTrafo
                 let rtLmkC = newLmkC.GetOrthoNormalOrientation()
                 let rotLmkC = Rot3d.FromFrame(rtLmkC.Forward.C0.XYZ, rtLmkC.Forward.C1.XYZ, rtLmkC.Forward.C2.XYZ)
                 let rotationLmkC = rotLmkC.GetEulerAngles()
@@ -304,18 +304,18 @@ module WIMOpc =
         match newCP with 
         | Some con -> 
             match con.backButtonPressed with 
-            | true -> 
-                let upInitialWIM = model.WIMinitialUserPos |> PList.tryFirst
-                match upInitialWIM with
-                | Some p -> 
-                    let newTrafo = createNewTrafo con
-                    let updateInitialWIM = {p with trafo = newTrafo; color = C4b.Cyan}
-                    let newInitialList = 
-                        model.WIMinitialUserPos 
-                        |> PList.prepend updateInitialWIM
+            | true -> model
+                //let upInitialWIM = model.WIMinitialUserPos |> PList.tryFirst
+                //match upInitialWIM with
+                //| Some p -> 
+                //    let newTrafo = createNewTrafo con
+                //    let updateInitialWIM = {p with trafo = newTrafo; color = C4b.Cyan}
+                //    let newInitialList = 
+                //        model.WIMinitialUserPos 
+                //        |> PList.prepend updateInitialWIM
                 
-                    {model with WIMinitialUserPos = newInitialList}
-                | None -> model
+                //    {model with WIMinitialUserPos = newInitialList}
+                //| None -> model
                 
             | false -> 
                 let upWIM = model.WIMuserPos |> PList.tryFirst
