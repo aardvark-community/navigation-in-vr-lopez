@@ -55,7 +55,7 @@ module WIMOpc =
         let minimapTrans = minimapCoordinateSystem.GetModelOrigin()
         let minimapScale = V3d(0.0025, 0.0025, 0.0025)
 
-        let minimapPos = //minimapCoordinateSystem
+        let minimapPos = 
             Trafo3d.FromComponents(minimapScale, minimapRotation, V3d(minimapTrans.X + 0.75, minimapTrans.Y, minimapTrans.Z - 0.25))
             
         let newWorkSpace = minimapPos//Trafo3d.FromBasis(V3d(0.000866772490015494, 0.000111846836880938, 0.000295737151484485), V3d(-0.000117399006863729, 0.000915138419620922, -2.01914890967389E-06), V3d(-0.00029357732806564, -3.57334077219641E-05, 0.000873956677452764), V3d(-0.424166218656598, -0.256776470921912, 0.798703249673775))
@@ -63,26 +63,10 @@ module WIMOpc =
         let newOpcSpace = model.initOpcSpaceTrafo * newWorkSpace
         //Scale now is: 1.048753, 1.048753, 1.048753
         
-        let newWIMlandmark = 
-            model.landmarkOnAnnotationSpace
-            |> PList.map (fun lmk -> 
-                let newLmk = lmk.trafo * newWorkSpace
-                let rt = newLmk.GetOrthoNormalOrientation()
-                let rot = Rot3d.FromFrame(rt.Forward.C0.XYZ, rt.Forward.C1.XYZ, rt.Forward.C2.XYZ)
-                let rotation = rot.GetEulerAngles()
-
-                let translation = newLmk.GetModelOrigin()
-
-                let scale = V3d(0.5, 0.5, 0.5)
-                {lmk with trafo = Trafo3d.FromComponents(scale, rotation, translation)}
-                //{lmk with trafo = lmk.trafo * newWorkSpace}
-            ) 
-
         {model with  
             WIMopcSpaceTrafo                = newOpcSpace;
             WIMannotationSpaceTrafo         = newAnnotationSpace;
             WIMworkSpaceTrafo               = newWorkSpace;
-            WIMlandmarkOnAnnotationSpace    = newWIMlandmark;
             landmarkOnController            = PList.empty;
         }
 
@@ -118,7 +102,7 @@ module WIMOpc =
         let updateWIMLandmark = 
             newModel.landmarkOnAnnotationSpace
             |> PList.map (fun landmark -> 
-                let newLmkC = landmark.trafo //* newModel.workSpaceTrafo.Inverse * newModel.WIMworkSpaceTrafo
+                let newLmkC = landmark.trafo * newModel.WIMworkSpaceTrafo
                 let rtLmkC = newLmkC.GetOrthoNormalOrientation()
                 let rotLmkC = Rot3d.FromFrame(rtLmkC.Forward.C0.XYZ, rtLmkC.Forward.C1.XYZ, rtLmkC.Forward.C2.XYZ)
                 let rotationLmkC = rotLmkC.GetEulerAngles()
@@ -187,7 +171,6 @@ module WIMOpc =
             | true -> model 
             | false -> 
                 let dist = V3d.Distance(userPos.trafo.GetModelOrigin(), con.pose.deviceToWorld.GetModelOrigin())
-                printfn"dist: %A" dist
                 if dist <= 0.1 then 
                     let newMode = {model.menuModel with menu = MenuState.HoverChangeUserWIM}
                     {model with menuModel = newMode}

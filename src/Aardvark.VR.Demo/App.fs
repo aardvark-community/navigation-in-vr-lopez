@@ -187,7 +187,6 @@ module Demo =
                     |> WIMOpc.checkHoverUserWIM kind p
                 | _ -> model
             
-            printfn"mode: %s" (model.menuModel.menu.ToString())
             let controllerMenuUpdate = MenuApp.update model.controllerInfos state vr newModel.menuModel (MenuAction.UpdateControllerPose (kind, p))
             {newModel with 
                 menuModel = controllerMenuUpdate; 
@@ -383,7 +382,7 @@ module Demo =
                     
                     let newDroneScreen = 
                         if newModel.droneControl.screen.Count.Equals(0) then 
-                            VisibleBox.createDroneScreen C4b.Red (newModel.droneControl.cameraPosition.GetModelOrigin())
+                            VisibleBox.createDroneScreen C4b.Red (newModel.droneControl.cameraPosition.GetModelOrigin() + V3d(0.2, -0.25, -0.25))
                             |> PList.single
                         else newModel.droneControl.screen
 
@@ -941,6 +940,27 @@ module Demo =
             |> Sg.trafo m.droneControl.cameraPosition
             |> Sg.onOff mkDisappear
 
+        let borderSecondCameraTest = 
+            let mkDisappear = 
+                let menuMode = m.menuModel.menu
+                
+                adaptive {
+                    let! newMenuMode = menuMode
+                    match newMenuMode with 
+                    | MenuState.DroneMode | MenuState.HoverDroneScreen -> return true 
+                    | _ -> return false
+                }
+            
+            m.droneControl.screen
+            |> AList.toASet 
+            |> ASet.map (fun b -> 
+                mkFlag m b 
+               )
+            |> Sg.set
+            |> defaultEffect
+            |> Sg.noEvents
+            |> Sg.onOff mkDisappear
+
         let borderSecondCamera = 
             let mkDisappear = 
                 let menuMode = m.menuModel.menu
@@ -1036,7 +1056,7 @@ module Demo =
                 landmarksOnWIM 
                 userPosOnWIM 
                 userPosOnAnnotationSpace |> Sg.trafo m.annotationSpaceTrafo
-                userConeOnWim
+                //userConeOnWim
                 initialUserPosOnWIM
                 //initialUserConeOnWim
             ]
@@ -1049,7 +1069,8 @@ module Demo =
                 landmarks
                 //throwRayLine
                 showSecondCamera
-                borderSecondCamera
+                borderSecondCameraTest
+                //borderSecondCamera
             ] |> Sg.ofList
 
         Sg.ofList [transformedSgs; WIMtransformedSgs; notTransformedSgs; opcs; WIMopcs]
