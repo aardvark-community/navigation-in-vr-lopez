@@ -264,15 +264,8 @@ module Demo =
                 match newModel.menuModel.menu with 
                 | Menu.MenuState.PlaceLandmarks -> 
                     let newLandmark = OpcUtilities.mkFlags id.pose.deviceToWorld 1
-                    //printfn "flag scale: %s" (newModel.landmarkOnAnnotationSpace.ToString())
                         
-                    {newModel with 
-                        landmarkOnController = newLandmark
-                        //WIMopcSpaceTrafo = Trafo3d.Translation(V3d(1000000.0, 1000000.0, 1000000.0))
-                        //WIMlandmarkOnAnnotationSpace = PList.empty
-                        //droneControl = Drone.initial;
-                        //WIMuserPos = PList.empty
-                    }
+                    {newModel with landmarkOnController = newLandmark}
                 | Menu.MenuState.Scale -> 
                     let newModel = newModel |> NavigationOpc.initialSceneInfo
                     {newModel with 
@@ -297,17 +290,13 @@ module Demo =
                             OpcUtilities.mkFlags id.pose.deviceToWorld 1
                         else newModel.userPosOnAnnotationSpace
                     
-                    let newModel = 
-                        {newModel with 
-                            cyllinderControl            = newCyllinder; 
-                            landmarkOnController        = newLandmark
-                            WIMuserPos                  = newUserPosWIM;
-                            userPosOnAnnotationSpace    = newUserPos;
-                            WIMinitialUserPos           = newInitialUserPosWIM
-                        }
-
-                    newModel 
-                    //|> PlaceLandmark.moveUserToNewPosOnAnnotationSpace
+                    {newModel with 
+                        cyllinderControl            = newCyllinder; 
+                        landmarkOnController        = newLandmark
+                        WIMuserPos                  = newUserPosWIM;
+                        userPosOnAnnotationSpace    = newUserPos;
+                        WIMinitialUserPos           = newInitialUserPosWIM
+                    }
                 | Menu.MenuState.WIM -> 
                     let newUserPosWIM = OpcUtilities.mkFlagsUser Trafo3d.Identity 1 
                     
@@ -325,16 +314,13 @@ module Demo =
                     let newInitialUserPosWIM = 
                         OpcUtilities.mkFlags (Trafo3d.Translation(V3d.One * 1000000.0)) 1
 
-                    let newModel = 
-                        {newModel with 
-                            landmarkOnController    = newLandmark
-                            userPosOnAnnotationSpace= newUserPos
-                            WIMinitialUserPos       = newInitialUserPosWIM
-                            droneControl            = Drone.initial;
-                            cyllinderControl        = PList.empty
-                        }
-                    newModel 
-                    //|> PlaceLandmark.moveUserToNewPosOnAnnotationSpace
+                    {newModel with 
+                        landmarkOnController    = newLandmark
+                        userPosOnAnnotationSpace= newUserPos
+                        WIMinitialUserPos       = newInitialUserPosWIM
+                        droneControl            = Drone.initial;
+                        cyllinderControl        = PList.empty
+                    }
                 | Menu.MenuState.Reset -> 
                     {newModel with 
                         landmarkOnController         = PList.empty;
@@ -409,24 +395,21 @@ module Demo =
                         if newModel.userPosOnAnnotationSpace.Count.Equals(0) then 
                             OpcUtilities.mkFlags id.pose.deviceToWorld 1
                         else newModel.userPosOnAnnotationSpace
-                    //let newInitialUserPosWIM1 = OpcUtilities.mkFlags (Trafo3d.Translation(V3d.One * 1000000.0)) 1
+                    let newInitialUserPosWIM1 = OpcUtilities.mkFlags (Trafo3d.Translation(V3d.One * 1000000.0)) 1
                     
 
                     let newModel = 
                         {newModel with 
                             userPosOnAnnotationSpace= newUserPos1;
-                            //WIMinitialUserPos       = newInitialUserPosWIM1;
+                            WIMinitialUserPos       = newInitialUserPosWIM1;
                             droneControl            = Drone.initial;
                             cyllinderControl        = PList.empty
                         }
 
                     newModel 
                     |> WIMOpc.moveUserToAnnotationSpaceFromWIM 
-                    
                 | _ -> newModel
-                    
             | None -> newModel
-
         | GetTrackpadPosition (con, axis, pos) -> 
             model 
                 
@@ -940,7 +923,7 @@ module Demo =
             |> Sg.trafo m.droneControl.cameraPosition
             |> Sg.onOff mkDisappear
 
-        let borderSecondCameraTest = 
+        let borderSecondCamera = 
             let mkDisappear = 
                 let menuMode = m.menuModel.menu
                 
@@ -959,34 +942,6 @@ module Demo =
             |> Sg.set
             |> defaultEffect
             |> Sg.noEvents
-            |> Sg.onOff mkDisappear
-
-        let borderSecondCamera = 
-            let mkDisappear = 
-                let menuMode = m.menuModel.menu
-                
-                adaptive {
-                    let! newMenuMode = menuMode
-                    match newMenuMode with 
-                    | MenuState.DroneMode | MenuState.HoverDroneScreen -> return true 
-                    | _ -> return false
-                }
-            let newTrafoCamera = 
-                let camPos = m.droneControl.cameraPosition
-                adaptive {
-                    let! cp = camPos 
-                    return Trafo3d.Translation(cp.GetModelOrigin() + V3d(0.2, -0.25, -0.25))
-                }
-                
-            Sg.box (Mod.constant C4b.Red) (Mod.constant (Box3d.FromSize(V3d(0.05, 3.5, 3.5))))
-            |> Sg.noEvents
-            |> Sg.trafo newTrafoCamera 
-            |> Sg.shader {
-                do! DefaultSurfaces.trafo
-                do! DefaultSurfaces.vertexColor
-                //do! DefaultSurfaces.simpleLighting
-            }
-            |> defaultEffect
             |> Sg.onOff mkDisappear
         
         let droneCylinder = 
@@ -1069,8 +1024,7 @@ module Demo =
                 landmarks
                 //throwRayLine
                 showSecondCamera
-                borderSecondCameraTest
-                //borderSecondCamera
+                borderSecondCamera
             ] |> Sg.ofList
 
         Sg.ofList [transformedSgs; WIMtransformedSgs; notTransformedSgs; opcs; WIMopcs]
