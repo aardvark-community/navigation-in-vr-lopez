@@ -180,6 +180,9 @@ module Demo =
                     |> DroneControlCenter.checkHoverScreen kind p 
                 | Menu.MenuState.HoverChangeUserWIM -> 
                     let model = 
+                        model
+                        |> WIMOpc.editMiniMap kind p
+                    let model = 
                         model 
                         |> WIMOpc.changeUserPosWIM kind p
                     
@@ -300,7 +303,9 @@ module Demo =
                 | Menu.MenuState.WIM -> 
                     let newUserPosWIM = OpcUtilities.mkFlagsUser Trafo3d.Identity 1 
                     
-                    let newModel = {newModel with WIMuserPos = newUserPosWIM}
+                    let newUserPosWIMcone = OpcUtilities.mkCone Trafo3d.Identity 1
+
+                    let newModel = {newModel with WIMuserPos = newUserPosWIM; WIMuserPosCone = newUserPosWIMcone}
 
                     let newModel = newModel |> WIMOpc.showMiniMap
                     
@@ -313,11 +318,14 @@ module Demo =
                         else newModel.userPosOnAnnotationSpace
                     let newInitialUserPosWIM = 
                         OpcUtilities.mkFlags (Trafo3d.Translation(V3d.One * 1000000.0)) 1
+                    let newInitialUserPosWIMcone = 
+                        OpcUtilities.mkCone Trafo3d.Identity 1
 
                     {newModel with 
                         landmarkOnController    = newLandmark
                         userPosOnAnnotationSpace= newUserPos
                         WIMinitialUserPos       = newInitialUserPosWIM
+                        WIMinitialUserPosCone   = newInitialUserPosWIMcone
                         droneControl            = Drone.initial;
                         cyllinderControl        = PList.empty
                     }
@@ -396,12 +404,13 @@ module Demo =
                             OpcUtilities.mkFlags id.pose.deviceToWorld 1
                         else newModel.userPosOnAnnotationSpace
                     let newInitialUserPosWIM1 = OpcUtilities.mkFlags (Trafo3d.Translation(V3d.One * 1000000.0)) 1
-                    
+                    let newInitialUserPosWIMcone = OpcUtilities.mkCone Trafo3d.Identity 1
 
                     let newModel = 
                         {newModel with 
                             userPosOnAnnotationSpace= newUserPos1;
                             WIMinitialUserPos       = newInitialUserPosWIM1;
+                            WIMinitialUserPosCone   = newInitialUserPosWIMcone;
                             droneControl            = Drone.initial;
                             cyllinderControl        = PList.empty
                         }
@@ -520,22 +529,17 @@ module Demo =
         | _ -> 
             []
 
-    let mkControllerBox (cp : IMod<Trafo3d>) (color : C4b) =
-        let newTrafo = 
-            cp
-            |> Mod.map (fun t -> 
-                let tt = V3d(t.GetModelOrigin().X, t.GetModelOrigin().Y, t.GetModelOrigin().Z + 0.07)
-                let r = t.GetOrthoNormalOrientation()
-                let rr = Rot3d.FromFrame(r.Forward.C0.XYZ, r.Forward.C1.XYZ, r.Forward.C2.XYZ)
-                let rrr = rr.GetEulerAngles()
-                let s = V3d.One
-                Trafo3d.FromComponents(s, rrr, tt)
-            )
-        Sg.cone' 20 color 0.5 5.0 
+    let mkCone (cp : MVisibleCone) (color : IMod<C4b>) =
+        Sg.cone 20 color (Mod.constant 0.5) (Mod.constant 5.0) 
             |> Sg.noEvents
             |> Sg.scale 0.01
             |> Sg.trafo (Mod.constant (Trafo3d.RotationInDegrees(V3d(-90.0,90.0,0.0))))
-            |> Sg.trafo newTrafo
+            |> Sg.trafo cp.trafo
+            |> Sg.shader {
+                do! DefaultSurfaces.trafo
+                do! DefaultSurfaces.vertexColor
+                //do! DefaultSurfaces.simpleLighting
+                }     
     
     let mkFlag (model : MModel) (box : MVisibleBox) =
         let color = mkColor model box
@@ -671,10 +675,10 @@ module Demo =
             |> Sg.noEvents
 
         let userConeOnWim = 
-            m.WIMuserPos
+            m.WIMuserPosCone
             |> AList.toASet
             |> ASet.map (fun b -> 
-                mkControllerBox b.trafo C4b.Red
+                mkCone b b.color
             )
             |> Sg.set
             |> defaultEffect
@@ -690,10 +694,10 @@ module Demo =
             |> Sg.noEvents
 
         let initialUserConeOnWim = 
-            m.WIMinitialUserPos
+            m.WIMinitialUserPosCone
             |> AList.toASet
             |> ASet.map (fun b -> 
-                mkControllerBox b.trafo C4b.Cyan
+                mkCone b b.color
             )
             |> Sg.set
             |> defaultEffect
@@ -1011,9 +1015,9 @@ module Demo =
                 landmarksOnWIM 
                 userPosOnWIM 
                 userPosOnAnnotationSpace |> Sg.trafo m.annotationSpaceTrafo
-                //userConeOnWim
+                userConeOnWim
                 initialUserPosOnWIM
-                //initialUserConeOnWim
+                initialUserConeOnWim
             ]
             |> Sg.ofList
 
@@ -1107,7 +1111,9 @@ module Demo =
             WIMlandmarkOnController     = PList.empty
             WIMlandmarkOnAnnotationSpace= PList.empty
             WIMuserPos                  = PList.empty
+            WIMuserPosCone              = PList.empty
             WIMinitialUserPos           = PList.empty
+            WIMinitialUserPosCone       = PList.empty
             userPosOnAnnotationSpace    = PList.empty
             teleportRay                 = Ray3d.Invalid
             droneControl                = Drone.initial

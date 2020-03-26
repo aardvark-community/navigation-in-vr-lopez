@@ -99,6 +99,24 @@ module WIMOpc =
                 )
             | None -> PList.empty
 
+        let newWIMuserPosCone = 
+            match userHMD with 
+            | Some pos -> 
+                newModel.WIMuserPosCone
+                |> PList.map (fun cone -> 
+                    let newLmkC = pos.pose.deviceToWorld * newModel.workSpaceTrafo.Inverse * newModel.WIMworkSpaceTrafo
+                    let rtLmkC = newLmkC.GetOrthoNormalOrientation()
+                    let rotLmkC = Rot3d.FromFrame(rtLmkC.Forward.C0.XYZ, rtLmkC.Forward.C1.XYZ, rtLmkC.Forward.C2.XYZ)
+                    let rotationLmkC = rotLmkC.GetEulerAngles()
+                    let rotationLmkC1 = V3d(0.0, 0.0, rotationLmkC.Z)
+
+                    let translationLmkC = V3d(newLmkC.GetModelOrigin().X, newLmkC.GetModelOrigin().Y, newLmkC.GetModelOrigin().Z + 0.07)
+
+                    let scaleLmkC = V3d.One
+                    {cone with trafo = Trafo3d.FromComponents(scaleLmkC, rotationLmkC1, translationLmkC)}
+                )
+            | None -> PList.empty
+
         let updateWIMLandmark = 
             newModel.landmarkOnAnnotationSpace
             |> PList.map (fun landmark -> 
@@ -116,7 +134,8 @@ module WIMOpc =
 
         {newModel with 
             WIMuserPos                      = newWIMuserPos;
-            WIMlandmarkOnAnnotationSpace    = updateWIMLandmark
+            WIMlandmarkOnAnnotationSpace    = updateWIMLandmark;
+            WIMuserPosCone                  = newWIMuserPosCone
         }
     
     let updateMiniMap kind p model : Model = 
@@ -198,11 +217,34 @@ module WIMOpc =
                     model.WIMuserPos
                     |> PList.map (fun pos -> 
                         let newTrafo = createNewTrafo con
-                        //{pos with trafo = Trafo3d.Translation(con.pose.deviceToWorld.GetModelOrigin())}
+
                         {pos with trafo = newTrafo}
                     )
                 | false -> model.WIMuserPos
             | None -> model.WIMuserPos
+
+        let newUserPosCone = 
+            match newCP with 
+            | Some pos -> 
+                match pos.backButtonPressed with 
+                | true -> 
+                    model.WIMuserPosCone
+                    |> PList.map (fun conePos -> 
+                        let newLmkC = pos.pose.deviceToWorld 
+                        let rtLmkC = newLmkC.GetOrthoNormalOrientation()
+                        let rotLmkC = Rot3d.FromFrame(rtLmkC.Forward.C0.XYZ, rtLmkC.Forward.C1.XYZ, rtLmkC.Forward.C2.XYZ)
+                        let rotationLmkC = rotLmkC.GetEulerAngles()
+                        let rotation1 = V3d(0.0, 0.0, rotationLmkC.Z)
+
+                        let translation = V3d(newLmkC.GetModelOrigin().X, newLmkC.GetModelOrigin().Y, newLmkC.GetModelOrigin().Z + 0.07)
+
+                        let scale = V3d.One
+                        
+                        let newTrafo = Trafo3d.FromComponents(scale, rotation1, translation)
+                        {conePos with trafo = newTrafo}
+                    )
+                | false -> model.WIMuserPosCone
+            | None -> model.WIMuserPosCone
 
         let newUserPosOnAnnotationSpace = 
             match newCP with 
@@ -222,7 +264,8 @@ module WIMOpc =
         
         {model with 
             WIMuserPos              = newUserPos
-            userPosOnAnnotationSpace= newUserPosOnAnnotationSpace    
+            userPosOnAnnotationSpace= newUserPosOnAnnotationSpace 
+            WIMuserPosCone          = newUserPosCone
         }
       
     let moveUserToAnnotationSpaceFromWIM model : Model = 
@@ -233,16 +276,29 @@ module WIMOpc =
             match con.backButtonPressed with 
             | true -> 
                 let upInitialWIM = model.WIMinitialUserPos |> PList.tryFirst
-                match upInitialWIM with
-                | Some p -> 
+                let upInitialWIMcone = model.WIMinitialUserPosCone |> PList.tryFirst
+                match upInitialWIM, upInitialWIMcone with
+                | Some p, Some c -> 
                     let newTrafo = createNewTrafo con
                     let updateInitialWIM = {p with trafo = newTrafo; color = C4b.Cyan}
-                    let newInitialList = 
-                        model.WIMinitialUserPos 
-                        |> PList.prepend updateInitialWIM
+                    let newInitialList = model.WIMinitialUserPos |> PList.prepend updateInitialWIM
+
+                    let newTrafoCone = 
+                        let newLmkC = con.pose.deviceToWorld 
+                        let rtLmkC = newLmkC.GetOrthoNormalOrientation()
+                        let rotLmkC = Rot3d.FromFrame(rtLmkC.Forward.C0.XYZ, rtLmkC.Forward.C1.XYZ, rtLmkC.Forward.C2.XYZ)
+                        let rotationLmkC = rotLmkC.GetEulerAngles()
+                        let rotation1 = V3d(0.0, 0.0, rotationLmkC.Z)
+
+                        let translation = V3d(newLmkC.GetModelOrigin().X, newLmkC.GetModelOrigin().Y, newLmkC.GetModelOrigin().Z + 0.07)
+
+                        let scale = V3d.One
+                        Trafo3d.FromComponents(scale, rotation1, translation)
+                    let updateInitialWIMcone = {c with trafo = newTrafoCone; color = C4b.Cyan}
+                    let newInitialConeList = model.WIMinitialUserPosCone |> PList.prepend updateInitialWIMcone
                 
-                    {model with WIMinitialUserPos = newInitialList}
-                | None -> model
+                    {model with WIMinitialUserPos = newInitialList; WIMinitialUserPosCone = newInitialConeList}
+                | _, _ -> model
                 
             | false -> 
                 let upWIM = model.WIMuserPos |> PList.tryFirst

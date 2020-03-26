@@ -3,6 +3,7 @@
 open Aardvark.Base.Incremental
 open Aardvark.Vr
 open Aardvark.Base
+open Aardvark.Base.IndexedGeometryPrimitives
 
 
 type ControllerKind =
@@ -135,6 +136,33 @@ module VisibleBox =
                 geometry = Box3d.FromSize(V3d(0.05, 3.5, 3.5))
         }
 
+    
+
+[<DomainType>]
+type VisibleCone = {
+    geometry : IndexedGeometry
+    color    : C4b
+    trafo    : Trafo3d
+}
+
+module VisibleCone = 
+
+    let initial = 
+        {
+            color    = C4b.Red
+            geometry = Cone.solidCone V3d.Zero V3d.Zero 1.0 1.0 50 C4b.Red
+            trafo    = Trafo3d.Identity
+            
+        }
+    let createVisibleCone (color : C4b) (position : V3d) = 
+        {
+            initial 
+                with 
+                color = color 
+                trafo = Trafo3d.Translation(position)
+                geometry = Cone.solidCone position V3d.Zero 5.0 0.5 20 color
+                
+        }
 
 [<DomainType>]
 type VisibleSphere = {

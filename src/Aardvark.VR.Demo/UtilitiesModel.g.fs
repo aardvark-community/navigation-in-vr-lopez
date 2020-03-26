@@ -192,6 +192,61 @@ module Mutable =
                 }
     
     
+    type MVisibleCone(__initial : Demo.VisibleCone) =
+        inherit obj()
+        let mutable __current : Aardvark.Base.Incremental.IModRef<Demo.VisibleCone> = Aardvark.Base.Incremental.EqModRef<Demo.VisibleCone>(__initial) :> Aardvark.Base.Incremental.IModRef<Demo.VisibleCone>
+        let _geometry = ResetMod.Create(__initial.geometry)
+        let _color = ResetMod.Create(__initial.color)
+        let _trafo = ResetMod.Create(__initial.trafo)
+        
+        member x.geometry = _geometry :> IMod<_>
+        member x.color = _color :> IMod<_>
+        member x.trafo = _trafo :> IMod<_>
+        
+        member x.Current = __current :> IMod<_>
+        member x.Update(v : Demo.VisibleCone) =
+            if not (System.Object.ReferenceEquals(__current.Value, v)) then
+                __current.Value <- v
+                
+                ResetMod.Update(_geometry,v.geometry)
+                ResetMod.Update(_color,v.color)
+                ResetMod.Update(_trafo,v.trafo)
+                
+        
+        static member Create(__initial : Demo.VisibleCone) : MVisibleCone = MVisibleCone(__initial)
+        static member Update(m : MVisibleCone, v : Demo.VisibleCone) = m.Update(v)
+        
+        override x.ToString() = __current.Value.ToString()
+        member x.AsString = sprintf "%A" __current.Value
+        interface IUpdatable<Demo.VisibleCone> with
+            member x.Update v = x.Update v
+    
+    
+    
+    [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
+    module VisibleCone =
+        [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
+        module Lens =
+            let geometry =
+                { new Lens<Demo.VisibleCone, Aardvark.Base.IndexedGeometry>() with
+                    override x.Get(r) = r.geometry
+                    override x.Set(r,v) = { r with geometry = v }
+                    override x.Update(r,f) = { r with geometry = f r.geometry }
+                }
+            let color =
+                { new Lens<Demo.VisibleCone, Aardvark.Base.C4b>() with
+                    override x.Get(r) = r.color
+                    override x.Set(r,v) = { r with color = v }
+                    override x.Update(r,f) = { r with color = f r.color }
+                }
+            let trafo =
+                { new Lens<Demo.VisibleCone, Aardvark.Base.Trafo3d>() with
+                    override x.Get(r) = r.trafo
+                    override x.Set(r,v) = { r with trafo = v }
+                    override x.Update(r,f) = { r with trafo = f r.trafo }
+                }
+    
+    
     type MVisibleSphere(__initial : Demo.VisibleSphere) =
         inherit obj()
         let mutable __current : Aardvark.Base.Incremental.IModRef<Demo.VisibleSphere> = Aardvark.Base.Incremental.EqModRef<Demo.VisibleSphere>(__initial) :> Aardvark.Base.Incremental.IModRef<Demo.VisibleSphere>

@@ -107,7 +107,9 @@ type Model =
         WIMlandmarkOnController     : plist<VisibleBox>
         WIMlandmarkOnAnnotationSpace: plist<VisibleBox>
         WIMuserPos                  : plist<VisibleBox>
+        WIMuserPosCone              : plist<VisibleCone>
         WIMinitialUserPos           : plist<VisibleBox>
+        WIMinitialUserPosCone       : plist<VisibleCone>
         userPosOnAnnotationSpace    : plist<VisibleBox>
         teleportRay                 : Ray3d
         droneControl                : Drone
@@ -186,7 +188,9 @@ module Model =
             WIMlandmarkOnController     = PList.empty
             WIMlandmarkOnAnnotationSpace= PList.empty
             WIMuserPos                  = PList.empty
+            WIMuserPosCone              = PList.empty
             WIMinitialUserPos           = PList.empty
+            WIMinitialUserPosCone       = PList.empty
             userPosOnAnnotationSpace    = PList.empty
             teleportRay                 = Ray3d.Invalid
             droneControl                = Drone.initial
