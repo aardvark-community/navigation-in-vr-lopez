@@ -17,6 +17,7 @@ type MenuState =
 | Reset
 | Teleportation
 | DroneMode
+| DroneModeController
 | HoverDroneScreen
 | HoverChangeUserWIM
 

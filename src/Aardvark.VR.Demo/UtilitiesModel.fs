@@ -135,6 +135,17 @@ module VisibleBox =
                 id = System.Guid.NewGuid().ToString()
                 geometry = Box3d.FromSize(V3d(0.05, 3.5, 3.5))
         }
+    
+    let createDroneScreenOnController (color : C4b) (position : V3d) = 
+        {
+            initial 
+                with
+                color = color
+                trafo = Trafo3d.Translation(position)
+                id = System.Guid.NewGuid().ToString()
+                //geometry = Box3d.FromSize(V3d(0.05, 1.2, 1.2))
+                geometry = Box3d.FromCenterAndSize(position, V3d(0.05, 1.2, 1.2))
+        }
 
     
 

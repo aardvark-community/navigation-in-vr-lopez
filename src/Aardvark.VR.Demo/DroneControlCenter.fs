@@ -14,6 +14,7 @@ module DroneControlCenter =
     open Aardvark.Base.MapExtImplementation
     open Demo
     open Demo.Menu
+    open System
 
     let moveDrone kind p model : Model = 
         let newControllersPosition = 
@@ -130,5 +131,45 @@ module DroneControlCenter =
                     }
                 {model  with droneControl = newDroneCameraPos}
             | false -> model 
+        | None -> model
+    
+    let moveScreenAttachedController kind p model : Model = 
+        let newControllersPosition = 
+            model 
+            |> OpcUtilities.updateControllersInfo kind p
+        
+        let model = { model with controllerInfos = newControllersPosition}
+        
+        let controllerPos = model.menuModel.controllerMenuSelector
+        let newCP = model.controllerInfos |> HMap.tryFind controllerPos.kind
+ 
+        match newCP with 
+        | Some con -> 
+            let newLmkC = con.pose.deviceToWorld 
+            let rtLmkC = newLmkC.GetOrthoNormalOrientation()
+            let rotLmkC = Rot3d.FromFrame(rtLmkC.Forward.C0.XYZ, rtLmkC.Forward.C1.XYZ, rtLmkC.Forward.C2.XYZ)
+            let rotation = rotLmkC.GetEulerAngles()
+            let rotation1 = V3d(0.0, 0.0, rotation.Z - Math.PI / 2.0)
+
+            let translation = V3d(newLmkC.GetModelOrigin().X, newLmkC.GetModelOrigin().Y - 1.3, newLmkC.GetModelOrigin().Z - 0.8)
+            let translationCameraPosition = V3d(newLmkC.GetModelOrigin().X, newLmkC.GetModelOrigin().Y, newLmkC.GetModelOrigin().Z)
+
+            let scale = V3d.One
+
+            let newTrafo = Trafo3d.FromComponents(scale, rotation1, translation) //* Trafo3d.RotationInDegrees(V3d(0.0,0.0,90.0))
+            let newTrafoCameraPosition = Trafo3d.FromComponents(scale, rotation1, translationCameraPosition) //* Trafo3d.RotationInDegrees(V3d(0.0,0.0,90.0))
+
+            let newScreenPos = 
+                model.droneControl.screen 
+                |> PList.map (fun screen -> 
+                    {screen with trafo = newTrafo }
+                )
+                    
+            let newDroneCameraPos = 
+                {model.droneControl with 
+                    cameraPosition = newTrafoCameraPosition
+                    screen = newScreenPos    
+                }
+            {model  with droneControl = newDroneCameraPos}
         | None -> model
 

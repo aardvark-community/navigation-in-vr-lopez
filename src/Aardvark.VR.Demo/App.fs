@@ -178,6 +178,13 @@ module Demo =
                     
                     model 
                     |> DroneControlCenter.checkHoverScreen kind p 
+                | Menu.MenuState.DroneModeController -> 
+                    let model = 
+                        model 
+                        |> DroneControlCenter.moveDrone kind p
+
+                    model
+                    |> DroneControlCenter.moveScreenAttachedController kind p
                 | Menu.MenuState.HoverChangeUserWIM -> 
                     let model = 
                         model
@@ -377,6 +384,38 @@ module Demo =
                     let newDroneScreen = 
                         if newModel.droneControl.screen.Count.Equals(0) then 
                             VisibleBox.createDroneScreen C4b.Red (newModel.droneControl.cameraPosition.GetModelOrigin() + V3d(0.2, -0.25, -0.25))
+                            |> PList.single
+                        else newModel.droneControl.screen
+
+                    let updateDrones = 
+                        {newModel.droneControl with 
+                            drone = newDrone; 
+                            screen = newDroneScreen
+                        }
+
+                    let newModel = 
+                        {newModel with 
+                            landmarkOnController            = PList.empty;
+                            WIMopcSpaceTrafo                = Trafo3d.Translation(V3d(1000000.0, 1000000.0, 1000000.0)); 
+                            WIMlandmarkOnAnnotationSpace    = PList.empty;
+                            WIMuserPos                      = PList.empty;
+                            droneControl                    = updateDrones
+                            cyllinderControl                = PList.empty
+                        }
+
+                    newModel
+                    |> DroneControlCenter.moveUserToDronePos
+                | Menu.MenuState.DroneModeController -> 
+                    let newDrone = 
+                        if newModel.droneControl.drone.Count.Equals(0) then 
+                            OpcUtilities.mkDrone id.pose.deviceToWorld 1
+                        else newModel.droneControl.drone
+
+                    let newDroneScreen = 
+                        if newModel.droneControl.screen.Count.Equals(0) then 
+                            let boxCenter = V3d(newModel.droneControl.cameraPosition.GetModelOrigin().X, newModel.droneControl.cameraPosition.GetModelOrigin().Y, newModel.droneControl.cameraPosition.GetModelOrigin().Z)
+                            VisibleBox.createDroneScreenOnController C4b.Red boxCenter
+                            //VisibleBox.createDroneScreenOnController C4b.Red (newModel.droneControl.cameraPosition.GetModelOrigin() + V3d(0.1, 0.0, 0.0))
                             |> PList.single
                         else newModel.droneControl.screen
 
@@ -894,7 +933,7 @@ module Demo =
                 let cen = p + d
                 CameraView.lookAt loc cen V3d.OOI 
                     |> CameraView.viewTrafo 
-                ) dronePos droneDir
+                ) dronePos dirHMD
             )
             // since our render target size is dynamic, we compute a proj trafo using standard techniques
             |> Sg.projTrafo (size |> Mod.map (fun actualSize -> 
@@ -927,6 +966,29 @@ module Demo =
             |> Sg.trafo m.droneControl.cameraPosition
             |> Sg.onOff mkDisappear
 
+        let showSecondCameraOnController = 
+            let mkDisappear = 
+                let menuMode = m.menuModel.menu
+                
+                adaptive {
+                    let! newMenuMode = menuMode
+                    match newMenuMode with 
+                    | MenuState.DroneModeController -> return true 
+                    | _ -> return false
+                }
+
+            let boxCenter = V3d(m.droneControl.cameraPosition.GetValue().GetModelOrigin().X, m.droneControl.cameraPosition.GetValue().GetModelOrigin().Y, m.droneControl.cameraPosition.GetValue().GetModelOrigin().Z + 0.5)
+
+            Sg.box (Mod.constant C4b.White) (Mod.constant (Box3d.FromCenterAndSize(boxCenter, V3d(0.1, 1.0, 1.0))))
+            |> Sg.diffuseTexture offscreenTexture
+            |> Sg.shader {
+                do! DefaultSurfaces.trafo
+                do! DefaultSurfaces.diffuseTexture
+                //do! DefaultSurfaces.simpleLighting
+            }
+            |> Sg.trafo m.droneControl.cameraPosition
+            |> Sg.onOff mkDisappear
+
         let borderSecondCamera = 
             let mkDisappear = 
                 let menuMode = m.menuModel.menu
@@ -935,6 +997,27 @@ module Demo =
                     let! newMenuMode = menuMode
                     match newMenuMode with 
                     | MenuState.DroneMode | MenuState.HoverDroneScreen -> return true 
+                    | _ -> return false
+                }
+            
+            m.droneControl.screen
+            |> AList.toASet 
+            |> ASet.map (fun b -> 
+                mkFlag m b 
+               )
+            |> Sg.set
+            |> defaultEffect
+            |> Sg.noEvents
+            |> Sg.onOff mkDisappear
+
+        let borderSecondCameraOnController = 
+            let mkDisappear = 
+                let menuMode = m.menuModel.menu
+                
+                adaptive {
+                    let! newMenuMode = menuMode
+                    match newMenuMode with 
+                    | MenuState.DroneModeController -> return true 
                     | _ -> return false
                 }
             
@@ -968,7 +1051,7 @@ module Demo =
                 adaptive {
                     let! newMenuMode = menuMode
                     match newMenuMode with 
-                    | MenuState.DroneMode | MenuState.HoverDroneScreen -> return true 
+                    | MenuState.DroneMode | MenuState.HoverDroneScreen | MenuState.DroneModeController -> return true 
                     | _ -> return false
                 }
 
@@ -1029,6 +1112,8 @@ module Demo =
                 //throwRayLine
                 showSecondCamera
                 borderSecondCamera
+                showSecondCameraOnController
+                borderSecondCameraOnController
             ] |> Sg.ofList
 
         Sg.ofList [transformedSgs; WIMtransformedSgs; notTransformedSgs; opcs; WIMopcs]
