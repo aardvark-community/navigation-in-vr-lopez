@@ -37,7 +37,7 @@ module DroneControlCenter =
                     newModel.droneControl.drone
                     |> PList.map (fun drone -> 
                         let newTrafo = drone.trafo.GetModelOrigin() + controllDir.XYZ * 0.05
-                        {drone with trafo = Trafo3d.Translation(newTrafo) }
+                        {drone with trafo = Trafo3d.Translation(newTrafo)}
                         
                     )
 
@@ -151,7 +151,7 @@ module DroneControlCenter =
             let rotation = rotLmkC.GetEulerAngles()
             let rotation1 = V3d(0.0, 0.0, rotation.Z - Math.PI / 2.0)
 
-            let translation = V3d(newLmkC.GetModelOrigin().X, newLmkC.GetModelOrigin().Y - 1.3, newLmkC.GetModelOrigin().Z - 0.8)
+            let translation = V3d(newLmkC.GetModelOrigin().X + 0.1, newLmkC.GetModelOrigin().Y + 0.6, newLmkC.GetModelOrigin().Z )
             let translationCameraPosition = V3d(newLmkC.GetModelOrigin().X, newLmkC.GetModelOrigin().Y, newLmkC.GetModelOrigin().Z)
 
             let scale = V3d.One
@@ -162,7 +162,7 @@ module DroneControlCenter =
             let newScreenPos = 
                 model.droneControl.screen 
                 |> PList.map (fun screen -> 
-                    {screen with trafo = newTrafo }
+                    {screen with trafo = newTrafo}
                 )
                     
             let newDroneCameraPos = 

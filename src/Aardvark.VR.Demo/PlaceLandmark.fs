@@ -85,7 +85,11 @@ module PlaceLandmark =
             let newModel = 
                 let updateLandmarkPos = 
                     newModel.landmarkOnController
-                    |> PList.map (fun landmark -> {landmark with trafo = id.pose.deviceToWorld})
+                    |> PList.map (fun landmark -> 
+                        {landmark with 
+                            trafo = id.pose.deviceToWorld
+                        }
+                    )
 
                 match id.backButtonPressed with 
                 | true -> 

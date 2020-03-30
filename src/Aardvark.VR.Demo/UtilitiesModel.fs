@@ -143,8 +143,7 @@ module VisibleBox =
                 color = color
                 trafo = Trafo3d.Translation(position)
                 id = System.Guid.NewGuid().ToString()
-                //geometry = Box3d.FromSize(V3d(0.05, 1.2, 1.2))
-                geometry = Box3d.FromCenterAndSize(position, V3d(0.05, 1.2, 1.2))
+                geometry = Box3d.FromSize(V3d(0.05, 1.2, 1.2))
         }
 
     

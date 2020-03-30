@@ -268,6 +268,13 @@ module Demo =
 
             let newModel = {newModel with menuModel = controllerMenuUpdate}
             
+            let getLandmarkScale = 
+                newModel.landmarkOnAnnotationSpace
+                |> PList.map (fun x -> 
+                    let ttt = x.geometry.Size
+                    printfn "scale: %A" ttt
+                )
+
             let controllerPos = newModel.controllerInfos |> HMap.tryFind kind
             match controllerPos with 
             | Some id -> 
@@ -337,18 +344,19 @@ module Demo =
                         cyllinderControl        = PList.empty
                     }
                 | Menu.MenuState.Reset -> 
-                    {newModel with 
-                        landmarkOnController         = PList.empty;
-                        landmarkOnAnnotationSpace    = PList.empty;
-                        WIMopcSpaceTrafo             = Trafo3d.Translation(V3d(1000000.0, 1000000.0, 1000000.0));
-                        WIMlandmarkOnAnnotationSpace = PList.empty;
-                        WIMuserPos                   = PList.empty;
-                        opcSpaceTrafo                = Trafo3d.FromBasis(V3d(0.0138907544072255, 0.0370928394273679, 0.410690910035505), V3d(0.11636514267386, 0.393870197365478, -0.0395094556451799), V3d(-0.395603213079913, 0.117157783795495, 0.0027988969790869), V3d(-57141.4217354136, 16979.9987604353, -1399135.09579421));
-                        annotationSpaceTrafo         = Trafo3d.Identity;
-                        workSpaceTrafo               = Trafo3d.Identity;
-                        droneControl                 = Drone.initial;
-                        cyllinderControl             = PList.empty
-                    }
+                    initial
+                    //{newModel with 
+                    //    landmarkOnController         = PList.empty;
+                    //    landmarkOnAnnotationSpace    = PList.empty;
+                    //    WIMopcSpaceTrafo             = Trafo3d.Translation(V3d(1000000.0, 1000000.0, 1000000.0));
+                    //    WIMlandmarkOnAnnotationSpace = PList.empty;
+                    //    WIMuserPos                   = PList.empty;
+                    //    opcSpaceTrafo                = Trafo3d.FromBasis(V3d(0.0138907544072255, 0.0370928394273679, 0.410690910035505), V3d(0.11636514267386, 0.393870197365478, -0.0395094556451799), V3d(-0.395603213079913, 0.117157783795495, 0.0027988969790869), V3d(-57141.4217354136, 16979.9987604353, -1399135.09579421));
+                    //    annotationSpaceTrafo         = Trafo3d.Identity;
+                    //    workSpaceTrafo               = Trafo3d.Identity;
+                    //    droneControl                 = Drone.initial;
+                    //    cyllinderControl             = PList.empty
+                    //}
                 | Menu.MenuState.Teleportation -> 
                     let controllTrafo = id.pose.deviceToWorld
 
@@ -413,9 +421,8 @@ module Demo =
 
                     let newDroneScreen = 
                         if newModel.droneControl.screen.Count.Equals(0) then 
-                            let boxCenter = V3d(newModel.droneControl.cameraPosition.GetModelOrigin().X, newModel.droneControl.cameraPosition.GetModelOrigin().Y, newModel.droneControl.cameraPosition.GetModelOrigin().Z)
-                            VisibleBox.createDroneScreenOnController C4b.Red boxCenter
-                            //VisibleBox.createDroneScreenOnController C4b.Red (newModel.droneControl.cameraPosition.GetModelOrigin() + V3d(0.1, 0.0, 0.0))
+                            //VisibleBox.createDroneScreenOnController C4b.Red (id.pose.deviceToWorld.GetModelOrigin())
+                            VisibleBox.createDroneScreenOnController C4b.Red (newModel.droneControl.cameraPosition.GetModelOrigin() + V3d(0.1, 0.0, 0.0))
                             |> PList.single
                         else newModel.droneControl.screen
 
@@ -1112,8 +1119,8 @@ module Demo =
                 //throwRayLine
                 showSecondCamera
                 borderSecondCamera
-                showSecondCameraOnController
                 borderSecondCameraOnController
+                showSecondCameraOnController
             ] |> Sg.ofList
 
         Sg.ofList [transformedSgs; WIMtransformedSgs; notTransformedSgs; opcs; WIMopcs]
