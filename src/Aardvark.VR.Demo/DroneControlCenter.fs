@@ -126,7 +126,7 @@ module DroneControlCenter =
                     
                 let newDroneCameraPos = 
                     {model.droneControl with 
-                        cameraPosition = Trafo3d.Translation(con.pose.deviceToWorld.GetModelOrigin())
+                        cameraPosition = model.droneControl.initControlTrafo * Trafo3d.Translation(con.pose.deviceToWorld.GetModelOrigin())
                         screen = newScreenPos    
                     }
                 {model  with droneControl = newDroneCameraPos}

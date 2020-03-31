@@ -1141,8 +1141,14 @@ module Demo =
             ttt
             
         let rotateBoxInit = false
+        let marcPath = @"C:\Users\lopez\Desktop\VictoriaCrater\HiRISE_VictoriaCrater_SuperResolution"
+        let publishPath = @"..\data"
+        let path = 
+            if System.IO.Directory.Exists publishPath then publishPath
+            elif System.IO.Directory.Exists marcPath then marcPath
+            else failwithf "could not find data dir. current directory i: %s" System.Environment.CurrentDirectory
         let patchHierarchiesInit = 
-            OpcViewerFunc.patchHierarchiesImport "C:\Users\lopez\Desktop\VictoriaCrater\HiRISE_VictoriaCrater_SuperResolution"
+            OpcViewerFunc.patchHierarchiesImport path //"..\bin\data" //"C:\Users\lopez\Desktop\VictoriaCrater\HiRISE_VictoriaCrater_SuperResolution"
 
         let boundingBoxInit = 
             OpcViewerFunc.boxImport (patchHierarchiesInit)
@@ -1159,6 +1165,8 @@ module Demo =
         let cameraStateInit = 
             OpcViewerFunc.restoreCamStateImport boundingBoxInit V3d.OOI
 
+        Log.line "using path: %s" path
+        //C:\Users\lopez\Desktop\VictoriaCrater\HiRISE_VictoriaCrater_SuperResolution
         let startOpcTrafo = Trafo3d.FromBasis(V3d(0.0138907544072255, 0.0370928394273679, 0.410690910035505), V3d(0.11636514267386, 0.393870197365478, -0.0395094556451799), V3d(-0.395603213079913, 0.117157783795495, 0.0027988969790869), V3d(-57141.4217354136, 16979.9987604353, -1399135.09579421))
         {
             text                        = "some text"
@@ -1172,7 +1180,7 @@ module Demo =
             patchHierarchies            = patchHierarchiesInit
             boundingBox                 = boundingBoxInit
             opcInfos                    = opcInfosInit
-            opcAttributes               = SurfaceAttributes.initModel "C:\Users\lopez\Desktop\VictoriaCrater\HiRISE_VictoriaCrater_SuperResolution"
+            opcAttributes               = SurfaceAttributes.initModel path //"C:\Users\lopez\Desktop\VictoriaCrater\HiRISE_VictoriaCrater_SuperResolution"
             mainFrustum                 = Frustum.perspective 60.0 0.01 1000.0 1.0
             rotateBox                   = rotateBoxInit
             pickingModel                = OpcViewer.Base.Picking.PickingModel.initial
