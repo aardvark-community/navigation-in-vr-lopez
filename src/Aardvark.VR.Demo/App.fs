@@ -463,6 +463,17 @@ module Demo =
 
                     newModel 
                     |> WIMOpc.moveUserToAnnotationSpaceFromWIM 
+                | Menu.MenuState.HoverDroneScreen -> 
+                    let newInitConTrafo = 
+                        newModel 
+                        |> OpcUtilities.getWorldTrafoIfBackPressed kind
+                    let updateDrones = 
+                        {newModel.droneControl with 
+                            initControlTrafo = Trafo3d.Translation(newInitConTrafo.GetModelOrigin())
+                            initCameraPosition = newModel.droneControl.cameraPosition
+                        }
+                    
+                    {newModel with droneControl = updateDrones}
                 | _ -> newModel
             | None -> newModel
         | GetTrackpadPosition (con, axis, pos) -> 

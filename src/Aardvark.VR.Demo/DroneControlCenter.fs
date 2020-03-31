@@ -94,7 +94,7 @@ module DroneControlCenter =
             | false -> 
                 let dist = V3d.Distance(con.pose.deviceToWorld.GetModelOrigin(), screen.trafo.GetModelOrigin())
                 printfn "dist: %A" dist
-                if dist <= 1.15 then 
+                if dist <= 5.15 then 
                     let newMode = {model.menuModel with menu = MenuState.HoverDroneScreen}
                     {model with menuModel = newMode}
                 else 
@@ -117,16 +117,17 @@ module DroneControlCenter =
         | Some con -> 
             match con.backButtonPressed with 
             | true -> 
+                let shiftTrafo = model.droneControl.initCameraPosition * Trafo3d.Translation(model.droneControl.initControlTrafo.GetModelOrigin()).Inverse 
                 let newScreenPos = 
                     model.droneControl.screen 
                     |> PList.map (fun screen -> 
-                        let newTrafo = Trafo3d.Translation(V3d(con.pose.deviceToWorld.GetModelOrigin().X + 0.2, con.pose.deviceToWorld.GetModelOrigin().Y, con.pose.deviceToWorld.GetModelOrigin().Z))
+                        let newTrafo = shiftTrafo * Trafo3d.Translation(V3d(con.pose.deviceToWorld.GetModelOrigin().X + 0.2, con.pose.deviceToWorld.GetModelOrigin().Y - 0.1, con.pose.deviceToWorld.GetModelOrigin().Z - 0.2))
                         {screen with trafo = newTrafo}
                     )
                     
                 let newDroneCameraPos = 
                     {model.droneControl with 
-                        cameraPosition = model.droneControl.initControlTrafo * Trafo3d.Translation(con.pose.deviceToWorld.GetModelOrigin())
+                        cameraPosition = shiftTrafo * Trafo3d.Translation(con.pose.deviceToWorld.GetModelOrigin())
                         screen = newScreenPos    
                     }
                 {model  with droneControl = newDroneCameraPos}

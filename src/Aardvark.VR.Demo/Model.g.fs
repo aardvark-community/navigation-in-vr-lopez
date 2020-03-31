@@ -55,12 +55,14 @@ module Mutable =
         let _droneCamera = ResetMod.Create(__initial.droneCamera)
         let _cameraPosition = ResetMod.Create(__initial.cameraPosition)
         let _initControlTrafo = ResetMod.Create(__initial.initControlTrafo)
+        let _initCameraPosition = ResetMod.Create(__initial.initCameraPosition)
         
         member x.drone = _drone :> alist<_>
         member x.screen = _screen :> alist<_>
         member x.droneCamera = _droneCamera :> IMod<_>
         member x.cameraPosition = _cameraPosition :> IMod<_>
         member x.initControlTrafo = _initControlTrafo :> IMod<_>
+        member x.initCameraPosition = _initCameraPosition :> IMod<_>
         
         member x.Current = __current :> IMod<_>
         member x.Update(v : Demo.Main.Drone) =
@@ -72,6 +74,7 @@ module Mutable =
                 ResetMod.Update(_droneCamera,v.droneCamera)
                 ResetMod.Update(_cameraPosition,v.cameraPosition)
                 ResetMod.Update(_initControlTrafo,v.initControlTrafo)
+                ResetMod.Update(_initCameraPosition,v.initCameraPosition)
                 
         
         static member Create(__initial : Demo.Main.Drone) : MDrone = MDrone(__initial)
@@ -117,6 +120,12 @@ module Mutable =
                     override x.Get(r) = r.initControlTrafo
                     override x.Set(r,v) = { r with initControlTrafo = v }
                     override x.Update(r,f) = { r with initControlTrafo = f r.initControlTrafo }
+                }
+            let initCameraPosition =
+                { new Lens<Demo.Main.Drone, Aardvark.Base.Trafo3d>() with
+                    override x.Get(r) = r.initCameraPosition
+                    override x.Set(r,v) = { r with initCameraPosition = v }
+                    override x.Update(r,f) = { r with initCameraPosition = f r.initCameraPosition }
                 }
     
     

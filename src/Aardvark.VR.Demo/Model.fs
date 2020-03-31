@@ -35,6 +35,7 @@ type Drone =
         droneCamera     : CameraView
         cameraPosition  : Trafo3d
         initControlTrafo : Trafo3d
+        initCameraPosition : Trafo3d
     }
 module Drone = 
     let initial = 
@@ -44,6 +45,7 @@ module Drone =
             droneCamera     = CameraView.lookAt (V3d.III * 3.0) V3d.Zero V3d.OOI
             cameraPosition  = Trafo3d.Identity
             initControlTrafo = Trafo3d.Identity
+            initCameraPosition = Trafo3d.Identity
         }
 
 [<DomainType>]
