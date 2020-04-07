@@ -1121,6 +1121,7 @@ module Demo =
             |> Sg.onOff mkDisappearInsideCylinder
             |> Sg.noEvents
 
+        
         let transformedSgs = 
             [
                 landmarksOnAnnotationSpace

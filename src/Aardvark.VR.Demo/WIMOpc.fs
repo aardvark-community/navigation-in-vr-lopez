@@ -322,11 +322,39 @@ module WIMOpc =
                             let newOpcSpace = model.initOpcSpaceTrafo * newWorkSpace
                             let newFlagSpace = model.initAnnotationSpaceTrafo * newWorkSpace
 
+                            let newHMD = model.controllerInfos |> HMap.tryFind ControllerKind.HMD
+                            let updateHMDorientation = 
+                                match newHMD with 
+                                | Some h -> 
+                                    let newHMDtrafo = 
+                                        let newLmkC = con.pose.deviceToWorld 
+                                        let rtLmkC = newLmkC.GetOrthoNormalOrientation()
+                                        let rotLmkC = Rot3d.FromFrame(rtLmkC.Forward.C0.XYZ, rtLmkC.Forward.C1.XYZ, rtLmkC.Forward.C2.XYZ)
+                                        let rotation = rotLmkC.GetEulerAngles()
+
+                                        let translation = h.pose.deviceToWorld.GetModelOrigin() //V3d(newLmkC.GetModelOrigin().X, newLmkC.GetModelOrigin().Y, newLmkC.GetModelOrigin().Z + 0.07)
+
+                                        let scale = V3d.One
+                                        Trafo3d.FromComponents(scale, rotation, translation)
+
+                                    {h.pose with deviceToWorld = newHMDtrafo}
+                                    
+                                | None -> Aardvark.Vr.Pose.none
+
+                            let newControllerInfo = 
+                                model.controllerInfos
+                                |> HMap.map (fun ck ci -> 
+                                    if ck.Equals(ControllerKind.HMD) then 
+                                        {ci with pose = updateHMDorientation}
+                                    else ci
+                                )
+
                             {model with 
                                 WIMuserPos                  = updatePosWIMspace
                                 workSpaceTrafo              = newWorkSpace
                                 opcSpaceTrafo               = newOpcSpace
                                 annotationSpaceTrafo        = newFlagSpace
+                                controllerInfos             = newControllerInfo
                             }
                         
                         | _ -> model
