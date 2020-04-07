@@ -100,16 +100,18 @@ module PlaceLandmark =
                     match landMarkOnController with 
                     | Some landmark ->
                         let updateLandmark = 
+                            let newTrafo = Trafo3d.Translation(id.pose.deviceToWorld.GetModelOrigin())
                             {landmark with 
-                                trafo = id.pose.deviceToWorld * newModel.WIMworkSpaceTrafo.Inverse
+                                trafo = newTrafo * newModel.WIMworkSpaceTrafo.Inverse //id.pose.deviceToWorld * newModel.WIMworkSpaceTrafo.Inverse
                             }
                         let newlandMarkOnAnnotationSpace = 
                             newModel.landmarkOnAnnotationSpace
                             |> PList.prepend updateLandmark
                             
                         let updateWIMLandmark = 
+                            let newTrafo = Trafo3d.Translation(id.pose.deviceToWorld.GetModelOrigin())
                             {landmark with 
-                                trafo = id.pose.deviceToWorld 
+                                trafo = newTrafo //id.pose.deviceToWorld 
                             }
                         let newlandMarkOnWIMAnnotationSpace = 
                             newModel.WIMlandmarkOnAnnotationSpace

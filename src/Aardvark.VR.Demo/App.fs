@@ -139,7 +139,6 @@ module Demo =
 
                     model
                     |> CyllinderCenter.controlCenter kind p
-
                 | Menu.MenuState.WIM -> 
                     let newModel = 
                         model 
