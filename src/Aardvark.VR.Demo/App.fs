@@ -131,10 +131,15 @@ module Demo =
                 | Menu.MenuState.Cyllinder -> 
                     let model = 
                         model
+                        |> WIMOpc.checkHoverUserWIM kind p
+
+                    let model = 
+                        model
                         |> CyllinderCenter.checkInside kind p
 
                     model
                     |> CyllinderCenter.controlCenter kind p
+
                 | Menu.MenuState.WIM -> 
                     let newModel = 
                         model 
@@ -939,6 +944,22 @@ module Demo =
                 let! hmd = findHMD
                 return hmd.Forward.C1.XYZ    
             }
+
+        let dirController = 
+            let controllerPos = m.menuModel.controllerMenuSelector 
+            let findHMD = 
+                m.controllerInfos
+                |> AMap.toMod
+                |> Mod.bind (fun ci -> 
+                    let test = ci |> HMap.tryFind (controllerPos.kind.GetValue())
+                    match test with 
+                    | Some id -> id.pose.deviceToWorld
+                    | None -> Mod.constant Trafo3d.Identity
+                )
+            adaptive {
+                let! hmd = findHMD
+                return hmd.Forward.C1.XYZ    
+            }
             
         let offscreenTask = 
             opcs
@@ -951,7 +972,7 @@ module Demo =
                 let cen = p + d
                 CameraView.lookAt loc cen V3d.OOI 
                     |> CameraView.viewTrafo 
-                ) dronePos dirHMD
+                ) dronePos dirController
             )
             // since our render target size is dynamic, we compute a proj trafo using standard techniques
             |> Sg.projTrafo (size |> Mod.map (fun actualSize -> 
@@ -995,9 +1016,9 @@ module Demo =
                     | _ -> return false
                 }
 
-            let boxCenter = V3d(m.droneControl.cameraPosition.GetValue().GetModelOrigin().X, m.droneControl.cameraPosition.GetValue().GetModelOrigin().Y, m.droneControl.cameraPosition.GetValue().GetModelOrigin().Z + 0.5)
+            let boxCenter = V3d(m.droneControl.cameraPosition.GetValue().GetModelOrigin().X, m.droneControl.cameraPosition.GetValue().GetModelOrigin().Y, m.droneControl.cameraPosition.GetValue().GetModelOrigin().Z + 0.25)
 
-            Sg.box (Mod.constant C4b.White) (Mod.constant (Box3d.FromCenterAndSize(boxCenter, V3d(0.1, 1.0, 1.0))))
+            Sg.box (Mod.constant C4b.White) (Mod.constant (Box3d.FromCenterAndSize(boxCenter, V3d(0.1, 0.5, 0.5))))
             |> Sg.diffuseTexture offscreenTexture
             |> Sg.shader {
                 do! DefaultSurfaces.trafo
@@ -1130,7 +1151,7 @@ module Demo =
                 //throwRayLine
                 showSecondCamera
                 borderSecondCamera
-                borderSecondCameraOnController
+                //borderSecondCameraOnController
                 showSecondCameraOnController
             ] |> Sg.ofList
 
