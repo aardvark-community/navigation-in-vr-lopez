@@ -130,4 +130,44 @@ module PlaceLandmark =
             newModel
         | None -> newModel
 
+    let hoverEvaluationLandmarks kind p model : Model = 
+        let newControllersPosition = 
+            model 
+            |> OpcUtilities.updateControllersInfo kind p
+        
+        let model = { model with controllerInfos = newControllersPosition}
+        
+        let controllerPos = model.menuModel.controllerMenuSelector
+        let newCP = model.controllerInfos |> HMap.tryFind controllerPos.kind
+        let evalLandmark = 
+            model.evaluationLandmarks
+            |> PList.tryAt model.evaluationCounter
+        
+        match newCP, evalLandmark with
+        | Some con, Some evalLand ->
+            
+            let newBoxPos = 
+                model.evaluationLandmarks
+                |> PList.updateAt model.evaluationCounter (fun el -> {el with trafo = Trafo3d.Translation(V3d(Trafo3d.Identity.GetModelOrigin().X + float(model.evaluationCounter), Trafo3d.Identity.GetModelOrigin().Y, Trafo3d.Identity.GetModelOrigin().Z))})
+            
+            let model = {model with evaluationLandmarks = newBoxPos}
+            
+            let dist = V3d.Distance(con.pose.deviceToWorld.GetModelOrigin(), evalLand.trafo.GetModelOrigin())
+            printfn "dist: %A" dist
+            if dist <= 0.1 then 
+                {model with evaluationCounter = model.evaluationCounter + 1}
+            else model
+        | _, _ -> model
+
+    
+
+
+
+        
+        
+        
+        
+
+
+
         

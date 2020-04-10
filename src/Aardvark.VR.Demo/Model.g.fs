@@ -218,6 +218,8 @@ module Mutable =
         let _droneControl = MDrone.Create(__initial.droneControl)
         let _cyllinderControl = MList.Create(__initial.cyllinderControl, (fun v -> Demo.Mutable.MVisibleCylinder.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleCylinder.Update(m, v)), (fun v -> v))
         let _totalCompass = MList.Create(__initial.totalCompass, (fun v -> MCompass.Create(v)), (fun (m,v) -> MCompass.Update(m, v)), (fun v -> v))
+        let _evaluationLandmarks = MList.Create(__initial.evaluationLandmarks, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
+        let _evaluationCounter = ResetMod.Create(__initial.evaluationCounter)
         
         member x.text = _text :> IMod<_>
         member x.vr = _vr :> IMod<_>
@@ -260,6 +262,8 @@ module Mutable =
         member x.droneControl = _droneControl
         member x.cyllinderControl = _cyllinderControl :> alist<_>
         member x.totalCompass = _totalCompass :> alist<_>
+        member x.evaluationLandmarks = _evaluationLandmarks :> alist<_>
+        member x.evaluationCounter = _evaluationCounter :> IMod<_>
         
         member x.Current = __current :> IMod<_>
         member x.Update(v : Demo.Main.Model) =
@@ -306,6 +310,8 @@ module Mutable =
                 MDrone.Update(_droneControl, v.droneControl)
                 MList.Update(_cyllinderControl, v.cyllinderControl)
                 MList.Update(_totalCompass, v.totalCompass)
+                MList.Update(_evaluationLandmarks, v.evaluationLandmarks)
+                ResetMod.Update(_evaluationCounter,v.evaluationCounter)
                 
         
         static member Create(__initial : Demo.Main.Model) : MModel = MModel(__initial)
@@ -567,4 +573,16 @@ module Mutable =
                     override x.Get(r) = r.totalCompass
                     override x.Set(r,v) = { r with totalCompass = v }
                     override x.Update(r,f) = { r with totalCompass = f r.totalCompass }
+                }
+            let evaluationLandmarks =
+                { new Lens<Demo.Main.Model, Aardvark.Base.plist<Demo.VisibleBox>>() with
+                    override x.Get(r) = r.evaluationLandmarks
+                    override x.Set(r,v) = { r with evaluationLandmarks = v }
+                    override x.Update(r,f) = { r with evaluationLandmarks = f r.evaluationLandmarks }
+                }
+            let evaluationCounter =
+                { new Lens<Demo.Main.Model, System.Int32>() with
+                    override x.Get(r) = r.evaluationCounter
+                    override x.Set(r,v) = { r with evaluationCounter = v }
+                    override x.Update(r,f) = { r with evaluationCounter = f r.evaluationCounter }
                 }

@@ -120,6 +120,9 @@ type Model =
         cyllinderControl            : plist<VisibleCylinder>
 
         totalCompass                : plist<Compass>
+
+        evaluationLandmarks         : plist<VisibleBox>
+        evaluationCounter           : int
         
     }
 
@@ -211,6 +214,9 @@ module Model =
             cyllinderControl            = PList.empty
 
             totalCompass                = PList.empty
+
+            evaluationLandmarks         = PList.empty
+            evaluationCounter           = 0
         }
 
     let initMainReset = 

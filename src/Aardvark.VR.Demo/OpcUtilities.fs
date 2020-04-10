@@ -30,6 +30,13 @@ module OpcUtilities =
             VisibleBox.createFlag C4b.White (controllerPos.GetModelOrigin()))
         |> PList.ofList
 
+    let mkEvalFlags (controllerPos : Trafo3d) (number : int) : plist<VisibleBox> = 
+        [0..number-1]
+        |> List.map (fun x -> 
+            let pos = V3d(controllerPos.GetModelOrigin().X + float(x), controllerPos.GetModelOrigin().Y, controllerPos.GetModelOrigin().Z) * 1000000.0
+            VisibleBox.createFlag C4b.White pos)
+        |> PList.ofList
+
     let mkDrone (controllerPos : Trafo3d) (number : int) : plist<VisibleBox> = 
         [0..number-1]
         |> List.map (fun x -> 

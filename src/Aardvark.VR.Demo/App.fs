@@ -126,8 +126,15 @@ module Demo =
                     model 
                     |> PlaceLandmark.placing kind p
                 | Menu.MenuState.Scale -> 
+                    let model = 
+                        model 
+                        |> NavigationOpc.currentSceneInfo kind p 
+
+                    printfn "eval counter: %d" model.evaluationCounter
+                    
                     model 
-                    |> NavigationOpc.currentSceneInfo kind p 
+                    |> PlaceLandmark.hoverEvaluationLandmarks kind p
+                    
                 | Menu.MenuState.Cyllinder -> 
                     let model = 
                         model
@@ -613,8 +620,8 @@ module Demo =
                 do! DefaultSurfaces.trafo
                 do! DefaultSurfaces.vertexColor
                 //do! DefaultSurfaces.simpleLighting
-                }      
-                
+                } 
+                               
     let mkSphere (model : MModel) (sphere : MVisibleSphere) =
         let color = sphere.color
         let pos = sphere.trafo
@@ -808,6 +815,17 @@ module Demo =
             |> ASet.map (fun b -> 
                 mkFlag m b 
                )
+            |> Sg.set
+            |> defaultEffect
+            |> Sg.noEvents
+            |> Sg.onOff mkDisappearInsideCylinder
+
+        let evaluationLands = 
+            m.evaluationLandmarks
+            |> AList.toASet 
+            |> ASet.map (fun b ->
+                mkFlag m b
+            )
             |> Sg.set
             |> defaultEffect
             |> Sg.noEvents
@@ -1125,6 +1143,7 @@ module Demo =
         let transformedSgs = 
             [
                 landmarksOnAnnotationSpace
+                evaluationLands
                 drones
                 droneCylinder
                 cylinderCenterShow
@@ -1197,6 +1216,9 @@ module Demo =
         let cameraStateInit = 
             OpcViewerFunc.restoreCamStateImport boundingBoxInit V3d.OOI
 
+        let newEvalLandmarks = 
+            OpcUtilities.mkEvalFlags Trafo3d.Identity 5
+
         Log.line "using path: %s" path
         //C:\Users\lopez\Desktop\VictoriaCrater\HiRISE_VictoriaCrater_SuperResolution
         let startOpcTrafo = Trafo3d.FromBasis(V3d(0.0138907544072255, 0.0370928394273679, 0.410690910035505), V3d(0.11636514267386, 0.393870197365478, -0.0395094556451799), V3d(-0.395603213079913, 0.117157783795495, 0.0027988969790869), V3d(-57141.4217354136, 16979.9987604353, -1399135.09579421))
@@ -1252,6 +1274,9 @@ module Demo =
             cyllinderControl            = PList.empty
 
             totalCompass                = PList.empty
+
+            evaluationLandmarks         = newEvalLandmarks //PList.empty
+            evaluationCounter           = 0
         }
     let app (runtime : IRuntime) =
         {
