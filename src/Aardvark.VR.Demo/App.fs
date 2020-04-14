@@ -130,10 +130,7 @@ module Demo =
                         model 
                         |> NavigationOpc.currentSceneInfo kind p 
 
-                    printfn "eval counter: %d" model.evaluationCounter
-                    
-                    model 
-                    |> PlaceLandmark.hoverEvaluationLandmarks kind p
+                    model
                     
                 | Menu.MenuState.Cyllinder -> 
                     let model = 
@@ -180,8 +177,12 @@ module Demo =
                         model 
                         |> DroneControlCenter.checkHoverScreen kind p 
 
+                    let model = 
+                        model 
+                        |> DroneControlCenter.moveDrone kind p
+
                     model 
-                    |> DroneControlCenter.moveDrone kind p
+                    |> PlaceLandmark.hoverEvaluationLandmarks kind p
                 | Menu.MenuState.HoverDroneScreen ->  
                     let model = 
                         model 
@@ -278,13 +279,6 @@ module Demo =
             let controllerMenuUpdate = MenuApp.update newModel.controllerInfos state vr newModel.menuModel (MenuAction.Select (kind, buttonPress))
 
             let newModel = {newModel with menuModel = controllerMenuUpdate}
-            
-            let getLandmarkScale = 
-                newModel.landmarkOnAnnotationSpace
-                |> PList.map (fun x -> 
-                    let ttt = x.geometry.Size
-                    printfn "scale: %A" ttt
-                )
 
             let controllerPos = newModel.controllerInfos |> HMap.tryFind kind
             match controllerPos with 
@@ -1217,7 +1211,7 @@ module Demo =
             OpcViewerFunc.restoreCamStateImport boundingBoxInit V3d.OOI
 
         let newEvalLandmarks = 
-            OpcUtilities.mkEvalFlags Trafo3d.Identity 5
+            OpcUtilities.mkEvalFlags (Trafo3d.Translation(V3d.One * 100000.0)) 5
 
         Log.line "using path: %s" path
         //C:\Users\lopez\Desktop\VictoriaCrater\HiRISE_VictoriaCrater_SuperResolution

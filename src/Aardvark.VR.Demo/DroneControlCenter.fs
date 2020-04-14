@@ -94,7 +94,7 @@ module DroneControlCenter =
             | false -> 
                 let dist = V3d.Distance(con.pose.deviceToWorld.GetModelOrigin(), screen.trafo.GetModelOrigin())
                 printfn "dist: %A" dist
-                if dist <= 5.15 then 
+                if dist <= 1.15 then 
                     let newMode = {model.menuModel with menu = MenuState.HoverDroneScreen}
                     {model with menuModel = newMode}
                 else 

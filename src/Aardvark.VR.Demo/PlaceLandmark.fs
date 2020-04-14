@@ -148,14 +148,29 @@ module PlaceLandmark =
             
             let newBoxPos = 
                 model.evaluationLandmarks
-                |> PList.updateAt model.evaluationCounter (fun el -> {el with trafo = Trafo3d.Translation(V3d(Trafo3d.Identity.GetModelOrigin().X + float(model.evaluationCounter), Trafo3d.Identity.GetModelOrigin().Y, Trafo3d.Identity.GetModelOrigin().Z))})
-            
+                |> PList.updateAt model.evaluationCounter (fun el -> 
+                    let newPositions = 
+                        [V3d(52.288818359375, -7.18469619750977, -12.9421234130859);
+                        V3d(-66.6853427886963, 103.339958190918, 20.5557823181152); 
+                        V3d(46.2436199188232, -119.581413269043, -5.77807426452637);
+                        V3d(61.1997127532959, -58.692741394043, -13.3692264556885);
+                        V3d(189.576578140259, 37.2320175170898, 8.15391540527344)]
+                    
+                    {el with 
+                        trafo = Trafo3d.Translation(newPositions.Item model.evaluationCounter);
+                        geometry = Box3d.FromSize(V3d(10.0, 10.0, 1.0))
+                    })
+                    //{el with trafo = Trafo3d.Translation(V3d(Trafo3d.Identity.GetModelOrigin().X + float(model.evaluationCounter), Trafo3d.Identity.GetModelOrigin().Y, Trafo3d.Identity.GetModelOrigin().Z))})
+                // place the new position of the next landmark here!!!! for testing purposes it is set to id+1
             let model = {model with evaluationLandmarks = newBoxPos}
-            
-            let dist = V3d.Distance(con.pose.deviceToWorld.GetModelOrigin(), evalLand.trafo.GetModelOrigin())
+            let controllerOnAnnotationSpace = con.pose.deviceToWorld * model.workSpaceTrafo.Inverse
+            let dist = V3d.Distance(controllerOnAnnotationSpace.GetModelOrigin(), evalLand.trafo.GetModelOrigin())
             printfn "dist: %A" dist
-            if dist <= 0.1 then 
-                {model with evaluationCounter = model.evaluationCounter + 1}
+            if dist <= 8.0 then 
+                let newBoxColor = 
+                    model.evaluationLandmarks
+                    |> PList.updateAt model.evaluationCounter (fun el -> {el with color = C4b.Green})
+                {model with evaluationCounter = model.evaluationCounter + 1; evaluationLandmarks = newBoxColor}
             else model
         | _, _ -> model
 

@@ -34,7 +34,7 @@ module OpcUtilities =
         [0..number-1]
         |> List.map (fun x -> 
             let pos = V3d(controllerPos.GetModelOrigin().X + float(x), controllerPos.GetModelOrigin().Y, controllerPos.GetModelOrigin().Z) * 1000000.0
-            VisibleBox.createFlag C4b.White pos)
+            VisibleBox.createFlag C4b.Red pos)
         |> PList.ofList
 
     let mkDrone (controllerPos : Trafo3d) (number : int) : plist<VisibleBox> = 
