@@ -142,7 +142,7 @@ module PlaceLandmark =
         let evalLandmark = 
             model.evaluationLandmarks
             |> PList.tryAt model.evaluationCounter
-        
+       
         match newCP, evalLandmark with
         | Some con, Some evalLand ->
             
@@ -158,19 +158,93 @@ module PlaceLandmark =
                     
                     {el with 
                         trafo = Trafo3d.Translation(newPositions.Item model.evaluationCounter);
-                        geometry = Box3d.FromSize(V3d(10.0, 10.0, 1.0))
+                        geometry = Box3d.FromSize(V3d(1.0, 1.0, 15.0))
                     })
-                    //{el with trafo = Trafo3d.Translation(V3d(Trafo3d.Identity.GetModelOrigin().X + float(model.evaluationCounter), Trafo3d.Identity.GetModelOrigin().Y, Trafo3d.Identity.GetModelOrigin().Z))})
+
                 // place the new position of the next landmark here!!!! for testing purposes it is set to id+1
             let model = {model with evaluationLandmarks = newBoxPos}
             let controllerOnAnnotationSpace = con.pose.deviceToWorld * model.workSpaceTrafo.Inverse
-            let dist = V3d.Distance(controllerOnAnnotationSpace.GetModelOrigin(), evalLand.trafo.GetModelOrigin())
+            let dist = System.Math.Round(V3d.Distance(controllerOnAnnotationSpace.GetModelOrigin(), evalLand.trafo.GetModelOrigin()), 3)
             printfn "dist: %A" dist
+            let model = {model with droneDistanceToLandmark = "distance to next landmark: " + dist.ToString()}
+
             if dist <= 8.0 then 
                 let newBoxColor = 
                     model.evaluationLandmarks
                     |> PList.updateAt model.evaluationCounter (fun el -> {el with color = C4b.Green})
                 {model with evaluationCounter = model.evaluationCounter + 1; evaluationLandmarks = newBoxColor}
+            else model
+        | _, _ -> model
+
+
+
+    let hoverEvaluationLandmarksOnWIM kind p model : Model = 
+        let newControllersPosition = 
+            model 
+            |> OpcUtilities.updateControllersInfo kind p
+        
+        let model = { model with controllerInfos = newControllersPosition;}
+        
+        let controllerPos = model.menuModel.controllerMenuSelector
+        let newCP = model.controllerInfos |> HMap.tryFind controllerPos.kind
+
+        let evalLandmark = 
+            model.evaluationLandmarksWIM2RealWorld
+            |> PList.tryAt model.evaluationCounter
+        
+        match newCP, evalLandmark with
+        | Some con, Some evalLand ->
+            
+            let newBoxPos = 
+                model.evaluationLandmarksWIM
+                |> PList.updateAt model.evaluationCounter (fun el -> 
+                    let newPositions = 
+                        [V3d(-0.532229542732239, -0.629597902297974, 0.832144618034363);
+                        V3d(-0.868810653686523, -0.584665536880493, 0.790270328521729); 
+                        V3d(-1.12461268901825, -0.510624647140503, 0.823796510696411);
+                        V3d(-0.82141649723053, -0.32404637336731, 0.815068364143372);
+                        V3d(-0.904855489730835, -0.686463356018066, 0.822355628013611)]
+                    
+                    {el with 
+                        trafo = Trafo3d.Translation(newPositions.Item model.evaluationCounter);
+                    })
+
+            let newBoxPosRealWorld = 
+                model.evaluationLandmarksWIM2RealWorld
+                |> PList.updateAt model.evaluationCounter (fun el -> 
+                    let newPositions = 
+                        [V3d(-0.532229542732239, -0.629597902297974, 0.832144618034363);
+                        V3d(-0.868810653686523, -0.584665536880493, 0.790270328521729); 
+                        V3d(-1.12461268901825, -0.510624647140503, 0.823796510696411);
+                        V3d(-0.82141649723053, -0.32404637336731, 0.815068364143372);
+                        V3d(-0.904855489730835, -0.686463356018066, 0.822355628013611)]
+                    
+                    let newTrafo = Trafo3d.Translation(newPositions.Item model.evaluationCounter)
+
+                    {el with 
+                        trafo = newTrafo * model.WIMworkSpaceTrafo.Inverse;
+                    })
+
+            let model = {model with evaluationLandmarksWIM = newBoxPos; evaluationLandmarksWIM2RealWorld = newBoxPosRealWorld}
+            let controllerOnAnnotationSpace = con.pose.deviceToWorld * model.workSpaceTrafo.Inverse
+            let dist = System.Math.Round(V3d.Distance(controllerOnAnnotationSpace.GetModelOrigin(), evalLand.trafo.GetModelOrigin()), 3)
+            printfn "dist: %A" dist
+            let model = {model with droneDistanceToLandmark = "distance to next landmark: " + dist.ToString()}
+
+            if dist <= 8.0 then 
+                let newBoxColor = 
+                    model.evaluationLandmarksWIM
+                    |> PList.updateAt model.evaluationCounter (fun el -> {el with color = C4b.Green})
+
+                let newBoxColor1 = 
+                    model.evaluationLandmarksWIM2RealWorld
+                    |> PList.updateAt model.evaluationCounter (fun el -> {el with color = C4b.Green})
+                
+                {model with 
+                    evaluationCounter = model.evaluationCounter + 1; 
+                    evaluationLandmarksWIM = newBoxColor; 
+                    evaluationLandmarksWIM2RealWorld = newBoxColor1
+                }
             else model
         | _, _ -> model
 

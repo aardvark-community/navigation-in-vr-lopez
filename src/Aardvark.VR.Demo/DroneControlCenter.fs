@@ -41,6 +41,12 @@ module DroneControlCenter =
                         
                     )
 
+                let newModel = 
+                    let droneFirst = newModel.droneControl.drone |> PList.tryFirst
+                    match droneFirst with 
+                    | Some dd -> {newModel with droneHeight = "Drone height: " + dd.trafo.GetModelOrigin().Z.ToString()}
+                    | None -> newModel
+
                 let updateDrones = 
                     {newModel.droneControl with drone = moveDrone}
                 

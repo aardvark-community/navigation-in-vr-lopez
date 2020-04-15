@@ -131,7 +131,6 @@ module Demo =
                         |> NavigationOpc.currentSceneInfo kind p 
 
                     model
-                    
                 | Menu.MenuState.Cyllinder -> 
                     let model = 
                         model
@@ -155,8 +154,12 @@ module Demo =
                         model
                         |> WIMOpc.checkHoverUserWIM kind p
                     
-                    model
-                    |> PlaceLandmark.placingOnWIM kind p
+                    let model = 
+                        model
+                        |> PlaceLandmark.placingOnWIM kind p
+
+                    model 
+                    //|> PlaceLandmark.hoverEvaluationLandmarksOnWIM kind p
                 | Menu.MenuState.Teleportation -> 
                     model 
                     |> Teleport.hitRay kind p
@@ -180,9 +183,9 @@ module Demo =
                     let model = 
                         model 
                         |> DroneControlCenter.moveDrone kind p
-
+                        
                     model 
-                    |> PlaceLandmark.hoverEvaluationLandmarks kind p
+                    //|> PlaceLandmark.hoverEvaluationLandmarks kind p
                 | Menu.MenuState.HoverDroneScreen ->  
                     let model = 
                         model 
@@ -195,8 +198,12 @@ module Demo =
                         model 
                         |> DroneControlCenter.moveDrone kind p
 
-                    model
-                    |> DroneControlCenter.moveScreenAttachedController kind p
+                    let model = 
+                        model
+                        |> DroneControlCenter.moveScreenAttachedController kind p
+
+                    model 
+                    |> PlaceLandmark.hoverEvaluationLandmarks kind p
                 | Menu.MenuState.HoverChangeUserWIM -> 
                     let model = 
                         model
@@ -205,8 +212,12 @@ module Demo =
                         model 
                         |> WIMOpc.changeUserPosWIM kind p
                     
-                    model
-                    |> WIMOpc.checkHoverUserWIM kind p
+                    let model = 
+                        model
+                        |> WIMOpc.checkHoverUserWIM kind p
+
+                    model 
+                    |> PlaceLandmark.hoverEvaluationLandmarksOnWIM kind p
                 | _ -> model
             
             let controllerMenuUpdate = MenuApp.update model.controllerInfos state vr newModel.menuModel (MenuAction.UpdateControllerPose (kind, p))
@@ -339,6 +350,13 @@ module Demo =
                         OpcUtilities.mkFlags (Trafo3d.Translation(V3d.One * 1000000.0)) 1
                     let newInitialUserPosWIMcone = 
                         OpcUtilities.mkCone Trafo3d.Identity 1
+                    
+                    let printlandsssonwim = 
+                        newModel.WIMlandmarkOnAnnotationSpace
+                        |> PList.map (fun mm -> 
+                            printfn "%A" (mm.trafo.GetModelOrigin()))
+
+                    let newLandmarkList = OpcUtilities.mkEvalFlags (Trafo3d.Translation(V3d.One * 100000.0)) 5
 
                     {newModel with 
                         landmarkOnController    = newLandmark
@@ -347,6 +365,8 @@ module Demo =
                         WIMinitialUserPosCone   = newInitialUserPosWIMcone
                         droneControl            = Drone.initial;
                         cyllinderControl        = PList.empty
+                        evaluationLandmarksWIM2RealWorld = newLandmarkList
+                        evaluationLandmarksWIM = newLandmarkList
                     }
                 | Menu.MenuState.Reset -> 
                     initial
@@ -479,7 +499,7 @@ module Demo =
                         }
                     
                     {newModel with droneControl = updateDrones}
-                | _ -> newModel
+                //| _ -> newModel
             | None -> newModel
         | GetTrackpadPosition (con, axis, pos) -> 
             model 
@@ -825,6 +845,28 @@ module Demo =
             |> Sg.noEvents
             |> Sg.onOff mkDisappearInsideCylinder
 
+        let evaluationLandsOnWIM = 
+            m.evaluationLandmarksWIM
+            |> AList.toASet 
+            |> ASet.map (fun b ->
+                mkFlag m b
+            )
+            |> Sg.set
+            |> defaultEffect
+            |> Sg.noEvents
+            |> Sg.onOff mkDisappearInsideCylinder
+
+        let evaluationLandsOnWIM2RealWorld = 
+            m.evaluationLandmarksWIM2RealWorld
+            |> AList.toASet 
+            |> ASet.map (fun b ->
+                mkFlag m b
+            )
+            |> Sg.set
+            |> defaultEffect
+            |> Sg.noEvents
+            |> Sg.onOff mkDisappearInsideCylinder
+
         let landmarksOnWIM = 
             m.WIMlandmarkOnAnnotationSpace
             |> AList.toASet 
@@ -974,7 +1016,7 @@ module Demo =
             
         let offscreenTask = 
             opcs
-            |> Sg.andAlso landmarksOnAnnotationSpace
+            |> Sg.andAlso evaluationLands //landmarksOnAnnotationSpace
             |> Sg.noEvents
             // attach a constant view trafo (which makes our box visible)
             |> Sg.viewTrafo (
@@ -1119,6 +1161,12 @@ module Demo =
             |> Sg.pass (RenderPass.after "" RenderPassOrder.Arbitrary RenderPass.main)
             |> Sg.onOff mkDisappear
         
+        let showDroneDistanceToLandmark = 
+            Sg.textWithConfig { TextConfig.Default with renderStyle = RenderStyle.Billboard; align = TextAlignment.Center; flipViewDependent = true } m.droneHeight
+            |> Sg.noEvents
+            |> Sg.scale 0.05
+            |> Sg.trafo(m.droneControl.cameraPosition)
+
         let cylinderCenterShow =     
             m.cyllinderControl
             |> AList.toASet
@@ -1133,14 +1181,13 @@ module Demo =
             |> Sg.onOff mkDisappearInsideCylinder
             |> Sg.noEvents
 
-        
         let transformedSgs = 
             [
                 landmarksOnAnnotationSpace
                 evaluationLands
                 drones
                 droneCylinder
-                cylinderCenterShow
+                //cylinderCenterShow
             ]
             |> Sg.ofList
             |> Sg.trafo m.annotationSpaceTrafo
@@ -1153,6 +1200,8 @@ module Demo =
                 userConeOnWim
                 initialUserPosOnWIM
                 initialUserConeOnWim
+                evaluationLandsOnWIM
+                evaluationLandsOnWIM2RealWorld |> Sg.trafo m.annotationSpaceTrafo
             ]
             |> Sg.ofList
 
@@ -1166,6 +1215,7 @@ module Demo =
                 borderSecondCamera
                 //borderSecondCameraOnController
                 showSecondCameraOnController
+                //showDroneDistanceToLandmark
             ] |> Sg.ofList
 
         Sg.ofList [transformedSgs; WIMtransformedSgs; notTransformedSgs; opcs; WIMopcs]
@@ -1270,7 +1320,11 @@ module Demo =
             totalCompass                = PList.empty
 
             evaluationLandmarks         = newEvalLandmarks //PList.empty
+            evaluationLandmarksWIM      = PList.empty
+            evaluationLandmarksWIM2RealWorld= PList.empty
             evaluationCounter           = 0
+            droneDistanceToLandmark     = ""
+            droneHeight                 = ""
         }
     let app (runtime : IRuntime) =
         {

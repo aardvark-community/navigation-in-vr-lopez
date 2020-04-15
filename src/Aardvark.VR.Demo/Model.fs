@@ -122,7 +122,11 @@ type Model =
         totalCompass                : plist<Compass>
 
         evaluationLandmarks         : plist<VisibleBox>
+        evaluationLandmarksWIM      : plist<VisibleBox>
+        evaluationLandmarksWIM2RealWorld : plist<VisibleBox>
         evaluationCounter           : int
+        droneDistanceToLandmark     : string
+        droneHeight                 : string
         
     }
 
@@ -216,7 +220,11 @@ module Model =
             totalCompass                = PList.empty
 
             evaluationLandmarks         = PList.empty
+            evaluationLandmarksWIM      = PList.empty
+            evaluationLandmarksWIM2RealWorld= PList.empty
             evaluationCounter           = 0
+            droneDistanceToLandmark     = ""
+            droneHeight                 = ""
         }
 
     let initMainReset = 
