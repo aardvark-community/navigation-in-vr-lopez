@@ -369,6 +369,10 @@ module Demo =
 
                     let newLandmarkList = OpcUtilities.mkEvalFlags (Trafo3d.Translation(V3d.One * 100000.0)) 5
 
+                    let printinshite = 
+                        newModel.landmarkOnAnnotationSpace
+                        |> PList.map (fun x -> printfn "%A" (x.trafo.GetModelOrigin()))
+
                     let newModel = 
                         newModel 
                         |> PlaceLandmark.updateLandmarksPositionOnWIM
