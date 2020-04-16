@@ -132,10 +132,26 @@ module WIMOpc =
                 {landmark with trafo = Trafo3d.FromComponents(scaleLmkC, rotationLmkC, translationLmkC)} //landmark.trafo * model.workSpaceTrafo.Inverse * newWorkSpace}
             )
 
+        let updateWIMEvalLandmark = 
+            newModel.evaluationLandmarks
+            |> PList.map (fun landmark -> 
+                let newLmkC = landmark.trafo * newModel.WIMworkSpaceTrafo
+                let rtLmkC = newLmkC.GetOrthoNormalOrientation()
+                let rotLmkC = Rot3d.FromFrame(rtLmkC.Forward.C0.XYZ, rtLmkC.Forward.C1.XYZ, rtLmkC.Forward.C2.XYZ)
+                let rotationLmkC = rotLmkC.GetEulerAngles()
+
+                let translationLmkC = newLmkC.GetModelOrigin()
+
+                let scaleLmkC = V3d(0.0125, 0.0125, 0.004)
+
+                {landmark with trafo = Trafo3d.FromComponents(scaleLmkC, rotationLmkC, translationLmkC)} //landmark.trafo * model.workSpaceTrafo.Inverse * newWorkSpace}
+            )
+
         {newModel with 
             WIMuserPos                      = newWIMuserPos;
             WIMlandmarkOnAnnotationSpace    = updateWIMLandmark;
-            WIMuserPosCone                  = newWIMuserPosCone
+            WIMuserPosCone                  = newWIMuserPosCone;
+            evaluationLandmarksWIM          = updateWIMEvalLandmark
         }
     
     let updateMiniMap kind p model : Model = 
@@ -315,9 +331,15 @@ module WIMOpc =
                                 |> PList.single
                                 //user position in wim
 
-                            let conRotation = con.pose.deviceToWorld.GetOrthoNormalOrientation()
+                            let conRotation = con.pose.deviceToWorld
+                            let conRor = conRotation.GetOrthoNormalOrientation()
+                            let conRot1 = Rot3d.FromFrame(conRor.Forward.C0.XYZ, conRor.Forward.C1.XYZ, conRor.Forward.C2.XYZ)
+                            let rotationEuler = conRot1.GetEulerAngles()
+                            let rotationEuler1 = V3d(0.0, 0.0, rotationEuler.Z)
+                            
+                            let rotationTest = Trafo3d.Rotation(rotationEuler1).Inverse
 
-                            let shiftTrafo = Trafo3d.Translation(annPos.trafo.GetModelOrigin()).Inverse //* conRotation//.Inverse 
+                            let shiftTrafo = Trafo3d.Translation(annPos.trafo.GetModelOrigin()).Inverse //* rotationTest //* conRotation//.Inverse 
                             //is takes all possible rotation of controller into account, we only want the z rotation
 
                             let newWorkSpace = model.initWorkSpaceTrafo * shiftTrafo
@@ -328,7 +350,6 @@ module WIMOpc =
                             let updateHMDorientation = 
                                 match newHMD with 
                                 | Some h -> 
-                                    // the part of applying the rotation to the hmd from the controller should be HERE!!!!
                                     let newHMDtrafo = 
                                         let newLmkC = con.pose.deviceToWorld 
                                         let newHMDrot = hmd.pose.deviceToWorld

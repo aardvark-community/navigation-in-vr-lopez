@@ -65,9 +65,10 @@ module DroneControlCenter =
                 let dronePos = model.droneControl.drone |> PList.tryFirst
                 match dronePos with 
                 | Some dPos -> 
-                    let newDronePos = dPos.trafo * model.workSpaceTrafo.Inverse * model.annotationSpaceTrafo //drone pos in annotation space
+                    //let newDronePos = dPos.trafo * model.workSpaceTrafo.Inverse //* model.annotationSpaceTrafo //drone pos in annotation space
+                    let newDronePos = Trafo3d.Translation(dPos.trafo.GetModelOrigin()).Inverse
                     //update Real World space trafos
-                    let newWorkSpace = model.initWorkSpaceTrafo * newDronePos.Inverse
+                    let newWorkSpace = model.initWorkSpaceTrafo * newDronePos
                     let newOpcSpace = model.initOpcSpaceTrafo * newWorkSpace
                     let newFlagSpace = model.initAnnotationSpaceTrafo * newWorkSpace
 

@@ -147,8 +147,12 @@ module Demo =
                         model 
                         |> WIMOpc.updateMiniMap kind p
 
-                    newModel
-                    |> WIMOpc.editMiniMap kind p
+                    let newModel = 
+                        newModel
+                        |> WIMOpc.editMiniMap kind p
+
+                    newModel 
+                    //|> PlaceLandmark.hoverEvaluationLandmarksOnWIM kind p
                 | Menu.MenuState.WIMLandmarks -> 
                     let model = 
                         model
@@ -185,7 +189,7 @@ module Demo =
                         |> DroneControlCenter.moveDrone kind p
                         
                     model 
-                    //|> PlaceLandmark.hoverEvaluationLandmarks kind p
+                    |> PlaceLandmark.hoverEvaluationLandmarks kind p
                 | Menu.MenuState.HoverDroneScreen ->  
                     let model = 
                         model 
@@ -338,8 +342,20 @@ module Demo =
                     let newModel = {newModel with WIMuserPos = newUserPosWIM; WIMuserPosCone = newUserPosWIMcone}
 
                     let newModel = newModel |> WIMOpc.showMiniMap
+
+                    let newLandmarkList = OpcUtilities.mkEvalFlags (Trafo3d.Translation(V3d.One * 100000.0)) 5
                     
-                    {newModel with droneControl = Drone.initial; cyllinderControl = PList.empty}
+                    let newModel = 
+                        {newModel with 
+                            droneControl = Drone.initial; 
+                            cyllinderControl = PList.empty
+                            evaluationLandmarksWIM2RealWorld = newLandmarkList
+                            evaluationLandmarksWIM = newLandmarkList    
+                        }
+
+                    newModel 
+                    |> PlaceLandmark.updateLandmarksPositionOnWIM
+
                 | Menu.MenuState.WIMLandmarks ->
                     let newLandmark = OpcUtilities.mkFlags id.pose.deviceToWorld 1
                     let newUserPos = 
@@ -350,13 +366,12 @@ module Demo =
                         OpcUtilities.mkFlags (Trafo3d.Translation(V3d.One * 1000000.0)) 1
                     let newInitialUserPosWIMcone = 
                         OpcUtilities.mkCone Trafo3d.Identity 1
-                    
-                    let printlandsssonwim = 
-                        newModel.WIMlandmarkOnAnnotationSpace
-                        |> PList.map (fun mm -> 
-                            printfn "%A" (mm.trafo.GetModelOrigin()))
 
                     let newLandmarkList = OpcUtilities.mkEvalFlags (Trafo3d.Translation(V3d.One * 100000.0)) 5
+
+                    let newModel = 
+                        newModel 
+                        |> PlaceLandmark.updateLandmarksPositionOnWIM
 
                     {newModel with 
                         landmarkOnController    = newLandmark
@@ -467,6 +482,10 @@ module Demo =
                             cyllinderControl                = PList.empty
                         }
 
+                    let newModel = 
+                        newModel 
+                        |> PlaceLandmark.updateLandmarksPosition
+
                     newModel
                     |> DroneControlCenter.moveUserToDronePos
                 | Menu.MenuState.HoverChangeUserWIM -> 
@@ -485,6 +504,10 @@ module Demo =
                             droneControl            = Drone.initial;
                             cyllinderControl        = PList.empty
                         }
+
+                    let newModel = 
+                        newModel 
+                        |> PlaceLandmark.updateLandmarksPositionOnWIM   
 
                     newModel 
                     |> WIMOpc.moveUserToAnnotationSpaceFromWIM 
