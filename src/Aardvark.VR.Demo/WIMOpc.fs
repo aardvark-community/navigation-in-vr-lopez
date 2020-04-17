@@ -16,6 +16,7 @@ module WIMOpc =
     open Aardvark.UI
     open Demo.Menu
     open System.IO.MemoryMappedFiles
+    open Aardvark.Base.Incremental
 
     let createNewTrafo con : Trafo3d = 
         let con2Pos = con.pose.deviceToWorld
@@ -80,7 +81,8 @@ module WIMOpc =
         let controllerPos = newModel.menuModel.controllerMenuSelector
 
         let userHMD = newModel.controllerInfos |> HMap.tryFind ControllerKind.HMD //controllerPos.kind
-      
+        let userCon = newModel.controllerInfos |> HMap.tryFind controllerPos.kind
+        
         let newWIMuserPos = 
             match userHMD with 
             | Some pos -> 
@@ -312,6 +314,7 @@ module WIMOpc =
 
                         let scale = V3d.One
                         Trafo3d.FromComponents(scale, rotation1, translation)
+ 
                     let updateInitialWIMcone = {c with trafo = newTrafoCone; color = C4b.Cyan}
                     let newInitialConeList = model.WIMinitialUserPosCone |> PList.prepend updateInitialWIMcone
                 
@@ -331,6 +334,23 @@ module WIMOpc =
                                 |> PList.single
                                 //user position in wim
 
+                            let Hmd2ConDiff =    
+                                let newCON = con.pose.deviceToWorld 
+                                let newHMDrot = hmd.pose.deviceToWorld
+                        
+                                let rtCON = newCON.GetOrthoNormalOrientation()
+                                let rtHMD = newHMDrot.GetOrthoNormalOrientation()
+                                let rotCON = Rot3d.FromFrame(rtCON.Forward.C0.XYZ, rtCON.Forward.C1.XYZ, rtCON.Forward.C2.XYZ)
+                                let rotHMD = Rot3d.FromFrame(rtHMD.Forward.C0.XYZ, rtHMD.Forward.C1.XYZ, rtHMD.Forward.C2.XYZ)
+                                let rotationCON = V3d(0.0, 0.0, rotCON.GetEulerAngles().Z)
+                                let rotationHMD = V3d(0.0, 0.0, rotHMD.GetEulerAngles().Z)
+
+                                rotationCON - rotationHMD 
+                                //let printCON = printfn "controller rotation: %A" rotationCON
+                                //let printHMD = printfn "hmd rotation: %A" rotationHMD
+
+                                //printfn "rotation difference: %A" (differenceRot)
+
                             let conRotation = con.pose.deviceToWorld
                             let conRor = conRotation.GetOrthoNormalOrientation()
                             let conRot1 = Rot3d.FromFrame(conRor.Forward.C0.XYZ, conRor.Forward.C1.XYZ, conRor.Forward.C2.XYZ)
@@ -339,7 +359,7 @@ module WIMOpc =
                             
                             let rotationTest = Trafo3d.Rotation(rotationEuler1).Inverse
 
-                            let shiftTrafo = Trafo3d.Translation(annPos.trafo.GetModelOrigin()).Inverse //* rotationTest //* conRotation//.Inverse 
+                            let shiftTrafo = Trafo3d.Translation(annPos.trafo.GetModelOrigin()).Inverse * Trafo3d.Rotation(Hmd2ConDiff).Inverse //* rotationTest //* conRotation//.Inverse 
                             //is takes all possible rotation of controller into account, we only want the z rotation
 
                             let newWorkSpace = model.initWorkSpaceTrafo * shiftTrafo
@@ -348,23 +368,21 @@ module WIMOpc =
 
                             let newHMD = model.controllerInfos |> HMap.tryFind ControllerKind.HMD
                             let updateHMDorientation = 
-                                match newHMD with 
-                                | Some h -> 
-                                    let newHMDtrafo = 
-                                        let newLmkC = con.pose.deviceToWorld 
-                                        let newHMDrot = hmd.pose.deviceToWorld
-                                        let rtLmkC = newLmkC.GetOrthoNormalOrientation()
-                                        let rotLmkC = Rot3d.FromFrame(rtLmkC.Forward.C0.XYZ, rtLmkC.Forward.C1.XYZ, rtLmkC.Forward.C2.XYZ)
-                                        let rotation = rotLmkC.GetEulerAngles()
+                                let newHMDtrafo = 
+                                    let newLmkC = con.pose.deviceToWorld 
+                                    let newHMDrot = hmd.pose.deviceToWorld
+                                    let rtLmkC = newLmkC.GetOrthoNormalOrientation()
+                                    let rotLmkC = Rot3d.FromFrame(rtLmkC.Forward.C0.XYZ, rtLmkC.Forward.C1.XYZ, rtLmkC.Forward.C2.XYZ)
+                                    let rotation = rotLmkC.GetEulerAngles()
 
-                                        let translation = h.pose.deviceToWorld.GetModelOrigin() //V3d(newLmkC.GetModelOrigin().X, newLmkC.GetModelOrigin().Y, newLmkC.GetModelOrigin().Z + 0.07)
+                                    let translation = hmd.pose.deviceToWorld.GetModelOrigin() //V3d(newLmkC.GetModelOrigin().X, newLmkC.GetModelOrigin().Y, newLmkC.GetModelOrigin().Z + 0.07)
 
-                                        let scale = V3d.One
-                                        Trafo3d.FromComponents(scale, rotation, translation)
+                                    let scale = V3d.One
+                                    Trafo3d.FromComponents(scale, rotation, translation)
 
-                                    {h.pose with deviceToWorld = newHMDtrafo} //con.pose.deviceToWorld * model.WIMworkSpaceTrafo.Inverse}
-                                    
-                                | None -> Aardvark.Vr.Pose.none
+                                {hmd.pose with deviceToWorld = newHMDtrafo} //con.pose.deviceToWorld * model.WIMworkSpaceTrafo.Inverse}
+                                 
+                            
 
                             let newControllerInfo = 
                                 model.controllerInfos

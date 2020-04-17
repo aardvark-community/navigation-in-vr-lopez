@@ -355,7 +355,6 @@ module Demo =
 
                     newModel 
                     |> PlaceLandmark.updateLandmarksPositionOnWIM
-
                 | Menu.MenuState.WIMLandmarks ->
                     let newLandmark = OpcUtilities.mkFlags id.pose.deviceToWorld 1
                     let newUserPos = 
@@ -1230,7 +1229,7 @@ module Demo =
 
         let transformedSgs = 
             [
-                landmarksOnAnnotationSpace
+                //landmarksOnAnnotationSpace
                 evaluationLands
                 drones
                 droneCylinder
@@ -1256,7 +1255,7 @@ module Demo =
             [
                 deviceSgs
                 menuApp
-                landmarks
+                //landmarks
                 //throwRayLine
                 showSecondCamera
                 borderSecondCamera
