@@ -947,6 +947,25 @@ module Demo =
                 |> Sg.trafo m.opcSpaceTrafo
                 |> Sg.onOff mkDisappearInsideCylinder
 
+        let opcsCamera = 
+            let startOpcTrafo = Trafo3d.FromBasis(V3d(0.0138907544072255, 0.0370928394273679, 0.410690910035505), V3d(0.11636514267386, 0.393870197365478, -0.0395094556451799), V3d(-0.395603213079913, 0.117157783795495, 0.0027988969790869), V3d(-57141.4217354136, 16979.9987604353, -1399135.09579421))
+            m.opcInfos
+                |> AMap.toASet
+                |> ASet.map(fun info -> 
+                    Sg.createSingleOpcSg m.opcAttributes.selectedScalar (Mod.constant false) m.cameraState.view info
+                    )
+                |> Sg.set
+                |> Sg.effect [ 
+                    toEffect Shader.stableTrafo
+                    toEffect DefaultSurfaces.diffuseTexture  
+                    toEffect Shader.AttributeShader.falseColorLegend
+                ]
+                |> Sg.noEvents
+                |> Sg.map OpcViewerMsg
+                |> Sg.noEvents     
+                |> Sg.trafo (Mod.constant startOpcTrafo)
+                |> Sg.onOff mkDisappearInsideCylinder
+
         let WIMopcs = 
             m.WIMopcInfos
                 |> AMap.toASet
@@ -1042,15 +1061,16 @@ module Demo =
             }
             
         let offscreenTask = 
-            opcs
+            opcsCamera
             |> Sg.andAlso evaluationLands //landmarksOnAnnotationSpace
             |> Sg.noEvents
             // attach a constant view trafo (which makes our box visible)
             |> Sg.viewTrafo (
-                Mod.map2 (fun p d -> 
+                Mod.map2 (fun p (d : V3d) -> 
                 let loc = p
                 let cen = p + d
-                CameraView.lookAt loc cen V3d.OOI 
+                CameraView.look p d.Normalized V3d.OOI
+                //CameraView.lookAt loc cen V3d.OOI 
                     |> CameraView.viewTrafo 
                 ) dronePos dirController
             )
