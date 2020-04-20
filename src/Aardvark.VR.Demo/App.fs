@@ -238,7 +238,7 @@ module Demo =
         
                     {model with controllerInfos = newControllersPosition}
                 
-            let printshite = printfn "menustate: %s initialmenustate: %s" (model.menuModel.menu.ToString()) (model.menuModel.initialMenuState.ToString())
+            //let printshite = printfn "menustate: %s initialmenustate: %s" (model.menuModel.menu.ToString()) (model.menuModel.initialMenuState.ToString())
             
             let controllerMenuUpdate = MenuApp.update model.controllerInfos state vr newModel.menuModel (MenuAction.UpdateControllerPose (kind, p))
             {newModel with 
@@ -1061,15 +1061,18 @@ module Demo =
 
         let dirController = 
             let controllerPos = m.menuModel.controllerMenuSelector 
+            let secondCon = 
+                if controllerPos.kind.Equals(ControllerKind.ControllerA) then
+                    m.controllerInfos |> AMap.tryFind ControllerKind.ControllerA
+                else m.controllerInfos |> AMap.tryFind ControllerKind.ControllerB
             let findHMD = 
-                m.controllerInfos
-                |> AMap.toMod
-                |> Mod.bind (fun ci -> 
-                    let test = ci |> HMap.tryFind (controllerPos.kind.GetValue())
-                    match test with 
+                secondCon
+                |> Mod.bind (fun x -> 
+                    match x with 
                     | Some id -> id.pose.deviceToWorld
                     | None -> Mod.constant Trafo3d.Identity
                 )
+                
             adaptive {
                 let! hmd = findHMD
                 return hmd.Forward.C1.XYZ    
@@ -1191,12 +1194,12 @@ module Demo =
                 let col = C4f(hsv.ToC3f(), 0.5f).ToC4b()
                 Mod.constant col
 
-            let rad = Mod.constant 0.20
+            let rad = Mod.constant 0.45
 
             let dTrafo = 
                 dronetrafo
                 |> Mod.map (fun t -> 
-                    Trafo3d.Translation(V3d(t.GetModelOrigin().X, t.GetModelOrigin().Y, t.GetModelOrigin().Z - 50.0))
+                    Trafo3d.Translation(V3d(t.GetModelOrigin().X + 0.22, t.GetModelOrigin().Y + 0.22, t.GetModelOrigin().Z))
                 )
 
             let mkDisappear = 

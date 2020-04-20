@@ -158,9 +158,9 @@ module DroneControlCenter =
         
         let newCP = model.controllerInfos |> HMap.tryFind controllerPos.kind
  
-        match newCP with 
-        | Some con -> 
-            let newLmkC = con.pose.deviceToWorld 
+        match newCP, secondCon with 
+        | Some con, Some con2 -> 
+            let newLmkC = con2.pose.deviceToWorld 
             let rtLmkC = newLmkC.GetOrthoNormalOrientation()
             let rotLmkC = Rot3d.FromFrame(rtLmkC.Forward.C0.XYZ, rtLmkC.Forward.C1.XYZ, rtLmkC.Forward.C2.XYZ)
             let rotation = rotLmkC.GetEulerAngles()
@@ -186,5 +186,5 @@ module DroneControlCenter =
                     screen = newScreenPos    
                 }
             {model  with droneControl = newDroneCameraPos}
-        | None -> model
+        | _, _ -> model
 
