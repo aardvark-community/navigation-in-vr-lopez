@@ -20,6 +20,7 @@ type MenuState =
 | DroneModeController
 | HoverDroneScreen
 | HoverChangeUserWIM
+| InMenu
 
 [<DomainType>]
 type MenuModel = 

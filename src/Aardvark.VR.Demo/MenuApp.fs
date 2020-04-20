@@ -104,26 +104,27 @@ module MenuApp =
                             let menuSelector = if a.joystickHold then a else b
                                 
                             if box0ID.id = id then 
-                                {   model with menu = MenuState.PlaceLandmarks; controllerMenuSelector = menuSelector}
+                                {   model with menu = MenuState.PlaceLandmarks; controllerMenuSelector = menuSelector; initialMenuState = MenuState.PlaceLandmarks}
                             else if box1ID.id = id then 
-                                {   model with menu = MenuState.WIMLandmarks; controllerMenuSelector = menuSelector}
+                                {   model with menu = MenuState.WIMLandmarks; controllerMenuSelector = menuSelector; initialMenuState = MenuState.WIMLandmarks}
                             else if box2ID.id = id then 
-                                {   model with menu = MenuState.WIM; controllerMenuSelector = menuSelector}
+                                {   model with menu = MenuState.WIM; controllerMenuSelector = menuSelector; initialMenuState = MenuState.WIM}
                             else if box3ID.id = id then 
-                                {   model with menu = MenuState.Scale; controllerMenuSelector = menuSelector}
+                                {   model with menu = MenuState.Scale; controllerMenuSelector = menuSelector; initialMenuState = MenuState.Scale}
                             else if box4ID.id = id then 
-                                {   model with menu = MenuState.Reset; controllerMenuSelector = menuSelector}
+                                {   model with menu = MenuState.Reset; controllerMenuSelector = menuSelector; initialMenuState = MenuState.Reset}
                             else if box5ID.id = id then 
-                                {   model with menu = MenuState.Teleportation; controllerMenuSelector = menuSelector}
+                                {   model with menu = MenuState.Teleportation; controllerMenuSelector = menuSelector; initialMenuState = MenuState.Teleportation}
                             else if box6ID.id = id then 
-                                {   model with menu = MenuState.DroneMode; controllerMenuSelector = menuSelector}
+                                {   model with menu = MenuState.DroneMode; controllerMenuSelector = menuSelector; initialMenuState = MenuState.DroneMode}
                             else if box7ID.id = id then 
-                                {   model with menu = MenuState.DroneModeController; controllerMenuSelector = menuSelector}
+                                {   model with menu = MenuState.DroneModeController; controllerMenuSelector = menuSelector; initialMenuState = MenuState.DroneModeController}
                             else 
                                 {
                                     model with 
                                         menu = MenuState.Cyllinder
                                         controllerMenuSelector = menuSelector; 
+                                        initialMenuState = MenuState.Cyllinder
                                         mainMenuBoxes = PList.empty
                                 }
                         else //HOVER

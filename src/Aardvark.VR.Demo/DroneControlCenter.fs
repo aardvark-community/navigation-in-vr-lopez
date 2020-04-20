@@ -118,6 +118,7 @@ module DroneControlCenter =
         let model = { model with controllerInfos = newControllersPosition}
         
         let controllerPos = model.menuModel.controllerMenuSelector
+
         let newCP = model.controllerInfos |> HMap.tryFind controllerPos.kind
  
         match newCP with 
@@ -149,6 +150,12 @@ module DroneControlCenter =
         let model = { model with controllerInfos = newControllersPosition}
         
         let controllerPos = model.menuModel.controllerMenuSelector
+        
+        let secondCon = 
+            if controllerPos.kind.Equals(ControllerKind.ControllerA) then
+                model.controllerInfos |> HMap.tryFind ControllerKind.ControllerB
+            else model.controllerInfos |> HMap.tryFind ControllerKind.ControllerA
+        
         let newCP = model.controllerInfos |> HMap.tryFind controllerPos.kind
  
         match newCP with 

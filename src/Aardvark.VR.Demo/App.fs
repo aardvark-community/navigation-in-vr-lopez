@@ -104,6 +104,15 @@ module Demo =
 
             let controllers = newModel.controllerInfos
 
+            let newModel = 
+                match buttonTouched with 
+                | true -> 
+                    let newMenuModel = {newModel.menuModel with menu = Menu.MenuState.InMenu}
+                    {newModel with menuModel = newMenuModel}
+                | false -> 
+                    let newMenuModel = {newModel.menuModel with menu = newModel.menuModel.initialMenuState}
+                    {model with menuModel = newMenuModel}
+
             let newMenuModel = 
                 let checkCon = controllers |> HMap.tryFind kind
                 match checkCon with 
@@ -222,7 +231,14 @@ module Demo =
 
                     model 
                     |> PlaceLandmark.hoverEvaluationLandmarksOnWIM kind p
-                | _ -> model
+                | _ -> 
+                    let newControllersPosition = 
+                        model 
+                        |> OpcUtilities.updateControllersInfo kind p
+        
+                    {model with controllerInfos = newControllersPosition}
+                
+            let printshite = printfn "menustate: %s initialmenustate: %s" (model.menuModel.menu.ToString()) (model.menuModel.initialMenuState.ToString())
             
             let controllerMenuUpdate = MenuApp.update model.controllerInfos state vr newModel.menuModel (MenuAction.UpdateControllerPose (kind, p))
             {newModel with 
@@ -366,11 +382,7 @@ module Demo =
                     let newInitialUserPosWIMcone = 
                         OpcUtilities.mkCone Trafo3d.Identity 1
 
-                    let newLandmarkList = OpcUtilities.mkEvalFlags (Trafo3d.Translation(V3d.One * 100000.0)) 5
-
-                    let printinshite = 
-                        newModel.landmarkOnAnnotationSpace
-                        |> PList.map (fun x -> printfn "%A" (x.trafo.GetModelOrigin()))
+                    //let newLandmarkList = OpcUtilities.mkEvalFlags (Trafo3d.Translation(V3d.One * 100000.0)) 5
 
                     let newModel = 
                         newModel 
@@ -383,8 +395,8 @@ module Demo =
                         WIMinitialUserPosCone   = newInitialUserPosWIMcone
                         droneControl            = Drone.initial;
                         cyllinderControl        = PList.empty
-                        evaluationLandmarksWIM2RealWorld = newLandmarkList
-                        evaluationLandmarksWIM = newLandmarkList
+                        //evaluationLandmarksWIM2RealWorld = newLandmarkList
+                        //evaluationLandmarksWIM = newLandmarkList
                     }
                 | Menu.MenuState.Reset -> 
                     initial
@@ -525,7 +537,7 @@ module Demo =
                         }
                     
                     {newModel with droneControl = updateDrones}
-                //| _ -> newModel
+                | _ -> newModel
             | None -> newModel
         | GetTrackpadPosition (con, axis, pos) -> 
             model 
@@ -601,11 +613,15 @@ module Demo =
         // buttons identifications: sensitive = 0, backButton = 1, sideButtons = 2
         | VrMessage.Touch(con,button) -> 
             match button with 
-            | 0 -> [MenuMessage (Demo.MenuAction.CreateMenu(con |> ControllerKind.fromInt, true), con |> ControllerKind.fromInt, true)]
+            | 0 -> 
+                printfn "touchin"
+                [MenuMessage (Demo.MenuAction.CreateMenu(con |> ControllerKind.fromInt, true), con |> ControllerKind.fromInt, true)]
             | _ -> []
         | VrMessage.Untouch(con,button) -> 
             match button with 
-            | 0 -> [MenuMessage (Demo.MenuAction.CreateMenu(con |> ControllerKind.fromInt, false), con |> ControllerKind.fromInt, false)]
+            | 0 -> 
+                printfn "UNtouchin"
+                [MenuMessage (Demo.MenuAction.CreateMenu(con |> ControllerKind.fromInt, false), con |> ControllerKind.fromInt, false)]
             | _ -> []
         | VrMessage.ValueChange(con, axis, pos) ->
             match axis with 
@@ -1240,7 +1256,7 @@ module Demo =
 
         let WIMtransformedSgs = 
             [
-                landmarksOnWIM 
+                //landmarksOnWIM 
                 userPosOnWIM 
                 userPosOnAnnotationSpace |> Sg.trafo m.annotationSpaceTrafo
                 userConeOnWim
