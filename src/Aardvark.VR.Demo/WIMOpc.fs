@@ -209,11 +209,23 @@ module WIMOpc =
             | false -> 
                 let dist = V3d.Distance(userPos.trafo.GetModelOrigin(), con.pose.deviceToWorld.GetModelOrigin())
                 if dist <= 0.1 then 
+                    let feedbackUserPos = 
+                        model.WIMuserPos
+                        |> PList.map (fun x -> {x with color = C4b.DarkRed})
+                    let feedbackUserPosCone = 
+                        model.WIMuserPosCone
+                        |> PList.map (fun x -> {x with color = C4b.DarkRed})
                     let newMode = {model.menuModel with menu = MenuState.HoverChangeUserWIM}
-                    {model with menuModel = newMode}
+                    {model with menuModel = newMode; WIMuserPos = feedbackUserPos; WIMuserPosCone = feedbackUserPosCone}
                 else 
+                    let feedbackUserPos = 
+                        model.WIMuserPos
+                        |> PList.map (fun x -> {x with color = C4b.Red})
+                    let feedbackUserPosCone = 
+                        model.WIMuserPosCone
+                        |> PList.map (fun x -> {x with color = C4b.DarkRed})
                     let newMode1 = {model.menuModel with menu = MenuState.WIMLandmarks}
-                    {model with menuModel = newMode1}
+                    {model with menuModel = newMode1; WIMuserPos = feedbackUserPos; WIMuserPosCone = feedbackUserPosCone}
         | _, _ -> 
             model
 

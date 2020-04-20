@@ -708,6 +708,12 @@ module Demo =
                 //do! DefaultSurfaces.simpleLighting
             }
 
+    let mkControllerBox (cp : MPose) =
+        Sg.cone' 20 C4b.Cyan 0.5 5.0 
+            |> Sg.noEvents
+            |> Sg.scale 0.01
+            |> Sg.trafo (Mod.constant (Trafo3d.RotationInDegrees(V3d(-90.0,90.0,0.0))))
+
     let ui' (info : VrSystemInfo) (m : MModel) = 
         let text = m.vr |> Mod.map (function true -> "Stop VR" | false -> "Start VR")
 
@@ -750,7 +756,7 @@ module Demo =
                 toEffect DefaultSurfaces.vertexColor
                 toEffect DefaultSurfaces.simpleLighting                              
             ]       
-            
+
         let mkDisappearInsideCylinder = 
                 let cylBool = 
                     m.cyllinderControl
