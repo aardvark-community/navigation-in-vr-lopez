@@ -54,6 +54,7 @@ module Mutable =
         let _screen = MList.Create(__initial.screen, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _droneCamera = ResetMod.Create(__initial.droneCamera)
         let _cameraPosition = ResetMod.Create(__initial.cameraPosition)
+        let _screenPosition = ResetMod.Create(__initial.screenPosition)
         let _initControlTrafo = ResetMod.Create(__initial.initControlTrafo)
         let _initCameraPosition = ResetMod.Create(__initial.initCameraPosition)
         
@@ -61,6 +62,7 @@ module Mutable =
         member x.screen = _screen :> alist<_>
         member x.droneCamera = _droneCamera :> IMod<_>
         member x.cameraPosition = _cameraPosition :> IMod<_>
+        member x.screenPosition = _screenPosition :> IMod<_>
         member x.initControlTrafo = _initControlTrafo :> IMod<_>
         member x.initCameraPosition = _initCameraPosition :> IMod<_>
         
@@ -73,6 +75,7 @@ module Mutable =
                 MList.Update(_screen, v.screen)
                 ResetMod.Update(_droneCamera,v.droneCamera)
                 ResetMod.Update(_cameraPosition,v.cameraPosition)
+                ResetMod.Update(_screenPosition,v.screenPosition)
                 ResetMod.Update(_initControlTrafo,v.initControlTrafo)
                 ResetMod.Update(_initCameraPosition,v.initCameraPosition)
                 
@@ -114,6 +117,12 @@ module Mutable =
                     override x.Get(r) = r.cameraPosition
                     override x.Set(r,v) = { r with cameraPosition = v }
                     override x.Update(r,f) = { r with cameraPosition = f r.cameraPosition }
+                }
+            let screenPosition =
+                { new Lens<Demo.Main.Drone, Aardvark.Base.Trafo3d>() with
+                    override x.Get(r) = r.screenPosition
+                    override x.Set(r,v) = { r with screenPosition = v }
+                    override x.Update(r,f) = { r with screenPosition = f r.screenPosition }
                 }
             let initControlTrafo =
                 { new Lens<Demo.Main.Drone, Aardvark.Base.Trafo3d>() with

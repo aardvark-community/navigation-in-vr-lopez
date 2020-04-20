@@ -34,6 +34,7 @@ type Drone =
         screen          : plist<VisibleBox>
         droneCamera     : CameraView
         cameraPosition  : Trafo3d
+        screenPosition  : Trafo3d
         initControlTrafo : Trafo3d
         initCameraPosition : Trafo3d
     }
@@ -44,6 +45,7 @@ module Drone =
             screen          = PList.empty
             droneCamera     = CameraView.lookAt (V3d.III * 3.0) V3d.Zero V3d.OOI
             cameraPosition  = Trafo3d.Identity
+            screenPosition  = Trafo3d.Identity
             initControlTrafo = Trafo3d.Identity
             initCameraPosition = Trafo3d.Identity
         }

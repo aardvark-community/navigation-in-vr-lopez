@@ -441,7 +441,8 @@ module Demo =
                 | Menu.MenuState.DroneMode -> 
                     let newDrone = 
                         if newModel.droneControl.drone.Count.Equals(0) then 
-                            OpcUtilities.mkDrone id.pose.deviceToWorld 1
+                            let newTrafo = Trafo3d.Translation(V3d(id.pose.deviceToWorld.GetModelOrigin().X + 2.0, id.pose.deviceToWorld.GetModelOrigin().Y, id.pose.deviceToWorld.GetModelOrigin().Z))
+                            OpcUtilities.mkDrone newTrafo 1
                         else newModel.droneControl.drone
                     
                     let newDroneScreen = 
@@ -471,7 +472,8 @@ module Demo =
                 | Menu.MenuState.DroneModeController -> 
                     let newDrone = 
                         if newModel.droneControl.drone.Count.Equals(0) then 
-                            OpcUtilities.mkDrone id.pose.deviceToWorld 1
+                            let newTrafo = Trafo3d.Translation(V3d(id.pose.deviceToWorld.GetModelOrigin().X + 2.0, id.pose.deviceToWorld.GetModelOrigin().Y, id.pose.deviceToWorld.GetModelOrigin().Z))
+                            OpcUtilities.mkDrone newTrafo 1
                         else newModel.droneControl.drone
 
                     let newDroneScreen = 
@@ -1173,6 +1175,25 @@ module Demo =
             |> Sg.noEvents
             |> Sg.onOff mkDisappear
 
+        let borderSecondCameracontrollerTest = 
+            let mkDisappear = 
+                let menuMode = m.menuModel.menu
+                
+                adaptive {
+                    let! newMenuMode = menuMode
+                    match newMenuMode with 
+                    | MenuState.DroneModeController -> return true 
+                    | _ -> return false
+                }
+
+            let boxCenter = V3d(m.droneControl.cameraPosition.GetValue().GetModelOrigin().X - 0.12, m.droneControl.cameraPosition.GetValue().GetModelOrigin().Y, m.droneControl.cameraPosition.GetValue().GetModelOrigin().Z + 0.35)
+            
+            Sg.box (Mod.constant C4b.Red) (Mod.constant (Box3d.FromCenterAndSize(boxCenter, V3d(0.12, 0.70, 0.70))))
+            |> Sg.noEvents
+            |> defaultEffect
+            |> Sg.trafo m.droneControl.screenPosition
+            |> Sg.onOff mkDisappear
+
         let borderSecondCameraOnController = 
             let mkDisappear = 
                 let menuMode = m.menuModel.menu
@@ -1284,6 +1305,7 @@ module Demo =
                 //throwRayLine
                 showSecondCamera
                 borderSecondCamera
+                borderSecondCameracontrollerTest
                 //borderSecondCameraOnController
                 showSecondCameraOnController
                 //showDroneDistanceToLandmark

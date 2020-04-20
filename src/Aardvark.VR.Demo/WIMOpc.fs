@@ -223,7 +223,7 @@ module WIMOpc =
                         |> PList.map (fun x -> {x with color = C4b.Red})
                     let feedbackUserPosCone = 
                         model.WIMuserPosCone
-                        |> PList.map (fun x -> {x with color = C4b.DarkRed})
+                        |> PList.map (fun x -> {x with color = C4b.Red})
                     let newMode1 = {model.menuModel with menu = MenuState.WIMLandmarks}
                     {model with menuModel = newMode1; WIMuserPos = feedbackUserPos; WIMuserPosCone = feedbackUserPosCone}
         | _, _ -> 

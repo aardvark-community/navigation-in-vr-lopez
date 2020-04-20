@@ -168,11 +168,13 @@ module DroneControlCenter =
 
             let translation = V3d(newLmkC.GetModelOrigin().X + 0.1, newLmkC.GetModelOrigin().Y + 0.6, newLmkC.GetModelOrigin().Z )
             let translationCameraPosition = V3d(newLmkC.GetModelOrigin().X, newLmkC.GetModelOrigin().Y, newLmkC.GetModelOrigin().Z)
+            let translationScreenPosition = V3d(newLmkC.GetModelOrigin().X + 0.12, newLmkC.GetModelOrigin().Y, newLmkC.GetModelOrigin().Z)
 
             let scale = V3d.One
 
             let newTrafo = Trafo3d.FromComponents(scale, rotation1, translation) //* Trafo3d.RotationInDegrees(V3d(0.0,0.0,90.0))
             let newTrafoCameraPosition = Trafo3d.FromComponents(scale, rotation1, translationCameraPosition) //* Trafo3d.RotationInDegrees(V3d(0.0,0.0,90.0))
+            let newTrafoScreenPosition = Trafo3d.FromComponents(scale, rotation1, translationScreenPosition) //* Trafo3d.RotationInDegrees(V3d(0.0,0.0,90.0))
 
             let newScreenPos = 
                 model.droneControl.screen 
@@ -183,7 +185,8 @@ module DroneControlCenter =
             let newDroneCameraPos = 
                 {model.droneControl with 
                     cameraPosition = newTrafoCameraPosition
-                    screen = newScreenPos    
+                    screen = newScreenPos 
+                    screenPosition = newTrafoScreenPosition
                 }
             {model  with droneControl = newDroneCameraPos}
         | _, _ -> model
