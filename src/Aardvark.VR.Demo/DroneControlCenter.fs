@@ -44,7 +44,11 @@ module DroneControlCenter =
                 let newModel = 
                     let droneFirst = newModel.droneControl.drone |> PList.tryFirst
                     match droneFirst with 
-                    | Some dd -> {newModel with droneHeight = "Drone height: " + dd.trafo.GetModelOrigin().Z.ToString()}
+                    | Some dd -> 
+                        let newDroneHeightTrafo = Trafo3d.Translation(V3d(newModel.droneControl.cameraPosition.GetModelOrigin().X, newModel.droneControl.cameraPosition.GetModelOrigin().Y - 0.75, newModel.droneControl.cameraPosition.GetModelOrigin().Z))
+                        let updateDroneHeight = 
+                            {newModel.droneHeight with text = "Drone height: " + dd.trafo.GetModelOrigin().Z.ToString(); trafo = newDroneHeightTrafo}
+                        {newModel with droneHeight = updateDroneHeight}
                     | None -> newModel
 
                 let updateDrones = 

@@ -64,6 +64,19 @@ module Compass =
         }
 
 [<DomainType>]
+type StringInfo = 
+    {
+        text    : string
+        trafo   : Trafo3d
+    }
+module StringInfo = 
+    let initial = 
+        {
+            trafo = Trafo3d.Translation(V3d.One * 500000.0)
+            text = ""
+        }
+
+[<DomainType>]
 type Model =
     {
         text                : string
@@ -127,8 +140,8 @@ type Model =
         evaluationLandmarksWIM      : plist<VisibleBox>
         evaluationLandmarksWIM2RealWorld : plist<VisibleBox>
         evaluationCounter           : int
-        droneDistanceToLandmark     : string
-        droneHeight                 : string
+        droneDistanceToLandmark     : StringInfo
+        droneHeight                 : StringInfo
         teleportBox                 : plist<VisibleBox> 
         
     }
@@ -226,8 +239,8 @@ module Model =
             evaluationLandmarksWIM      = PList.empty
             evaluationLandmarksWIM2RealWorld= PList.empty
             evaluationCounter           = 0
-            droneDistanceToLandmark     = ""
-            droneHeight                 = ""
+            droneDistanceToLandmark     = StringInfo.initial
+            droneHeight                 = StringInfo.initial
             teleportBox                 = PList.empty
         }
 

@@ -191,7 +191,10 @@ module PlaceLandmark =
             let controllerOnAnnotationSpace = con.pose.deviceToWorld * model.workSpaceTrafo.Inverse
             let dist = System.Math.Round(V3d.Distance(controllerOnAnnotationSpace.GetModelOrigin(), evalLand.trafo.GetModelOrigin()), 3)
             //printfn "dist: %A" dist
-            let model = {model with droneDistanceToLandmark = "distance to next landmark: " + dist.ToString()}
+            let model = 
+                let newTrafo = Trafo3d.Translation(V3d(model.droneControl.cameraPosition.GetModelOrigin().X + 0.30, model.droneControl.cameraPosition.GetModelOrigin().Y - 0.75, model.droneControl.cameraPosition.GetModelOrigin().Z))
+                let updateDrone = {model.droneDistanceToLandmark with text = "distance to next landmark: " + dist.ToString(); trafo = newTrafo}
+                {model with droneDistanceToLandmark = updateDrone}
 
             if dist <= 8.0 then 
                 let newBoxColor = 
@@ -222,7 +225,10 @@ module PlaceLandmark =
             let evalandtrafo = evalLand.trafo.GetModelOrigin()
             let dist = System.Math.Round(V3d.Distance(controllerOnAnnotationSpace.GetModelOrigin(), evalLand.trafo.GetModelOrigin()), 3)
             //printfn "dist: %A" dist
-            let model = {model with droneDistanceToLandmark = "distance to next landmark: " + dist.ToString()}
+            let model = 
+                let newTrafo = Trafo3d.Translation(V3d(model.WIMworkSpaceTrafo.GetModelOrigin().X, model.WIMworkSpaceTrafo.GetModelOrigin().Y - 5.0, model.WIMworkSpaceTrafo.GetModelOrigin().Z))
+                let updateDrone = {model.droneDistanceToLandmark with text = "distance to next landmark: " + dist.ToString(); trafo = newTrafo}
+                {model with droneDistanceToLandmark = updateDrone}
 
             if dist <= 8.0 then 
                 let newBoxColor = 

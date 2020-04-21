@@ -161,7 +161,6 @@ module Demo =
                         |> WIMOpc.editMiniMap kind p
 
                     newModel 
-                    //|> PlaceLandmark.hoverEvaluationLandmarksOnWIM kind p
                 | Menu.MenuState.WIMLandmarks -> 
                     let model = 
                         model
@@ -172,10 +171,13 @@ module Demo =
                         |> PlaceLandmark.placingOnWIM kind p
 
                     model 
-                    //|> PlaceLandmark.hoverEvaluationLandmarksOnWIM kind p
                 | Menu.MenuState.Teleportation -> 
+                    let model = 
+                        model 
+                        |> Teleport.hitRay kind p
+
                     model 
-                    |> Teleport.hitRay kind p
+                    |> Teleport.rayIntersection kind p
                 | Menu.MenuState.DroneMode -> 
                     let controllerPos = model.menuModel.controllerMenuSelector
                     let userHMD = model.controllerInfos |> HMap.tryFind ControllerKind.HMD
@@ -237,9 +239,7 @@ module Demo =
                         |> OpcUtilities.updateControllersInfo kind p
         
                     {model with controllerInfos = newControllersPosition}
-                
-            //let printshite = printfn "menustate: %s initialmenustate: %s" (model.menuModel.menu.ToString()) (model.menuModel.initialMenuState.ToString())
-            
+                            
             let controllerMenuUpdate = MenuApp.update model.controllerInfos state vr newModel.menuModel (MenuAction.UpdateControllerPose (kind, p))
             {newModel with 
                 menuModel = controllerMenuUpdate; 
@@ -402,7 +402,7 @@ module Demo =
                     initial
                 | Menu.MenuState.Teleportation -> 
                     let controllTrafo = id.pose.deviceToWorld
-
+                    
                     let origin = controllTrafo.Forward.TransformPos V3d.Zero
                     let controllDir = controllTrafo.Forward.TransformDir V3d.YAxis
                     
@@ -998,6 +998,7 @@ module Demo =
             let ttt = m.teleportRay
             adaptive{
                 let! rrr = ttt
+
                 return [|rrr.Line3d|]
             }
             
@@ -1170,7 +1171,7 @@ module Demo =
                     | _ -> return false
                 }
 
-            let boxCenter = V3d(m.droneControl.cameraPosition.GetValue().GetModelOrigin().X - 0.12, m.droneControl.cameraPosition.GetValue().GetModelOrigin().Y, m.droneControl.cameraPosition.GetValue().GetModelOrigin().Z + 0.35)
+            let boxCenter = V3d(m.droneControl.cameraPosition.GetValue().GetModelOrigin().X - 0.12, m.droneControl.cameraPosition.GetValue().GetModelOrigin().Y, m.droneControl.cameraPosition.GetValue().GetModelOrigin().Z + 0.20)
             
             Sg.box (Mod.constant C4b.Red) (Mod.constant (Box3d.FromCenterAndSize(boxCenter, V3d(0.12, 0.70, 0.70))))
             |> Sg.noEvents
@@ -1237,11 +1238,17 @@ module Demo =
             |> Sg.pass (RenderPass.after "" RenderPassOrder.Arbitrary RenderPass.main)
             |> Sg.onOff mkDisappear
         
-        let showDroneDistanceToLandmark = 
-            Sg.textWithConfig { TextConfig.Default with renderStyle = RenderStyle.Billboard; align = TextAlignment.Center; flipViewDependent = true } m.droneHeight
+        let showDroneHeight = 
+            Sg.textWithConfig { TextConfig.Default with renderStyle = RenderStyle.Billboard; align = TextAlignment.Center; flipViewDependent = true } m.droneHeight.text
             |> Sg.noEvents
             |> Sg.scale 0.05
-            |> Sg.trafo(m.droneControl.cameraPosition)
+            |> Sg.trafo(m.droneHeight.trafo)
+
+        let showDroneDist2Landmark = 
+            Sg.textWithConfig { TextConfig.Default with renderStyle = RenderStyle.Billboard; align = TextAlignment.Center; flipViewDependent = true } m.droneDistanceToLandmark.text
+            |> Sg.noEvents
+            |> Sg.scale 0.05
+            |> Sg.trafo(m.droneDistanceToLandmark.trafo)
 
         let cylinderCenterShow =     
             m.cyllinderControl
@@ -1292,7 +1299,8 @@ module Demo =
                 borderSecondCameracontrollerTest
                 //borderSecondCameraOnController
                 showSecondCameraOnController
-                //showDroneDistanceToLandmark
+                //showDroneHeight
+                showDroneDist2Landmark
             ] |> Sg.ofList
 
         Sg.ofList [transformedSgs; WIMtransformedSgs; notTransformedSgs; opcs; WIMopcs]
@@ -1400,8 +1408,8 @@ module Demo =
             evaluationLandmarksWIM      = PList.empty
             evaluationLandmarksWIM2RealWorld= PList.empty
             evaluationCounter           = 0
-            droneDistanceToLandmark     = ""
-            droneHeight                 = ""
+            droneDistanceToLandmark     = StringInfo.initial
+            droneHeight                 = StringInfo.initial
             teleportBox                 = PList.empty
         }
     let app (runtime : IRuntime) =

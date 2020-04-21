@@ -184,6 +184,52 @@ module Mutable =
                 }
     
     
+    type MStringInfo(__initial : Demo.Main.StringInfo) =
+        inherit obj()
+        let mutable __current : Aardvark.Base.Incremental.IModRef<Demo.Main.StringInfo> = Aardvark.Base.Incremental.EqModRef<Demo.Main.StringInfo>(__initial) :> Aardvark.Base.Incremental.IModRef<Demo.Main.StringInfo>
+        let _text = ResetMod.Create(__initial.text)
+        let _trafo = ResetMod.Create(__initial.trafo)
+        
+        member x.text = _text :> IMod<_>
+        member x.trafo = _trafo :> IMod<_>
+        
+        member x.Current = __current :> IMod<_>
+        member x.Update(v : Demo.Main.StringInfo) =
+            if not (System.Object.ReferenceEquals(__current.Value, v)) then
+                __current.Value <- v
+                
+                ResetMod.Update(_text,v.text)
+                ResetMod.Update(_trafo,v.trafo)
+                
+        
+        static member Create(__initial : Demo.Main.StringInfo) : MStringInfo = MStringInfo(__initial)
+        static member Update(m : MStringInfo, v : Demo.Main.StringInfo) = m.Update(v)
+        
+        override x.ToString() = __current.Value.ToString()
+        member x.AsString = sprintf "%A" __current.Value
+        interface IUpdatable<Demo.Main.StringInfo> with
+            member x.Update v = x.Update v
+    
+    
+    
+    [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
+    module StringInfo =
+        [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
+        module Lens =
+            let text =
+                { new Lens<Demo.Main.StringInfo, System.String>() with
+                    override x.Get(r) = r.text
+                    override x.Set(r,v) = { r with text = v }
+                    override x.Update(r,f) = { r with text = f r.text }
+                }
+            let trafo =
+                { new Lens<Demo.Main.StringInfo, Aardvark.Base.Trafo3d>() with
+                    override x.Get(r) = r.trafo
+                    override x.Set(r,v) = { r with trafo = v }
+                    override x.Update(r,f) = { r with trafo = f r.trafo }
+                }
+    
+    
     type MModel(__initial : Demo.Main.Model) =
         inherit obj()
         let mutable __current : Aardvark.Base.Incremental.IModRef<Demo.Main.Model> = Aardvark.Base.Incremental.EqModRef<Demo.Main.Model>(__initial) :> Aardvark.Base.Incremental.IModRef<Demo.Main.Model>
@@ -231,8 +277,8 @@ module Mutable =
         let _evaluationLandmarksWIM = MList.Create(__initial.evaluationLandmarksWIM, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _evaluationLandmarksWIM2RealWorld = MList.Create(__initial.evaluationLandmarksWIM2RealWorld, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _evaluationCounter = ResetMod.Create(__initial.evaluationCounter)
-        let _droneDistanceToLandmark = ResetMod.Create(__initial.droneDistanceToLandmark)
-        let _droneHeight = ResetMod.Create(__initial.droneHeight)
+        let _droneDistanceToLandmark = MStringInfo.Create(__initial.droneDistanceToLandmark)
+        let _droneHeight = MStringInfo.Create(__initial.droneHeight)
         let _teleportBox = MList.Create(__initial.teleportBox, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         
         member x.text = _text :> IMod<_>
@@ -280,8 +326,8 @@ module Mutable =
         member x.evaluationLandmarksWIM = _evaluationLandmarksWIM :> alist<_>
         member x.evaluationLandmarksWIM2RealWorld = _evaluationLandmarksWIM2RealWorld :> alist<_>
         member x.evaluationCounter = _evaluationCounter :> IMod<_>
-        member x.droneDistanceToLandmark = _droneDistanceToLandmark :> IMod<_>
-        member x.droneHeight = _droneHeight :> IMod<_>
+        member x.droneDistanceToLandmark = _droneDistanceToLandmark
+        member x.droneHeight = _droneHeight
         member x.teleportBox = _teleportBox :> alist<_>
         
         member x.Current = __current :> IMod<_>
@@ -333,8 +379,8 @@ module Mutable =
                 MList.Update(_evaluationLandmarksWIM, v.evaluationLandmarksWIM)
                 MList.Update(_evaluationLandmarksWIM2RealWorld, v.evaluationLandmarksWIM2RealWorld)
                 ResetMod.Update(_evaluationCounter,v.evaluationCounter)
-                ResetMod.Update(_droneDistanceToLandmark,v.droneDistanceToLandmark)
-                ResetMod.Update(_droneHeight,v.droneHeight)
+                MStringInfo.Update(_droneDistanceToLandmark, v.droneDistanceToLandmark)
+                MStringInfo.Update(_droneHeight, v.droneHeight)
                 MList.Update(_teleportBox, v.teleportBox)
                 
         
@@ -623,13 +669,13 @@ module Mutable =
                     override x.Update(r,f) = { r with evaluationCounter = f r.evaluationCounter }
                 }
             let droneDistanceToLandmark =
-                { new Lens<Demo.Main.Model, System.String>() with
+                { new Lens<Demo.Main.Model, Demo.Main.StringInfo>() with
                     override x.Get(r) = r.droneDistanceToLandmark
                     override x.Set(r,v) = { r with droneDistanceToLandmark = v }
                     override x.Update(r,f) = { r with droneDistanceToLandmark = f r.droneDistanceToLandmark }
                 }
             let droneHeight =
-                { new Lens<Demo.Main.Model, System.String>() with
+                { new Lens<Demo.Main.Model, Demo.Main.StringInfo>() with
                     override x.Get(r) = r.droneHeight
                     override x.Set(r,v) = { r with droneHeight = v }
                     override x.Update(r,f) = { r with droneHeight = f r.droneHeight }

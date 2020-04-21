@@ -11,6 +11,9 @@ module Teleport =
     open Model
     open OpenTK
     open Aardvark.Base.MapExtImplementation
+    open Aardvark.Prinziple
+    open Aardvark.SceneGraph.Opc
+    open Demo
 
     let hitRay kind p model : Model = 
         let newControllersPosition = 
@@ -28,6 +31,7 @@ module Teleport =
             let controllDir = controllTrafo.Forward.TransformDir V3d.YAxis
 
             let testRay = Ray3d(origin, controllDir)
+                        
             {model with teleportRay = testRay}
         | None -> model
 
@@ -65,6 +69,48 @@ module Teleport =
             | false -> model
         | None -> model 
 
+    let rayIntersection kind p model : Model = 
+        //let patchHierarchies = 
+        //    model.patchHierarchies
+        //    |> List.toSeq
+        //    |> Seq.map Prinziple.registerIfZipped
+        //    |> Seq.map (fun x -> 
+        //        PatchHierarchy.load Serialization.binarySerializer.Pickle Serialization.binarySerializer.UnPickle (OpcPaths x)
+        //    )
+        //    |> Seq.toList
+
+        let kdTreesPerHierarchy =
+            [| 
+                for h in model.patchHierarchies do
+                    if true then   
+                        yield KdTrees.loadKdTrees h Trafo3d.Identity ViewerModality.XYZ SerializationOpc.binarySerializer                    
+                    else 
+                        yield HMap.empty
+            |]
+
+        let totalKdTrees = kdTreesPerHierarchy.Length
+        Log.line "creating %d kdTrees" totalKdTrees
+
+        let kdTrees = 
+            kdTreesPerHierarchy                     
+            |> Array.Parallel.mapi (fun i e ->
+                Log.start "creating kdtree #%d of %d" i totalKdTrees
+                let r = e
+                Log.stop()
+                r
+            )
+            |> Array.fold (fun a b -> HMap.union a b) HMap.empty
+
+        let checkIntersect = OpcViewer.Base.Picking.Intersect.intersectWithOpc (Some kdTrees) (FastRay3d(model.teleportRay))
         
-        
+        let checkFloatIntersect = 
+            match checkIntersect with 
+            | Some f -> printfn "intersection float: %f" f
+            | None -> printfn "there is no float"
+
+
+
+
+
+        model 
 
