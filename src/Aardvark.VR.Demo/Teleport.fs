@@ -26,7 +26,7 @@ module Teleport =
             let controllTrafo = id.pose.deviceToWorld
             let origin = controllTrafo.Forward.TransformPos V3d.Zero
             let controllDir = controllTrafo.Forward.TransformDir V3d.YAxis
-            //let dir = V3d.IOO //V3d.Subtract(V3d(id.pose.deviceToWorld.GetModelOrigin().X + 1000000000.0, id.pose.deviceToWorld.GetModelOrigin().Y, id.pose.deviceToWorld.GetModelOrigin().Z), id.pose.deviceToWorld.GetModelOrigin())
+
             let testRay = Ray3d(origin, controllDir)
             {model with teleportRay = testRay}
         | None -> model

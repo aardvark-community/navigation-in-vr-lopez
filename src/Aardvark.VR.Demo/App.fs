@@ -400,18 +400,6 @@ module Demo =
                     }
                 | Menu.MenuState.Reset -> 
                     initial
-                    //{newModel with 
-                    //    landmarkOnController         = PList.empty;
-                    //    landmarkOnAnnotationSpace    = PList.empty;
-                    //    WIMopcSpaceTrafo             = Trafo3d.Translation(V3d(1000000.0, 1000000.0, 1000000.0));
-                    //    WIMlandmarkOnAnnotationSpace = PList.empty;
-                    //    WIMuserPos                   = PList.empty;
-                    //    opcSpaceTrafo                = Trafo3d.FromBasis(V3d(0.0138907544072255, 0.0370928394273679, 0.410690910035505), V3d(0.11636514267386, 0.393870197365478, -0.0395094556451799), V3d(-0.395603213079913, 0.117157783795495, 0.0027988969790869), V3d(-57141.4217354136, 16979.9987604353, -1399135.09579421));
-                    //    annotationSpaceTrafo         = Trafo3d.Identity;
-                    //    workSpaceTrafo               = Trafo3d.Identity;
-                    //    droneControl                 = Drone.initial;
-                    //    cyllinderControl             = PList.empty
-                    //}
                 | Menu.MenuState.Teleportation -> 
                     let controllTrafo = id.pose.deviceToWorld
 
@@ -434,20 +422,6 @@ module Demo =
                     newModel 
                     |> Teleport.teleportUser
                     
-                    //match id.backButtonPressed with 
-                    //| true -> newModel 
-                    //| false -> 
-                    //    let controllDir = controllTrafo.Forward.C1
-                    //    let newTrafo = Trafo3d.Translation(id.pose.deviceToWorld.GetModelOrigin() + controllDir.XYZ * 50.0).Inverse
-                    //    let newWorkSpace = newModel.initWorkSpaceTrafo * newTrafo //Trafo3d.Translation(newModel.workSpaceTrafo.GetModelOrigin() + controllDir.XYZ * 5.0).Inverse
-                    //    let newOpcSpace = newModel.initOpcSpaceTrafo * newWorkSpace
-                    //    let newFlagSpace = newModel.initAnnotationSpaceTrafo * newWorkSpace
-
-                    //    {newModel with 
-                    //        workSpaceTrafo          = newWorkSpace
-                    //        opcSpaceTrafo           = newOpcSpace
-                    //        annotationSpaceTrafo    = newFlagSpace
-                    //    }
                 | Menu.MenuState.DroneMode -> 
                     let newDrone = 
                         if newModel.droneControl.drone.Count.Equals(0) then 
