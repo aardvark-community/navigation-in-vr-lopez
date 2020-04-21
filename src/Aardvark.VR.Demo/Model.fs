@@ -129,6 +129,7 @@ type Model =
         evaluationCounter           : int
         droneDistanceToLandmark     : string
         droneHeight                 : string
+        teleportBox                 : plist<VisibleBox> 
         
     }
 
@@ -227,6 +228,7 @@ module Model =
             evaluationCounter           = 0
             droneDistanceToLandmark     = ""
             droneHeight                 = ""
+            teleportBox                 = PList.empty
         }
 
     let initMainReset = 

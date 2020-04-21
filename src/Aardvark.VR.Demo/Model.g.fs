@@ -233,6 +233,7 @@ module Mutable =
         let _evaluationCounter = ResetMod.Create(__initial.evaluationCounter)
         let _droneDistanceToLandmark = ResetMod.Create(__initial.droneDistanceToLandmark)
         let _droneHeight = ResetMod.Create(__initial.droneHeight)
+        let _teleportBox = MList.Create(__initial.teleportBox, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         
         member x.text = _text :> IMod<_>
         member x.vr = _vr :> IMod<_>
@@ -281,6 +282,7 @@ module Mutable =
         member x.evaluationCounter = _evaluationCounter :> IMod<_>
         member x.droneDistanceToLandmark = _droneDistanceToLandmark :> IMod<_>
         member x.droneHeight = _droneHeight :> IMod<_>
+        member x.teleportBox = _teleportBox :> alist<_>
         
         member x.Current = __current :> IMod<_>
         member x.Update(v : Demo.Main.Model) =
@@ -333,6 +335,7 @@ module Mutable =
                 ResetMod.Update(_evaluationCounter,v.evaluationCounter)
                 ResetMod.Update(_droneDistanceToLandmark,v.droneDistanceToLandmark)
                 ResetMod.Update(_droneHeight,v.droneHeight)
+                MList.Update(_teleportBox, v.teleportBox)
                 
         
         static member Create(__initial : Demo.Main.Model) : MModel = MModel(__initial)
@@ -630,4 +633,10 @@ module Mutable =
                     override x.Get(r) = r.droneHeight
                     override x.Set(r,v) = { r with droneHeight = v }
                     override x.Update(r,f) = { r with droneHeight = f r.droneHeight }
+                }
+            let teleportBox =
+                { new Lens<Demo.Main.Model, Aardvark.Base.plist<Demo.VisibleBox>>() with
+                    override x.Get(r) = r.teleportBox
+                    override x.Set(r,v) = { r with teleportBox = v }
+                    override x.Update(r,f) = { r with teleportBox = f r.teleportBox }
                 }

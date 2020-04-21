@@ -422,22 +422,32 @@ module Demo =
                     //let controllDir = controllTrafo.GetViewDirectionLH()
                     //let origin = controllTrafo.GetModelOrigin()
 
-                    let testRay = Ray3d(origin, controllDir)
-                    let newModel = {newModel with teleportRay = testRay; droneControl = Drone.initial; cyllinderControl = PList.empty}
-                    
-                    match id.backButtonPressed with 
-                    | true -> newModel 
-                    | false -> 
-                        let controllDir = controllTrafo.Forward.C1
-                        let newWorkSpace = Trafo3d.Translation(newModel.workSpaceTrafo.GetModelOrigin() + controllDir.XYZ * 5.0).Inverse
-                        let newOpcSpace = model.initOpcSpaceTrafo * newWorkSpace
-                        let newFlagSpace = model.initAnnotationSpaceTrafo * newWorkSpace
+                    let newBox = 
+                        if newModel.teleportBox.Count.Equals(0) then 
+                            OpcUtilities.mkFlags id.pose.deviceToWorld 1
+                        else newModel.teleportBox
 
-                        {newModel with 
-                            workSpaceTrafo          = newWorkSpace
-                            opcSpaceTrafo           = newOpcSpace
-                            annotationSpaceTrafo    = newFlagSpace
-                        }
+                    let testRay = Ray3d(origin, controllDir)
+                    
+                    let newModel = {newModel with teleportRay = testRay; droneControl = Drone.initial; cyllinderControl = PList.empty; teleportBox = newBox}
+
+                    newModel 
+                    |> Teleport.teleportUser
+                    
+                    //match id.backButtonPressed with 
+                    //| true -> newModel 
+                    //| false -> 
+                    //    let controllDir = controllTrafo.Forward.C1
+                    //    let newTrafo = Trafo3d.Translation(id.pose.deviceToWorld.GetModelOrigin() + controllDir.XYZ * 50.0).Inverse
+                    //    let newWorkSpace = newModel.initWorkSpaceTrafo * newTrafo //Trafo3d.Translation(newModel.workSpaceTrafo.GetModelOrigin() + controllDir.XYZ * 5.0).Inverse
+                    //    let newOpcSpace = newModel.initOpcSpaceTrafo * newWorkSpace
+                    //    let newFlagSpace = newModel.initAnnotationSpaceTrafo * newWorkSpace
+
+                    //    {newModel with 
+                    //        workSpaceTrafo          = newWorkSpace
+                    //        opcSpaceTrafo           = newOpcSpace
+                    //        annotationSpaceTrafo    = newFlagSpace
+                    //    }
                 | Menu.MenuState.DroneMode -> 
                     let newDrone = 
                         if newModel.droneControl.drone.Count.Equals(0) then 
@@ -1302,7 +1312,7 @@ module Demo =
                 deviceSgs
                 menuApp
                 //landmarks
-                //throwRayLine
+                throwRayLine
                 showSecondCamera
                 borderSecondCamera
                 borderSecondCameracontrollerTest
@@ -1418,6 +1428,7 @@ module Demo =
             evaluationCounter           = 0
             droneDistanceToLandmark     = ""
             droneHeight                 = ""
+            teleportBox                 = PList.empty
         }
     let app (runtime : IRuntime) =
         {
