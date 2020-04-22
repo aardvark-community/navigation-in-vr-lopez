@@ -146,7 +146,23 @@ module PlaceLandmark =
                     geometry = Box3d.FromSize(V3d(1.0, 1.0, 15.0))
                 })
 
-        let model = {model with evaluationLandmarks = newBoxPos}
+        let newBoxPos1 = 
+            model.evaluationLandmarksLook //look for different position for the look landmarks
+            |> PList.updateAt model.evaluationCounter (fun el -> 
+                let newPositions = 
+                    [V3d(185.197639465332, 36.5524291992188, 10.9512329101563);
+                    V3d(-185.197639465332, 36.5524291992188, 10.9512329101563); 
+                    V3d(-53.2457828521729, -106.917476654053, -6.37202262878418);
+                    V3d(-6.98366165161133, -46.9223976135254, -7.34567642211914);
+                    V3d(52.2900581359863, 93.6270713806152, 21.503210067749)]
+                    
+                {el with 
+                    trafo = Trafo3d.Translation(newPositions.Item model.evaluationCounter);
+                    geometry = Box3d.FromSize(V3d(1.0, 1.0, 15.0));
+                    color = C4b.Blue
+                })
+
+        let model = {model with evaluationLandmarks = newBoxPos; evaluationLandmarksLook = newBoxPos1}
         model
       
     let updateLandmarksPositionOnWIM model : Model = // positions of evaluation landmarks in wim and drone mode should be different!!!
@@ -170,7 +186,23 @@ module PlaceLandmark =
                     geometry = Box3d.FromSize(V3d(1.0, 1.0, 15.0))
                 })
 
-        let model = {model with evaluationLandmarks = newBoxPos}
+        let newBoxPos1 = 
+            model.evaluationLandmarksLook //look for different position for the look landmarks
+            |> PList.updateAt model.evaluationCounter (fun el -> 
+                let newPositions = 
+                    [V3d(185.197639465332, 36.5524291992188, 10.9512329101563);
+                    V3d(-185.197639465332, 36.5524291992188, 10.9512329101563); 
+                    V3d(-53.2457828521729, -106.917476654053, -6.37202262878418);
+                    V3d(-6.98366165161133, -46.9223976135254, -7.34567642211914);
+                    V3d(52.2900581359863, 93.6270713806152, 21.503210067749)]
+                    
+                {el with 
+                    trafo = Trafo3d.Translation(newPositions.Item model.evaluationCounter);
+                    geometry = Box3d.FromSize(V3d(1.0, 1.0, 15.0));
+                    color = C4b.Blue
+                })
+
+        let model = {model with evaluationLandmarks = newBoxPos; evaluationLandmarksLook = newBoxPos1}
         model
     
     let hoverEvaluationLandmarks kind p model : Model = 
@@ -200,7 +232,10 @@ module PlaceLandmark =
                 let newBoxColor = 
                     model.evaluationLandmarks
                     |> PList.updateAt model.evaluationCounter (fun el -> {el with color = C4b.Green})
-                {model with evaluationCounter = model.evaluationCounter + 1; evaluationLandmarks = newBoxColor}
+                let newBoxColor1 = 
+                    model.evaluationLandmarksLook
+                    |> PList.updateAt model.evaluationCounter (fun el -> {el with color = C4b.Green})
+                {model with evaluationCounter = model.evaluationCounter + 1; evaluationLandmarks = newBoxColor; evaluationLandmarksLook = newBoxColor1}
             else model
         | _, _ -> model
 
@@ -239,11 +274,16 @@ module PlaceLandmark =
                     model.evaluationLandmarks
                     |> PList.updateAt model.evaluationCounter (fun el -> {el with color = C4b.Green})
                 
+                let newBoxColor2 = 
+                    model.evaluationLandmarksLook
+                    |> PList.updateAt model.evaluationCounter (fun el -> {el with color = C4b.Green})
+
                 let model = 
                     {model with 
                         evaluationCounter = model.evaluationCounter + 1; 
                         evaluationLandmarksWIM = newBoxColor; 
-                        evaluationLandmarks = newBoxColor1
+                        evaluationLandmarks = newBoxColor1;
+                        evaluationLandmarksLook = newBoxColor2
                     }
 
                 model |> updateLandmarksPositionOnWIM

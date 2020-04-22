@@ -153,6 +153,8 @@ type Model =
         droneDistanceToLandmark     : StringInfo
         droneHeight                 : StringInfo
         teleportBox                 : plist<VisibleBox> 
+
+
         
     }
 
@@ -285,6 +287,7 @@ module Model =
             droneDistanceToLandmark     = StringInfo.initial
             droneHeight                 = StringInfo.initial
             teleportBox                 = PList.empty
+
         }
 
     let initMainReset = 

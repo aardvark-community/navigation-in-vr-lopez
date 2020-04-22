@@ -366,7 +366,8 @@ module Demo =
                             droneControl = Drone.initial; 
                             cyllinderControl = PList.empty
                             evaluationLandmarksWIM2RealWorld = newLandmarkList
-                            evaluationLandmarksWIM = newLandmarkList    
+                            evaluationLandmarksWIM = newLandmarkList 
+                            evaluationLandmarksWIMLook = newLandmarkList
                         }
 
                     newModel 
@@ -415,9 +416,16 @@ module Demo =
                             OpcUtilities.mkFlags id.pose.deviceToWorld 1
                         else newModel.teleportBox
 
+                    
                     let testRay = Ray3d(origin, controllDir)
                     
-                    let newModel = {newModel with teleportRay = testRay; droneControl = Drone.initial; cyllinderControl = PList.empty; teleportBox = newBox}
+                    let newModel = 
+                        {newModel with 
+                            teleportRay = testRay; 
+                            droneControl = Drone.initial; 
+                            cyllinderControl = PList.empty; 
+                            teleportBox = newBox
+                        }
 
                     newModel 
                     |> Teleport.teleportUser
@@ -879,8 +887,30 @@ module Demo =
             |> Sg.noEvents
             |> Sg.onOff mkDisappearInsideCylinder
 
+        let evaluationLandsLook = 
+            m.evaluationLandmarksLook
+            |> AList.toASet 
+            |> ASet.map (fun b ->
+                mkFlag m b
+            )
+            |> Sg.set
+            |> defaultEffect
+            |> Sg.noEvents
+            |> Sg.onOff mkDisappearInsideCylinder
+
         let evaluationLandsOnWIM = 
             m.evaluationLandmarksWIM
+            |> AList.toASet 
+            |> ASet.map (fun b ->
+                mkFlag m b
+            )
+            |> Sg.set
+            |> defaultEffect
+            |> Sg.noEvents
+            |> Sg.onOff mkDisappearInsideCylinder
+
+        let evaluationLandsOnWIMLook = 
+            m.evaluationLandmarksWIMLook
             |> AList.toASet 
             |> ASet.map (fun b ->
                 mkFlag m b
@@ -1014,6 +1044,7 @@ module Demo =
                 ]
             |> Sg.pass (RenderPass.after "lines" RenderPassOrder.Arbitrary RenderPass.main)
             |> Sg.depthTest (Mod.constant DepthTestMode.None)
+            |> Sg.trafo m.opcSpaceTrafo
 
         let signature =
             runtime.CreateFramebufferSignature [
@@ -1263,11 +1294,12 @@ module Demo =
             //|> Sg.pass (RenderPass.after "" RenderPassOrder.Arbitrary RenderPass.main)
             |> Sg.onOff mkDisappearInsideCylinder
             |> Sg.noEvents
-
+       
         let transformedSgs = 
             [
                 //landmarksOnAnnotationSpace
                 evaluationLands
+                evaluationLandsLook
                 drones
                 droneCylinder
                 //cylinderCenterShow
@@ -1284,6 +1316,7 @@ module Demo =
                 initialUserPosOnWIM
                 initialUserConeOnWim
                 evaluationLandsOnWIM
+                evaluationLandsOnWIMLook
                 evaluationLandsOnWIM2RealWorld |> Sg.trafo m.annotationSpaceTrafo
             ]
             |> Sg.ofList
@@ -1436,7 +1469,7 @@ module Demo =
             evaluationLandmarksWIM      = PList.empty
             evaluationLandmarksWIM2RealWorld= PList.empty
 
-            evaluationLandmarksLook     = PList.empty 
+            evaluationLandmarksLook     = newEvalLandmarks 
             evaluationLandmarksWIMLook  = PList.empty
             evaluationLandmarksWIM2RealWorldLook = PList.empty
 
@@ -1445,6 +1478,7 @@ module Demo =
             droneDistanceToLandmark     = StringInfo.initial
             droneHeight                 = StringInfo.initial
             teleportBox                 = PList.empty
+
         }
     let app (runtime : IRuntime) =
         {

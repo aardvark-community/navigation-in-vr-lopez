@@ -26,7 +26,7 @@ module Teleport =
         
         match newCP with
         | Some id -> 
-            let controllTrafo = id.pose.deviceToWorld
+            let controllTrafo = id.pose.deviceToWorld * model.opcSpaceTrafo.Inverse
             let origin = controllTrafo.Forward.TransformPos V3d.Zero
             let controllDir = controllTrafo.Forward.TransformDir V3d.YAxis
 
@@ -70,6 +70,14 @@ module Teleport =
         | None -> model 
 
     let rayIntersection kind p model : Model = 
+        let newRay = FastRay3d(model.teleportRay)
         
+        let checkIntersection = 
+            OpcViewer.Base.Picking.Intersect.intersectWithOpc (Some model.kdTree) newRay
+        
+        //let printshite = 
+        //    match checkIntersection with 
+        //    | Some x -> printfn "intersect: %f" x
+        //    | None -> printfn "No intersection"
         model 
 

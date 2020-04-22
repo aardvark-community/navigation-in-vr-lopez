@@ -149,11 +149,27 @@ module WIMOpc =
                 {landmark with trafo = Trafo3d.FromComponents(scaleLmkC, rotationLmkC, translationLmkC)} //landmark.trafo * model.workSpaceTrafo.Inverse * newWorkSpace}
             )
 
+        let updateWIMEvalLandmarkLook = 
+            newModel.evaluationLandmarksLook
+            |> PList.map (fun landmark -> 
+                let newLmkC = landmark.trafo * newModel.WIMworkSpaceTrafo
+                let rtLmkC = newLmkC.GetOrthoNormalOrientation()
+                let rotLmkC = Rot3d.FromFrame(rtLmkC.Forward.C0.XYZ, rtLmkC.Forward.C1.XYZ, rtLmkC.Forward.C2.XYZ)
+                let rotationLmkC = rotLmkC.GetEulerAngles()
+
+                let translationLmkC = newLmkC.GetModelOrigin()
+
+                let scaleLmkC = V3d(0.0125, 0.0125, 0.004)
+
+                {landmark with trafo = Trafo3d.FromComponents(scaleLmkC, rotationLmkC, translationLmkC)} //landmark.trafo * model.workSpaceTrafo.Inverse * newWorkSpace}
+            )
+
         {newModel with 
             WIMuserPos                      = newWIMuserPos;
             WIMlandmarkOnAnnotationSpace    = updateWIMLandmark;
             WIMuserPosCone                  = newWIMuserPosCone;
-            evaluationLandmarksWIM          = updateWIMEvalLandmark
+            evaluationLandmarksWIM          = updateWIMEvalLandmark;
+            evaluationLandmarksWIMLook      = updateWIMEvalLandmarkLook
         }
     
     let updateMiniMap kind p model : Model = 
