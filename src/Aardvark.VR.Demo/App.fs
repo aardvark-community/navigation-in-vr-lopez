@@ -1315,7 +1315,8 @@ module Demo =
         }
 
     let initial =
-        
+        let kdTreesSerializable = SerializationOpc.registry.RegisterFactory (fun _ -> KdTrees.level0KdTreePickler)
+
         let startLandmark = 
             let ttt = OpcUtilities.mkFlags (Trafo3d.Translation(V3d(-1.14622000066486, 0.188908132549816, 0.456057644407983))) 1
             ttt
@@ -1351,6 +1352,31 @@ module Demo =
         Log.line "using path: %s" path
         //C:\Users\lopez\Desktop\VictoriaCrater\HiRISE_VictoriaCrater_SuperResolution
         let startOpcTrafo = Trafo3d.FromBasis(V3d(0.0138907544072255, 0.0370928394273679, 0.410690910035505), V3d(0.11636514267386, 0.393870197365478, -0.0395094556451799), V3d(-0.395603213079913, 0.117157783795495, 0.0027988969790869), V3d(-57141.4217354136, 16979.9987604353, -1399135.09579421))
+        
+        let loadKdTrees = 
+            let kdTreesPerHierarchy =
+                [| 
+                    for h in patchHierarchiesInit do
+                        if true then   
+                            yield KdTrees.loadKdTrees h Trafo3d.Identity ViewerModality.XYZ SerializationOpc.binarySerializer                    
+                        else 
+                            yield HMap.empty
+                |]
+
+            let totalKdTrees = kdTreesPerHierarchy.Length
+            Log.line "creating %d kdTrees" totalKdTrees
+
+            let kdTrees = 
+                kdTreesPerHierarchy                     
+                |> Array.Parallel.mapi (fun i e ->
+                    Log.start "creating kdtree #%d of %d" i totalKdTrees
+                    let r = e
+                    Log.stop()
+                    r
+                )
+                |> Array.fold (fun a b -> HMap.union a b) HMap.empty
+            kdTrees
+        
         {
             text                        = "some text"
             vr                          = false
@@ -1367,6 +1393,8 @@ module Demo =
             mainFrustum                 = Frustum.perspective 60.0 0.01 1000.0 1.0
             rotateBox                   = rotateBoxInit
             pickingModel                = OpcViewer.Base.Picking.PickingModel.initial
+
+            kdTree                      = loadKdTrees
 
             offsetControllerDistance    = 1.0
 
@@ -1407,7 +1435,13 @@ module Demo =
             evaluationLandmarks         = newEvalLandmarks //PList.empty
             evaluationLandmarksWIM      = PList.empty
             evaluationLandmarksWIM2RealWorld= PList.empty
+
+            evaluationLandmarksLook     = PList.empty 
+            evaluationLandmarksWIMLook  = PList.empty
+            evaluationLandmarksWIM2RealWorldLook = PList.empty
+
             evaluationCounter           = 0
+            
             droneDistanceToLandmark     = StringInfo.initial
             droneHeight                 = StringInfo.initial
             teleportBox                 = PList.empty

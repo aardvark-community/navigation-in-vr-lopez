@@ -276,6 +276,9 @@ module Mutable =
         let _evaluationLandmarks = MList.Create(__initial.evaluationLandmarks, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _evaluationLandmarksWIM = MList.Create(__initial.evaluationLandmarksWIM, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _evaluationLandmarksWIM2RealWorld = MList.Create(__initial.evaluationLandmarksWIM2RealWorld, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
+        let _evaluationLandmarksLook = MList.Create(__initial.evaluationLandmarksLook, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
+        let _evaluationLandmarksWIMLook = MList.Create(__initial.evaluationLandmarksWIMLook, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
+        let _evaluationLandmarksWIM2RealWorldLook = MList.Create(__initial.evaluationLandmarksWIM2RealWorldLook, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _evaluationCounter = ResetMod.Create(__initial.evaluationCounter)
         let _droneDistanceToLandmark = MStringInfo.Create(__initial.droneDistanceToLandmark)
         let _droneHeight = MStringInfo.Create(__initial.droneHeight)
@@ -296,6 +299,7 @@ module Mutable =
         member x.mainFrustum = _mainFrustum :> IMod<_>
         member x.rotateBox = _rotateBox :> IMod<_>
         member x.pickingModel = _pickingModel
+        member x.kdTree = __current.Value.kdTree
         member x.initWorkSpaceTrafo = _initWorkSpaceTrafo :> IMod<_>
         member x.workSpaceTrafo = _workSpaceTrafo :> IMod<_>
         member x.opcSpaceTrafo = _opcSpaceTrafo :> IMod<_>
@@ -325,6 +329,9 @@ module Mutable =
         member x.evaluationLandmarks = _evaluationLandmarks :> alist<_>
         member x.evaluationLandmarksWIM = _evaluationLandmarksWIM :> alist<_>
         member x.evaluationLandmarksWIM2RealWorld = _evaluationLandmarksWIM2RealWorld :> alist<_>
+        member x.evaluationLandmarksLook = _evaluationLandmarksLook :> alist<_>
+        member x.evaluationLandmarksWIMLook = _evaluationLandmarksWIMLook :> alist<_>
+        member x.evaluationLandmarksWIM2RealWorldLook = _evaluationLandmarksWIM2RealWorldLook :> alist<_>
         member x.evaluationCounter = _evaluationCounter :> IMod<_>
         member x.droneDistanceToLandmark = _droneDistanceToLandmark
         member x.droneHeight = _droneHeight
@@ -378,6 +385,9 @@ module Mutable =
                 MList.Update(_evaluationLandmarks, v.evaluationLandmarks)
                 MList.Update(_evaluationLandmarksWIM, v.evaluationLandmarksWIM)
                 MList.Update(_evaluationLandmarksWIM2RealWorld, v.evaluationLandmarksWIM2RealWorld)
+                MList.Update(_evaluationLandmarksLook, v.evaluationLandmarksLook)
+                MList.Update(_evaluationLandmarksWIMLook, v.evaluationLandmarksWIMLook)
+                MList.Update(_evaluationLandmarksWIM2RealWorldLook, v.evaluationLandmarksWIM2RealWorldLook)
                 ResetMod.Update(_evaluationCounter,v.evaluationCounter)
                 MStringInfo.Update(_droneDistanceToLandmark, v.droneDistanceToLandmark)
                 MStringInfo.Update(_droneHeight, v.droneHeight)
@@ -487,6 +497,12 @@ module Mutable =
                     override x.Get(r) = r.pickingModel
                     override x.Set(r,v) = { r with pickingModel = v }
                     override x.Update(r,f) = { r with pickingModel = f r.pickingModel }
+                }
+            let kdTree =
+                { new Lens<Demo.Main.Model, Aardvark.Base.hmap<Aardvark.Base.Box3d,Aardvark.VRVis.Opc.KdTrees.Level0KdTree>>() with
+                    override x.Get(r) = r.kdTree
+                    override x.Set(r,v) = { r with kdTree = v }
+                    override x.Update(r,f) = { r with kdTree = f r.kdTree }
                 }
             let initWorkSpaceTrafo =
                 { new Lens<Demo.Main.Model, Aardvark.Base.Trafo3d>() with
@@ -661,6 +677,24 @@ module Mutable =
                     override x.Get(r) = r.evaluationLandmarksWIM2RealWorld
                     override x.Set(r,v) = { r with evaluationLandmarksWIM2RealWorld = v }
                     override x.Update(r,f) = { r with evaluationLandmarksWIM2RealWorld = f r.evaluationLandmarksWIM2RealWorld }
+                }
+            let evaluationLandmarksLook =
+                { new Lens<Demo.Main.Model, Aardvark.Base.plist<Demo.VisibleBox>>() with
+                    override x.Get(r) = r.evaluationLandmarksLook
+                    override x.Set(r,v) = { r with evaluationLandmarksLook = v }
+                    override x.Update(r,f) = { r with evaluationLandmarksLook = f r.evaluationLandmarksLook }
+                }
+            let evaluationLandmarksWIMLook =
+                { new Lens<Demo.Main.Model, Aardvark.Base.plist<Demo.VisibleBox>>() with
+                    override x.Get(r) = r.evaluationLandmarksWIMLook
+                    override x.Set(r,v) = { r with evaluationLandmarksWIMLook = v }
+                    override x.Update(r,f) = { r with evaluationLandmarksWIMLook = f r.evaluationLandmarksWIMLook }
+                }
+            let evaluationLandmarksWIM2RealWorldLook =
+                { new Lens<Demo.Main.Model, Aardvark.Base.plist<Demo.VisibleBox>>() with
+                    override x.Get(r) = r.evaluationLandmarksWIM2RealWorldLook
+                    override x.Set(r,v) = { r with evaluationLandmarksWIM2RealWorldLook = v }
+                    override x.Update(r,f) = { r with evaluationLandmarksWIM2RealWorldLook = f r.evaluationLandmarksWIM2RealWorldLook }
                 }
             let evaluationCounter =
                 { new Lens<Demo.Main.Model, System.Int32>() with

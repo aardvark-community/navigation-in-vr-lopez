@@ -4,11 +4,14 @@ open Aardvark.Vr
 open Aardium
 open Demo.Main
 open Suave
+open Demo
+open Aardvark.VRVis.Opc
 
 
 [<EntryPoint>]
 let main argv =
     Ag.initialize()
+    SerializationOpc.registry.RegisterFactory (fun _ -> KdTrees.level0KdTreePickler)
     Aardvark.Init()
     Aardium.init()
 
