@@ -46,6 +46,7 @@ module Demo =
     open OpcViewer.Base.Shader
     open Aardvark.Base
     open Aardvark.Base.MultimethodTest
+    open Aardvark.Base.IndexedGeometryPrimitives
     
     let show  (att : list<string * AttributeValue<_>>) (sg : ISg<_>) =
 
@@ -176,8 +177,12 @@ module Demo =
                         model 
                         |> Teleport.hitRay kind p
 
+                    let model = 
+                        model 
+                        |> Teleport.rayIntersection kind p
+
                     model 
-                    |> Teleport.rayIntersection kind p
+                    |> PlaceLandmark.hoverEvaluationLandmarks kind p
                 | Menu.MenuState.DroneMode -> 
                     let controllerPos = model.menuModel.controllerMenuSelector
                     let userHMD = model.controllerInfos |> HMap.tryFind ControllerKind.HMD
@@ -411,18 +416,28 @@ module Demo =
                     //let controllDir = controllTrafo.GetViewDirectionLH()
                     //let origin = controllTrafo.GetModelOrigin()
 
+                    let testRay = Ray3d(origin, controllDir) 
+
                     let newTeleportCone = 
-                        if newModel.teleportCone.Count.Equals(0) then 
-                            OpcUtilities.mkCone id.pose.deviceToWorld 1
-                        else newModel.teleportCone
+                        let coneList = 
+                            if newModel.teleportCone.Count.Equals(0) then 
+                                OpcUtilities.mkCone id.pose.deviceToWorld 1
+                            else newModel.teleportCone
+                        let firstCone = coneList |> PList.tryFirst
+                        match firstCone with 
+                        | Some cone -> {cone with geometry = Cone.solidCone (cone.trafo.GetModelOrigin()) V3d.Zero 500.0 500.0 20 C4b.Red} |> PList.single
+                        | None -> newModel.teleportCone
                     
                     let newBox = 
-                        if newModel.teleportBox.Count.Equals(0) then 
-                            OpcUtilities.mkFlags id.pose.deviceToWorld 1
-                        else newModel.teleportBox
+                        let boxList = 
+                            if newModel.teleportBox.Count.Equals(0) then 
+                                OpcUtilities.mkFlags id.pose.deviceToWorld 1
+                            else newModel.teleportBox
+                        let firstBox = boxList |> PList.tryFirst
+                        match firstBox with 
+                        | Some box -> {box with geometry = Box3d.FromSize(V3d(5.0, 1.0, 1.0))} |> PList.single
+                        | None -> newModel.teleportBox
 
-                    
-                    let testRay = Ray3d(origin, controllDir)
                     
                     let newModel = 
                         {newModel with 
@@ -433,6 +448,9 @@ module Demo =
                             teleportCone = newTeleportCone
                         }
 
+                    let newModel = 
+                        newModel 
+                        |> PlaceLandmark.updateLandmarksPosition
 
                     newModel 
                     |> Teleport.teleportUser
@@ -1365,7 +1383,7 @@ module Demo =
                 deviceSgs
                 menuApp
                 //landmarks
-                throwRayLine
+                //throwRayLine
                 teleport2intersection
                 teleportationCone
                 showSecondCamera
@@ -1500,11 +1518,7 @@ module Demo =
             WIMinitialUserPos           = PList.empty
             WIMinitialUserPosCone       = PList.empty
             userPosOnAnnotationSpace    = PList.empty
-            teleportRay                 = Ray3d.Invalid
-            droneControl                = Drone.initial
             cyllinderControl            = PList.empty
-
-            totalCompass                = PList.empty
 
             evaluationLandmarks         = newEvalLandmarks //PList.empty
             evaluationLandmarksWIM      = PList.empty
@@ -1516,9 +1530,11 @@ module Demo =
 
             evaluationCounter           = 0
             
+            droneControl                = Drone.initial
             droneDistanceToLandmark     = StringInfo.initial
             droneHeight                 = StringInfo.initial
             
+            teleportRay                 = Ray3d.Invalid
             teleportBox                 = PList.empty
             teleportCone                = PList.empty
 

@@ -51,18 +51,6 @@ module Drone =
             initCameraPosition = Trafo3d.Identity
         }
 
-[<DomainType>]
-type Compass = 
-    {
-        trafo   : Trafo3d
-        text    : string
-    }
-module Compass = 
-    let initial = 
-        {
-            trafo   = Trafo3d.Identity
-            text    = ""
-        }
 
 [<DomainType>]
 type StringInfo = 
@@ -134,11 +122,7 @@ type Model =
         WIMinitialUserPos           : plist<VisibleBox>
         WIMinitialUserPosCone       : plist<VisibleCone>
         userPosOnAnnotationSpace    : plist<VisibleBox>
-        teleportRay                 : Ray3d
-        droneControl                : Drone
         cyllinderControl            : plist<VisibleCylinder>
-
-        totalCompass                : plist<Compass>
 
         evaluationLandmarks         : plist<VisibleBox>
         evaluationLandmarksWIM      : plist<VisibleBox>
@@ -150,8 +134,11 @@ type Model =
 
         evaluationCounter           : int
 
+        droneControl                : Drone
         droneDistanceToLandmark     : StringInfo
         droneHeight                 : StringInfo
+        
+        teleportRay                 : Ray3d
         teleportBox                 : plist<VisibleBox> 
         teleportCone                : plist<VisibleCone>
 
@@ -269,11 +256,8 @@ module Model =
             WIMinitialUserPos           = PList.empty
             WIMinitialUserPosCone       = PList.empty
             userPosOnAnnotationSpace    = PList.empty
-            teleportRay                 = Ray3d.Invalid
-            droneControl                = Drone.initial
             cyllinderControl            = PList.empty
 
-            totalCompass                = PList.empty
 
             evaluationLandmarks         = PList.empty
             evaluationLandmarksWIM      = PList.empty
@@ -285,8 +269,11 @@ module Model =
             
             evaluationCounter           = 0
 
+            droneControl                = Drone.initial
             droneDistanceToLandmark     = StringInfo.initial
             droneHeight                 = StringInfo.initial
+            
+            teleportRay                 = Ray3d.Invalid
             teleportBox                 = PList.empty
             teleportCone                = PList.empty
 

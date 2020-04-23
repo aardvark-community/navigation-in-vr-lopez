@@ -33,7 +33,7 @@ module Teleport =
             let controllDir = controllTrafo.Forward.TransformDir V3d.YAxis
 
             let testRay = Ray3d(origin, controllDir)
-                        
+
             {model with teleportRay = testRay}
         | None -> model
 
@@ -85,7 +85,7 @@ module Teleport =
             |> PList.map (fun tBox -> 
                 let newTrafo = Trafo3d.Translation(intersectionVector) 
 
-                {tBox with trafo = newTrafo; geometry = Box3d.FromSize(V3d(5.0, 1.0, 1.0)); color = C4b.Red}
+                {tBox with trafo = newTrafo; color = C4b.Red}
             )
 
         let moveCone = 
@@ -102,7 +102,7 @@ module Teleport =
                         rotLmkC.GetEulerAngles()
                     let newTrafo = Trafo3d.FromComponents(V3d.One, getRotation, newVectorTransform)
 
-                    {cone with trafo = newTrafo; color = C4b.Red; geometry = Cone.solidCone (cone.trafo.GetModelOrigin()) V3d.Zero 500.0 500.0 20 C4b.Red}
+                    {cone with trafo = newTrafo; color = C4b.Red}
                 )
             | None -> model.teleportCone
 

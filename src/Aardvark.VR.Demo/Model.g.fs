@@ -138,52 +138,6 @@ module Mutable =
                 }
     
     
-    type MCompass(__initial : Demo.Main.Compass) =
-        inherit obj()
-        let mutable __current : Aardvark.Base.Incremental.IModRef<Demo.Main.Compass> = Aardvark.Base.Incremental.EqModRef<Demo.Main.Compass>(__initial) :> Aardvark.Base.Incremental.IModRef<Demo.Main.Compass>
-        let _trafo = ResetMod.Create(__initial.trafo)
-        let _text = ResetMod.Create(__initial.text)
-        
-        member x.trafo = _trafo :> IMod<_>
-        member x.text = _text :> IMod<_>
-        
-        member x.Current = __current :> IMod<_>
-        member x.Update(v : Demo.Main.Compass) =
-            if not (System.Object.ReferenceEquals(__current.Value, v)) then
-                __current.Value <- v
-                
-                ResetMod.Update(_trafo,v.trafo)
-                ResetMod.Update(_text,v.text)
-                
-        
-        static member Create(__initial : Demo.Main.Compass) : MCompass = MCompass(__initial)
-        static member Update(m : MCompass, v : Demo.Main.Compass) = m.Update(v)
-        
-        override x.ToString() = __current.Value.ToString()
-        member x.AsString = sprintf "%A" __current.Value
-        interface IUpdatable<Demo.Main.Compass> with
-            member x.Update v = x.Update v
-    
-    
-    
-    [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
-    module Compass =
-        [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
-        module Lens =
-            let trafo =
-                { new Lens<Demo.Main.Compass, Aardvark.Base.Trafo3d>() with
-                    override x.Get(r) = r.trafo
-                    override x.Set(r,v) = { r with trafo = v }
-                    override x.Update(r,f) = { r with trafo = f r.trafo }
-                }
-            let text =
-                { new Lens<Demo.Main.Compass, System.String>() with
-                    override x.Get(r) = r.text
-                    override x.Set(r,v) = { r with text = v }
-                    override x.Update(r,f) = { r with text = f r.text }
-                }
-    
-    
     type MStringInfo(__initial : Demo.Main.StringInfo) =
         inherit obj()
         let mutable __current : Aardvark.Base.Incremental.IModRef<Demo.Main.StringInfo> = Aardvark.Base.Incremental.EqModRef<Demo.Main.StringInfo>(__initial) :> Aardvark.Base.Incremental.IModRef<Demo.Main.StringInfo>
@@ -269,10 +223,7 @@ module Mutable =
         let _WIMinitialUserPos = MList.Create(__initial.WIMinitialUserPos, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _WIMinitialUserPosCone = MList.Create(__initial.WIMinitialUserPosCone, (fun v -> Demo.Mutable.MVisibleCone.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleCone.Update(m, v)), (fun v -> v))
         let _userPosOnAnnotationSpace = MList.Create(__initial.userPosOnAnnotationSpace, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
-        let _teleportRay = ResetMod.Create(__initial.teleportRay)
-        let _droneControl = MDrone.Create(__initial.droneControl)
         let _cyllinderControl = MList.Create(__initial.cyllinderControl, (fun v -> Demo.Mutable.MVisibleCylinder.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleCylinder.Update(m, v)), (fun v -> v))
-        let _totalCompass = MList.Create(__initial.totalCompass, (fun v -> MCompass.Create(v)), (fun (m,v) -> MCompass.Update(m, v)), (fun v -> v))
         let _evaluationLandmarks = MList.Create(__initial.evaluationLandmarks, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _evaluationLandmarksWIM = MList.Create(__initial.evaluationLandmarksWIM, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _evaluationLandmarksWIM2RealWorld = MList.Create(__initial.evaluationLandmarksWIM2RealWorld, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
@@ -280,8 +231,10 @@ module Mutable =
         let _evaluationLandmarksWIMLook = MList.Create(__initial.evaluationLandmarksWIMLook, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _evaluationLandmarksWIM2RealWorldLook = MList.Create(__initial.evaluationLandmarksWIM2RealWorldLook, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _evaluationCounter = ResetMod.Create(__initial.evaluationCounter)
+        let _droneControl = MDrone.Create(__initial.droneControl)
         let _droneDistanceToLandmark = MStringInfo.Create(__initial.droneDistanceToLandmark)
         let _droneHeight = MStringInfo.Create(__initial.droneHeight)
+        let _teleportRay = ResetMod.Create(__initial.teleportRay)
         let _teleportBox = MList.Create(__initial.teleportBox, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _teleportCone = MList.Create(__initial.teleportCone, (fun v -> Demo.Mutable.MVisibleCone.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleCone.Update(m, v)), (fun v -> v))
         
@@ -323,10 +276,7 @@ module Mutable =
         member x.WIMinitialUserPos = _WIMinitialUserPos :> alist<_>
         member x.WIMinitialUserPosCone = _WIMinitialUserPosCone :> alist<_>
         member x.userPosOnAnnotationSpace = _userPosOnAnnotationSpace :> alist<_>
-        member x.teleportRay = _teleportRay :> IMod<_>
-        member x.droneControl = _droneControl
         member x.cyllinderControl = _cyllinderControl :> alist<_>
-        member x.totalCompass = _totalCompass :> alist<_>
         member x.evaluationLandmarks = _evaluationLandmarks :> alist<_>
         member x.evaluationLandmarksWIM = _evaluationLandmarksWIM :> alist<_>
         member x.evaluationLandmarksWIM2RealWorld = _evaluationLandmarksWIM2RealWorld :> alist<_>
@@ -334,8 +284,10 @@ module Mutable =
         member x.evaluationLandmarksWIMLook = _evaluationLandmarksWIMLook :> alist<_>
         member x.evaluationLandmarksWIM2RealWorldLook = _evaluationLandmarksWIM2RealWorldLook :> alist<_>
         member x.evaluationCounter = _evaluationCounter :> IMod<_>
+        member x.droneControl = _droneControl
         member x.droneDistanceToLandmark = _droneDistanceToLandmark
         member x.droneHeight = _droneHeight
+        member x.teleportRay = _teleportRay :> IMod<_>
         member x.teleportBox = _teleportBox :> alist<_>
         member x.teleportCone = _teleportCone :> alist<_>
         
@@ -380,10 +332,7 @@ module Mutable =
                 MList.Update(_WIMinitialUserPos, v.WIMinitialUserPos)
                 MList.Update(_WIMinitialUserPosCone, v.WIMinitialUserPosCone)
                 MList.Update(_userPosOnAnnotationSpace, v.userPosOnAnnotationSpace)
-                ResetMod.Update(_teleportRay,v.teleportRay)
-                MDrone.Update(_droneControl, v.droneControl)
                 MList.Update(_cyllinderControl, v.cyllinderControl)
-                MList.Update(_totalCompass, v.totalCompass)
                 MList.Update(_evaluationLandmarks, v.evaluationLandmarks)
                 MList.Update(_evaluationLandmarksWIM, v.evaluationLandmarksWIM)
                 MList.Update(_evaluationLandmarksWIM2RealWorld, v.evaluationLandmarksWIM2RealWorld)
@@ -391,8 +340,10 @@ module Mutable =
                 MList.Update(_evaluationLandmarksWIMLook, v.evaluationLandmarksWIMLook)
                 MList.Update(_evaluationLandmarksWIM2RealWorldLook, v.evaluationLandmarksWIM2RealWorldLook)
                 ResetMod.Update(_evaluationCounter,v.evaluationCounter)
+                MDrone.Update(_droneControl, v.droneControl)
                 MStringInfo.Update(_droneDistanceToLandmark, v.droneDistanceToLandmark)
                 MStringInfo.Update(_droneHeight, v.droneHeight)
+                ResetMod.Update(_teleportRay,v.teleportRay)
                 MList.Update(_teleportBox, v.teleportBox)
                 MList.Update(_teleportCone, v.teleportCone)
                 
@@ -639,29 +590,11 @@ module Mutable =
                     override x.Set(r,v) = { r with userPosOnAnnotationSpace = v }
                     override x.Update(r,f) = { r with userPosOnAnnotationSpace = f r.userPosOnAnnotationSpace }
                 }
-            let teleportRay =
-                { new Lens<Demo.Main.Model, Aardvark.Base.Ray3d>() with
-                    override x.Get(r) = r.teleportRay
-                    override x.Set(r,v) = { r with teleportRay = v }
-                    override x.Update(r,f) = { r with teleportRay = f r.teleportRay }
-                }
-            let droneControl =
-                { new Lens<Demo.Main.Model, Demo.Main.Drone>() with
-                    override x.Get(r) = r.droneControl
-                    override x.Set(r,v) = { r with droneControl = v }
-                    override x.Update(r,f) = { r with droneControl = f r.droneControl }
-                }
             let cyllinderControl =
                 { new Lens<Demo.Main.Model, Aardvark.Base.plist<Demo.VisibleCylinder>>() with
                     override x.Get(r) = r.cyllinderControl
                     override x.Set(r,v) = { r with cyllinderControl = v }
                     override x.Update(r,f) = { r with cyllinderControl = f r.cyllinderControl }
-                }
-            let totalCompass =
-                { new Lens<Demo.Main.Model, Aardvark.Base.plist<Demo.Main.Compass>>() with
-                    override x.Get(r) = r.totalCompass
-                    override x.Set(r,v) = { r with totalCompass = v }
-                    override x.Update(r,f) = { r with totalCompass = f r.totalCompass }
                 }
             let evaluationLandmarks =
                 { new Lens<Demo.Main.Model, Aardvark.Base.plist<Demo.VisibleBox>>() with
@@ -705,6 +638,12 @@ module Mutable =
                     override x.Set(r,v) = { r with evaluationCounter = v }
                     override x.Update(r,f) = { r with evaluationCounter = f r.evaluationCounter }
                 }
+            let droneControl =
+                { new Lens<Demo.Main.Model, Demo.Main.Drone>() with
+                    override x.Get(r) = r.droneControl
+                    override x.Set(r,v) = { r with droneControl = v }
+                    override x.Update(r,f) = { r with droneControl = f r.droneControl }
+                }
             let droneDistanceToLandmark =
                 { new Lens<Demo.Main.Model, Demo.Main.StringInfo>() with
                     override x.Get(r) = r.droneDistanceToLandmark
@@ -716,6 +655,12 @@ module Mutable =
                     override x.Get(r) = r.droneHeight
                     override x.Set(r,v) = { r with droneHeight = v }
                     override x.Update(r,f) = { r with droneHeight = f r.droneHeight }
+                }
+            let teleportRay =
+                { new Lens<Demo.Main.Model, Aardvark.Base.Ray3d>() with
+                    override x.Get(r) = r.teleportRay
+                    override x.Set(r,v) = { r with teleportRay = v }
+                    override x.Update(r,f) = { r with teleportRay = f r.teleportRay }
                 }
             let teleportBox =
                 { new Lens<Demo.Main.Model, Aardvark.Base.plist<Demo.VisibleBox>>() with
