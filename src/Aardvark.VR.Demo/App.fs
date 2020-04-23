@@ -1295,6 +1295,17 @@ module Demo =
             |> Sg.onOff mkDisappearInsideCylinder
             |> Sg.noEvents
        
+        let teleport2intersection = 
+            m.teleportBox
+            |> AList.toASet 
+            |> ASet.map (fun b -> 
+                mkFlag m b 
+               )
+            |> Sg.set
+            |> defaultEffect
+            |> Sg.noEvents
+            |> Sg.trafo m.opcSpaceTrafo
+        
         let transformedSgs = 
             [
                 //landmarksOnAnnotationSpace
@@ -1327,6 +1338,7 @@ module Demo =
                 menuApp
                 //landmarks
                 throwRayLine
+                teleport2intersection
                 showSecondCamera
                 borderSecondCamera
                 borderSecondCameracontrollerTest

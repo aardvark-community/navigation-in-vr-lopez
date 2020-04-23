@@ -41,21 +41,13 @@ module Teleport =
         
         match newCP with 
         | Some id -> 
-            let controllDir = id.pose.deviceToWorld.Forward.C1
             match id.backButtonPressed with 
             | true -> 
-                let moveBox = 
-                        model.teleportBox
-                        |> PList.map (fun tBox -> 
-                            let newTrafo = Trafo3d.Translation(tBox.trafo.GetModelOrigin() + controllDir.XYZ * 50.0)
-                            {tBox with trafo = newTrafo}
-                        )
-
-                let model = {model with teleportBox = moveBox}
                 let teleportPos = model.teleportBox |> PList.tryFirst
                 match teleportPos with 
                 | Some tPos -> 
-                    let newTeleportPos = Trafo3d.Translation(tPos.trafo.GetModelOrigin()).Inverse
+                    let newVector = (tPos.trafo * model.initOpcSpaceTrafo).GetModelOrigin()
+                    let newTeleportPos = Trafo3d.Translation(newVector).Inverse 
                     let newWorkSpace = model.initWorkSpaceTrafo * newTeleportPos
                     let newOpcSpace = model.initOpcSpaceTrafo * newWorkSpace
                     let newFlagSpace = model.initAnnotationSpaceTrafo * newWorkSpace
@@ -70,14 +62,33 @@ module Teleport =
         | None -> model 
 
     let rayIntersection kind p model : Model = 
+        let newControllersPosition = 
+            model 
+            |> OpcUtilities.updateControllersInfo kind p
+        
+        let model = { model with controllerInfos = newControllersPosition}
+
         let newRay = FastRay3d(model.teleportRay)
         
         let checkIntersection = 
             OpcViewer.Base.Picking.Intersect.intersectWithOpc (Some model.kdTree) newRay
         
-        //let printshite = 
-        //    match checkIntersection with 
-        //    | Some x -> printfn "intersect: %f" x
-        //    | None -> printfn "No intersection"
+        let intersectionVector = 
+            match checkIntersection with 
+            | Some intersection -> model.teleportRay.GetPointOnRay(intersection)
+            | None -> V3d.Zero
+
+        let printshite = printfn "intersection vector: %A" intersectionVector
+
+        let moveBox = 
+            model.teleportBox
+            |> PList.map (fun tBox -> 
+                let newTrafo = Trafo3d.Translation(intersectionVector) //* model.opcSpaceTrafo.Inverse
+                let printfshit = printfn "movebox trafo: %A" (newTrafo.GetModelOrigin())
+                {tBox with trafo = newTrafo; geometry = Box3d.FromSize(V3d(1.0, 1.0, 5.0))}
+            )
+
+        let model = {model with teleportBox = moveBox}
+
         model 
 

@@ -30,6 +30,7 @@ nuget Aardvark.Geometry.PolyMesh            ~> 4.9.10
 nuget Aardvark.Service                      ~> 4.6.0
 nuget Aardvark.UI                           ~> 4.6.0
 nuget Aardvark.UI.Primitives                ~> 4.6.0
+nuget OPCViewer.Base                        ~> 0.0.6
 
 nuget Aardvark.Compiler.DomainTypes.MSBuild ~> 4.3.0
 
@@ -40,6 +41,7 @@ nuget FsPickler                             ~> 5.2.2
 nuget FsPickler.Json                        ~> 5.2.2
 
 nuget Unofficial.OpenVR                     ~> 1.1.0
+
 
 group Build
 framework: net45
