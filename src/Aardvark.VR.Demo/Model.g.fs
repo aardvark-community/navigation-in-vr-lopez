@@ -283,6 +283,7 @@ module Mutable =
         let _droneDistanceToLandmark = MStringInfo.Create(__initial.droneDistanceToLandmark)
         let _droneHeight = MStringInfo.Create(__initial.droneHeight)
         let _teleportBox = MList.Create(__initial.teleportBox, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
+        let _teleportCone = MList.Create(__initial.teleportCone, (fun v -> Demo.Mutable.MVisibleCone.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleCone.Update(m, v)), (fun v -> v))
         
         member x.text = _text :> IMod<_>
         member x.vr = _vr :> IMod<_>
@@ -336,6 +337,7 @@ module Mutable =
         member x.droneDistanceToLandmark = _droneDistanceToLandmark
         member x.droneHeight = _droneHeight
         member x.teleportBox = _teleportBox :> alist<_>
+        member x.teleportCone = _teleportCone :> alist<_>
         
         member x.Current = __current :> IMod<_>
         member x.Update(v : Demo.Main.Model) =
@@ -392,6 +394,7 @@ module Mutable =
                 MStringInfo.Update(_droneDistanceToLandmark, v.droneDistanceToLandmark)
                 MStringInfo.Update(_droneHeight, v.droneHeight)
                 MList.Update(_teleportBox, v.teleportBox)
+                MList.Update(_teleportCone, v.teleportCone)
                 
         
         static member Create(__initial : Demo.Main.Model) : MModel = MModel(__initial)
@@ -719,4 +722,10 @@ module Mutable =
                     override x.Get(r) = r.teleportBox
                     override x.Set(r,v) = { r with teleportBox = v }
                     override x.Update(r,f) = { r with teleportBox = f r.teleportBox }
+                }
+            let teleportCone =
+                { new Lens<Demo.Main.Model, Aardvark.Base.plist<Demo.VisibleCone>>() with
+                    override x.Get(r) = r.teleportCone
+                    override x.Set(r,v) = { r with teleportCone = v }
+                    override x.Update(r,f) = { r with teleportCone = f r.teleportCone }
                 }

@@ -14,6 +14,8 @@ module Teleport =
     open Aardvark.Prinziple
     open Aardvark.SceneGraph.Opc
     open Demo
+    open Aardvark.Base
+    open Aardvark.Base.IndexedGeometryPrimitives
 
     let hitRay kind p model : Model = 
         let newControllersPosition = 
@@ -78,17 +80,33 @@ module Teleport =
             | Some intersection -> model.teleportRay.GetPointOnRay(intersection)
             | None -> V3d.Zero
 
-        let printshite = printfn "intersection vector: %A" intersectionVector
-
         let moveBox = 
             model.teleportBox
             |> PList.map (fun tBox -> 
-                let newTrafo = Trafo3d.Translation(intersectionVector) //* model.opcSpaceTrafo.Inverse
-                let printfshit = printfn "movebox trafo: %A" (newTrafo.GetModelOrigin())
-                {tBox with trafo = newTrafo; geometry = Box3d.FromSize(V3d(1.0, 1.0, 5.0))}
+                let newTrafo = Trafo3d.Translation(intersectionVector) 
+
+                {tBox with trafo = newTrafo; geometry = Box3d.FromSize(V3d(5.0, 1.0, 1.0)); color = C4b.Red}
             )
 
-        let model = {model with teleportBox = moveBox}
+        let moveCone = 
+            let getHmd  = model.controllerInfos |> HMap.tryFind ControllerKind.HMD
+            match getHmd with 
+            | Some hmd -> 
+                model.teleportCone
+                |> PList.map (fun cone -> 
+                    let newVectorTransform = V3d(intersectionVector.X + 5.0, intersectionVector.Y, intersectionVector.Z)
+                    let getRotation = 
+                        let newLmkC = hmd.pose.deviceToWorld * model.opcSpaceTrafo.Inverse
+                        let rtLmkC = newLmkC.GetOrthoNormalOrientation()
+                        let rotLmkC = Rot3d.FromFrame(rtLmkC.Forward.C0.XYZ, rtLmkC.Forward.C1.XYZ, rtLmkC.Forward.C2.XYZ)
+                        rotLmkC.GetEulerAngles()
+                    let newTrafo = Trafo3d.FromComponents(V3d.One, getRotation, newVectorTransform)
+
+                    {cone with trafo = newTrafo; color = C4b.Red; geometry = Cone.solidCone (cone.trafo.GetModelOrigin()) V3d.Zero 500.0 500.0 20 C4b.Red}
+                )
+            | None -> model.teleportCone
+
+        let model = {model with teleportBox = moveBox; teleportCone = moveCone}
 
         model 
 

@@ -411,6 +411,11 @@ module Demo =
                     //let controllDir = controllTrafo.GetViewDirectionLH()
                     //let origin = controllTrafo.GetModelOrigin()
 
+                    let newTeleportCone = 
+                        if newModel.teleportCone.Count.Equals(0) then 
+                            OpcUtilities.mkCone id.pose.deviceToWorld 1
+                        else newModel.teleportCone
+                    
                     let newBox = 
                         if newModel.teleportBox.Count.Equals(0) then 
                             OpcUtilities.mkFlags id.pose.deviceToWorld 1
@@ -424,8 +429,10 @@ module Demo =
                             teleportRay = testRay; 
                             droneControl = Drone.initial; 
                             cyllinderControl = PList.empty; 
-                            teleportBox = newBox
+                            teleportBox = newBox;
+                            teleportCone = newTeleportCone
                         }
+
 
                     newModel 
                     |> Teleport.teleportUser
@@ -651,6 +658,17 @@ module Demo =
         Sg.cone 20 color (Mod.constant 0.5) (Mod.constant 5.0) 
             |> Sg.noEvents
             |> Sg.scale 0.01
+            |> Sg.trafo (Mod.constant (Trafo3d.RotationInDegrees(V3d(-90.0,90.0,0.0))))
+            |> Sg.trafo cp.trafo
+            |> Sg.shader {
+                do! DefaultSurfaces.trafo
+                do! DefaultSurfaces.vertexColor
+                //do! DefaultSurfaces.simpleLighting
+                }
+    
+    let mkConeTeleport (cp : MVisibleCone) (color : IMod<C4b>) =
+        Sg.cone 20 color (Mod.constant 0.5) (Mod.constant 5.0) 
+            |> Sg.noEvents
             |> Sg.trafo (Mod.constant (Trafo3d.RotationInDegrees(V3d(-90.0,90.0,0.0))))
             |> Sg.trafo cp.trafo
             |> Sg.shader {
@@ -1306,6 +1324,16 @@ module Demo =
             |> Sg.noEvents
             |> Sg.trafo m.opcSpaceTrafo
         
+        let teleportationCone = 
+            m.teleportCone
+            |> AList.toASet
+            |> ASet.map (fun b -> 
+                mkConeTeleport b b.color
+            )
+            |> Sg.set
+            |> defaultEffect
+            |> Sg.trafo m.opcSpaceTrafo
+
         let transformedSgs = 
             [
                 //landmarksOnAnnotationSpace
@@ -1339,6 +1367,7 @@ module Demo =
                 //landmarks
                 throwRayLine
                 teleport2intersection
+                teleportationCone
                 showSecondCamera
                 borderSecondCamera
                 borderSecondCameracontrollerTest
@@ -1489,7 +1518,9 @@ module Demo =
             
             droneDistanceToLandmark     = StringInfo.initial
             droneHeight                 = StringInfo.initial
+            
             teleportBox                 = PList.empty
+            teleportCone                = PList.empty
 
         }
     let app (runtime : IRuntime) =
