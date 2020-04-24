@@ -94,19 +94,19 @@ module MenuApp =
                             let menuSelector = if a.joystickHold then a else b
                                 
                             if box0ID.id = id then 
-                                {   model with menu = MenuState.Reset; controllerMenuSelector = menuSelector; initialMenuState = MenuState.PlaceLandmarks}
+                                {   model with menu = MenuState.Reset; controllerMenuSelector = menuSelector; initialMenuState = MenuState.Reset}
                             else if box1ID.id = id then 
                                 {   model with menu = MenuState.WIMLandmarks; controllerMenuSelector = menuSelector; initialMenuState = MenuState.WIMLandmarks}
                             else if box2ID.id = id then 
                                 {   model with menu = MenuState.WIM; controllerMenuSelector = menuSelector; initialMenuState = MenuState.WIM}
                             else if box3ID.id = id then 
-                                {   model with menu = MenuState.Teleportation; controllerMenuSelector = menuSelector; initialMenuState = MenuState.Scale}
+                                {   model with menu = MenuState.Teleportation; controllerMenuSelector = menuSelector; initialMenuState = MenuState.Teleportation}
                             else 
                                 {
                                     model with 
                                         menu = MenuState.DroneModeController
                                         controllerMenuSelector = menuSelector; 
-                                        initialMenuState = MenuState.Cyllinder
+                                        initialMenuState = MenuState.DroneModeController
                                         mainMenuBoxes = PList.empty
                                 }
                             
