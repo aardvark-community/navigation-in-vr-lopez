@@ -130,6 +130,19 @@ module Demo =
         | CameraMessage m -> 
             { model with cameraState = FreeFlyController.update model.cameraState m }   
         | SetControllerPosition (kind, p) ->    
+            //let model = 
+            //    match model.evaluationCounter with 
+            //    | x when x < 2 -> 
+            //        let newMenuMode = {model.menuModel with menu = MenuState.DroneModeController}
+            //        {model with menuModel = newMenuMode}
+            //    | x when x >= 2 && x < 4 -> 
+            //        let newMenuMode = {model.menuModel with menu = MenuState.WIMLandmarks}
+            //        {model with menuModel = newMenuMode}
+            //    | x when x >= 4 && x < 15 -> 
+            //        let newMenuMode = {model.menuModel with menu = MenuState.Teleportation}
+            //        {model with menuModel = newMenuMode}
+            //    | _ -> model
+            
             let newModel = 
                 match model.menuModel.menu with 
                 | Menu.MenuState.PlaceLandmarks ->
@@ -245,7 +258,7 @@ module Demo =
         
                     {model with controllerInfos = newControllersPosition}
                      
-            let printshite = printfn "counter: %d" model.evaluationCounter
+            let printshite = printfn "menustate: %s" (model.menuModel.menu.ToString())
 
             let controllerMenuUpdate = MenuApp.update model.controllerInfos state vr newModel.menuModel (MenuAction.UpdateControllerPose (kind, p))
             {newModel with 

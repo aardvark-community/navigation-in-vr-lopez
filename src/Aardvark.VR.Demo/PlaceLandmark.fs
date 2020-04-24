@@ -223,20 +223,6 @@ module PlaceLandmark =
                     model |> updateLandmarksPosition
 
                 else model
-
-            //let model = 
-            //    match model.evaluationCounter with 
-            //    | x when x < 5 -> 
-            //        let newMenuMode = {model.menuModel with menu = MenuState.DroneModeController}
-            //        {model with menuModel = newMenuMode}
-            //    | x when x > = 5 && x < 10 -> 
-            //        let newMenuMode = {model.menuModel with menu = MenuState.WIM}
-            //        {model with menuModel = newMenuMode}
-            //    | x when x > = 10 && x < 15 -> 
-            //        let newMenuMode = {model.menuModel with menu = MenuState.Teleportation}
-            //        {model with menuModel = newMenuMode}
-            //    | _ -> model
-
             model
         | _, _ -> model
 

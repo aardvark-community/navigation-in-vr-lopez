@@ -40,28 +40,21 @@ module MenuApp =
                 let hmdPos = controllers |> HMap.values |> Seq.item 0
                 //match model.menu with
                 //| PlaceLandmarks ->
-                let newMenuBoxes = UtilitiesMenu.mkBoxesMenu model.initialMenuPosition hmdPos.pose 9 //number of menu possibilities should be the number of boxes. So far 2
+                let newMenuBoxes = UtilitiesMenu.mkBoxesMenu model.initialMenuPosition hmdPos.pose 5 //number of menu possibilities should be the number of boxes. So far 2
                 let box0id = newMenuBoxes |> Seq.item 0
                 let box1id = newMenuBoxes |> Seq.item 1
                 let box2id = newMenuBoxes |> Seq.item 2
                 let box3id = newMenuBoxes |> Seq.item 3
                 let box4id = newMenuBoxes |> Seq.item 4
-                let box5id = newMenuBoxes |> Seq.item 5
-                let box6id = newMenuBoxes |> Seq.item 6
-                let box7id = newMenuBoxes |> Seq.item 7
 
                 let newMenuBoxes = 
                     newMenuBoxes 
                     |> PList.map (fun idx -> 
-                        if idx.id.Equals(box0id.id) then {idx with id = "Place Landmarks"}
+                        if idx.id.Equals(box0id.id) then {idx with id = "Reset"}
                         else if idx.id.Equals(box1id.id) then {idx with id = "WIM Place Landmarks "}
                         else if idx.id.Equals(box2id.id) then {idx with id = "WIM"}
-                        else if idx.id.Equals(box3id.id) then {idx with id = "Scale"}
-                        else if idx.id.Equals(box4id.id) then {idx with id = "Reset"}
-                        else if idx.id.Equals(box5id.id) then {idx with id = "Teleportation"}
-                        else if idx.id.Equals(box6id.id) then {idx with id = "Drone mode"}
-                        else if idx.id.Equals(box7id.id) then {idx with id = "Drone mode On Controller"}
-                        else {idx with id = "Cyllinder"}
+                        else if idx.id.Equals(box3id.id) then {idx with id = "Teleportation"}
+                        else {idx with id = "Drone mode On Controller"}
                         )
                 {model with mainMenuBoxes = newMenuBoxes; menuButtonPressed = buttonPressed}
     
@@ -97,36 +90,26 @@ module MenuApp =
                             let box2ID = model.mainMenuBoxes |> Seq.item 2
                             let box3ID = model.mainMenuBoxes |> Seq.item 3
                             let box4ID = model.mainMenuBoxes |> Seq.item 4
-                            let box5ID = model.mainMenuBoxes |> Seq.item 5
-                            let box6ID = model.mainMenuBoxes |> Seq.item 6
-                            let box7ID = model.mainMenuBoxes |> Seq.item 7
 
                             let menuSelector = if a.joystickHold then a else b
                                 
                             if box0ID.id = id then 
-                                {   model with menu = MenuState.PlaceLandmarks; controllerMenuSelector = menuSelector; initialMenuState = MenuState.PlaceLandmarks}
+                                {   model with menu = MenuState.Reset; controllerMenuSelector = menuSelector; initialMenuState = MenuState.PlaceLandmarks}
                             else if box1ID.id = id then 
                                 {   model with menu = MenuState.WIMLandmarks; controllerMenuSelector = menuSelector; initialMenuState = MenuState.WIMLandmarks}
                             else if box2ID.id = id then 
                                 {   model with menu = MenuState.WIM; controllerMenuSelector = menuSelector; initialMenuState = MenuState.WIM}
                             else if box3ID.id = id then 
-                                {   model with menu = MenuState.Scale; controllerMenuSelector = menuSelector; initialMenuState = MenuState.Scale}
-                            else if box4ID.id = id then 
-                                {   model with menu = MenuState.Reset; controllerMenuSelector = menuSelector; initialMenuState = MenuState.Reset}
-                            else if box5ID.id = id then 
-                                {   model with menu = MenuState.Teleportation; controllerMenuSelector = menuSelector; initialMenuState = MenuState.Teleportation}
-                            else if box6ID.id = id then 
-                                {   model with menu = MenuState.DroneMode; controllerMenuSelector = menuSelector; initialMenuState = MenuState.DroneMode}
-                            else if box7ID.id = id then 
-                                {   model with menu = MenuState.DroneModeController; controllerMenuSelector = menuSelector; initialMenuState = MenuState.DroneModeController}
+                                {   model with menu = MenuState.Teleportation; controllerMenuSelector = menuSelector; initialMenuState = MenuState.Scale}
                             else 
                                 {
                                     model with 
-                                        menu = MenuState.Cyllinder
+                                        menu = MenuState.DroneModeController
                                         controllerMenuSelector = menuSelector; 
                                         initialMenuState = MenuState.Cyllinder
                                         mainMenuBoxes = PList.empty
                                 }
+                            
                         else //HOVER
                             update controllers state vr model (HoverIn id)
                      | _ -> //HOVEROUT
