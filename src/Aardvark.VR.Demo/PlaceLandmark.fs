@@ -135,11 +135,21 @@ module PlaceLandmark =
             model.evaluationLandmarks
             |> PList.updateAt model.evaluationCounter (fun el -> 
                 let newPositions = 
-                    [V3d(60.0217819213867, -9.39531326293945, -11.815357208252);
-                    V3d(185.197639465332, 36.5524291992188, 10.9512329101563); 
-                    V3d(53.2457828521729, -106.917476654053, -6.37202262878418);
-                    V3d(6.98366165161133, -46.9223976135254, -7.34567642211914);
-                    V3d(-52.2900581359863, 93.6270713806152, 21.503210067749)]
+                    [V3d(151.104545593262, 17.6482200622559, -1.07669830322266);
+                    V3d(41.4958953857422, -86.480712890625, 9.59806442260742); 
+                    V3d(-28.3977508544922, 82.3419570922852, 20.4675674438477);
+                    V3d(47.2373962402344, -146.375179290771, 3.89385223388672);
+                    V3d(158.316850662231, -14.4028663635254, -2.29530334472656);
+                    V3d(26.3594150543213, -195.874500274658, 18.9978122711182);
+                    V3d(52.1530628204346, 29.5162200927734, -5.88483810424805);
+                    V3d(25.4886627197266, -58.6039543151855, -4.27331924438477);
+                    V3d(181.050395965576, -126.30672454834, 8.62436294555664);
+                    V3d(-39.9592399597168, -44.0988540649414, -1.48630142211914);
+                    V3d(109.532499313354, 35.3672981262207, -2.02255249023438);
+                    V3d(25.2892017364502, -97.76611328125, 7.16843605041504);
+                    V3d(-39.0450477600098, -19.5907592773438, 1.12066268920898);
+                    V3d(55.6381225585938, -57.164478302002, -1.92041397094727);
+                    V3d(187.817573547363, 34.8072052001953, 7.72666931152344);]
                     
                 {el with 
                     trafo = Trafo3d.Translation(newPositions.Item model.evaluationCounter);
@@ -150,51 +160,21 @@ module PlaceLandmark =
             model.evaluationLandmarksLook //look for different position for the look landmarks
             |> PList.updateAt model.evaluationCounter (fun el -> 
                 let newPositions = 
-                    [V3d(185.197639465332, 36.5524291992188, 10.9512329101563);
-                    V3d(-185.197639465332, 36.5524291992188, 10.9512329101563); 
-                    V3d(-53.2457828521729, -106.917476654053, -6.37202262878418);
-                    V3d(-6.98366165161133, -46.9223976135254, -7.34567642211914);
-                    V3d(52.2900581359863, 93.6270713806152, 21.503210067749)]
-                    
-                {el with 
-                    trafo = Trafo3d.Translation(newPositions.Item model.evaluationCounter);
-                    geometry = Box3d.FromSize(V3d(1.0, 1.0, 15.0));
-                    color = C4b.Blue
-                })
-
-        let model = {model with evaluationLandmarks = newBoxPos; evaluationLandmarksLook = newBoxPos1}
-        model
-      
-    let updateLandmarksPositionOnWIM model : Model = // positions of evaluation landmarks in wim and drone mode should be different!!!
-        let newBoxPos = 
-            model.evaluationLandmarks
-            |> PList.updateAt model.evaluationCounter (fun el -> 
-                let newPositions = 
-                    [V3d(60.0217819213867, -9.39531326293945, -11.815357208252);
-                    V3d(185.197639465332, 36.5524291992188, 10.9512329101563); 
-                    V3d(53.2457828521729, -106.917476654053, -6.37202262878418);
-                    V3d(6.98366165161133, -46.9223976135254, -7.34567642211914);
-                    V3d(-52.2900581359863, 93.6270713806152, 21.503210067749)]
-                    //[V3d(52.288818359375, -7.18469619750977, -12.9421234130859);
-                    //V3d(-66.6853427886963, 103.339958190918, 20.5557823181152); 
-                    //V3d(46.2436199188232, -119.581413269043, -5.77807426452637);
-                    //V3d(61.1997127532959, -58.692741394043, -13.3692264556885);
-                    //V3d(189.576578140259, 37.2320175170898, 8.15391540527344)]
-                    
-                {el with 
-                    trafo = Trafo3d.Translation(newPositions.Item model.evaluationCounter);
-                    geometry = Box3d.FromSize(V3d(1.0, 1.0, 15.0))
-                })
-
-        let newBoxPos1 = 
-            model.evaluationLandmarksLook //look for different position for the look landmarks
-            |> PList.updateAt model.evaluationCounter (fun el -> 
-                let newPositions = 
-                    [V3d(185.197639465332, 36.5524291992188, 10.9512329101563);
-                    V3d(-185.197639465332, 36.5524291992188, 10.9512329101563); 
-                    V3d(-53.2457828521729, -106.917476654053, -6.37202262878418);
-                    V3d(-6.98366165161133, -46.9223976135254, -7.34567642211914);
-                    V3d(52.2900581359863, 93.6270713806152, 21.503210067749)]
+                    [V3d(-7.3760986328125, -41.402530670166, -7.04555511474609);
+                    V3d(88.4960174560547, -52.3723602294922, -11.848258972168); 
+                    V3d(-86.4656448364258, -78.271484375, 23.7221240997314);
+                    V3d(34.4533920288086, -24.4295120239258, -8.52031707763672);
+                    V3d(110.958623886108, -79.7956466674805, -6.08882904052734);
+                    V3d(-16.7708873748779, -83.1976890563965, -3.19957733154297);
+                    V3d(74.9305248260498, -33.1958770751953, -12.7483367919922);
+                    V3d(10.8861923217773, 97.8855133056641, 19.6725845336914);
+                    V3d(87.2105121612549, -139.066791534424, 1.42250061035156);
+                    V3d(120.385646820068, -49.5013236999512, -9.09461975097656);
+                    V3d(59.9913120269775, 96.1291313171387, 16.9708728790283);
+                    V3d(78.129243850708, -189.288806915283, 13.8190746307373);
+                    V3d(-69.0516948699951, 39.6745681762695, 24.7023105621338);
+                    V3d(213.29870223999, -40.9213066101074, 8.6432933807373);
+                    V3d(87.7236366271973, -0.589466094970703, -2.62374877929688);]
                     
                 {el with 
                     trafo = Trafo3d.Translation(newPositions.Item model.evaluationCounter);
@@ -228,77 +208,36 @@ module PlaceLandmark =
                 let updateDrone = {model.droneDistanceToLandmark with text = "distance to next landmark: " + dist.ToString(); trafo = newTrafo}
                 {model with droneDistanceToLandmark = updateDrone}
 
-            if dist <= 8.0 then 
-                let newBoxColor = 
-                    model.evaluationLandmarks
-                    |> PList.updateAt model.evaluationCounter (fun el -> {el with color = C4b.Green})
-                let newBoxColor1 = 
-                    model.evaluationLandmarksLook
-                    |> PList.updateAt model.evaluationCounter (fun el -> {el with color = C4b.Green})
-                {model with evaluationCounter = model.evaluationCounter + 1; evaluationLandmarks = newBoxColor; evaluationLandmarksLook = newBoxColor1}
-            else model
-        | _, _ -> model
-
-    let hoverEvaluationLandmarksOnWIM kind p model : Model = 
-        let newControllersPosition = 
-            model 
-            |> OpcUtilities.updateControllersInfo kind p
-        
-        let model = { model with controllerInfos = newControllersPosition;}
-        
-        let controllerPos = model.menuModel.controllerMenuSelector
-        let newCP = model.controllerInfos |> HMap.tryFind controllerPos.kind
-
-        let evalLandmark = 
-            model.evaluationLandmarks
-            |> PList.tryAt model.evaluationCounter
-        
-        match newCP, evalLandmark with
-        | Some con, Some evalLand ->
-
-            let controllerOnAnnotationSpace = con.pose.deviceToWorld * model.workSpaceTrafo.Inverse
-            let evalandtrafo = evalLand.trafo.GetModelOrigin()
-            let dist = System.Math.Round(V3d.Distance(controllerOnAnnotationSpace.GetModelOrigin(), evalLand.trafo.GetModelOrigin()), 3)
-            //printfn "dist: %A" dist
             let model = 
-                let newTrafo = Trafo3d.Translation(V3d(model.WIMworkSpaceTrafo.GetModelOrigin().X, model.WIMworkSpaceTrafo.GetModelOrigin().Y - 5.0, model.WIMworkSpaceTrafo.GetModelOrigin().Z))
-                let updateDrone = {model.droneDistanceToLandmark with text = "distance to next landmark: " + dist.ToString(); trafo = newTrafo}
-                {model with droneDistanceToLandmark = updateDrone}
+                if dist <= 8.0 then 
+                    let newBoxColor = 
+                        model.evaluationLandmarks
+                        |> PList.updateAt model.evaluationCounter (fun el -> {el with color = C4b.Green})
+                    
+                    let newBoxColor1 = 
+                        model.evaluationLandmarksLook
+                        |> PList.updateAt model.evaluationCounter (fun el -> {el with color = C4b.Green})
+                    
+                    let model = {model with evaluationCounter = model.evaluationCounter + 1; evaluationLandmarks = newBoxColor; evaluationLandmarksLook = newBoxColor1}
+                    
+                    model |> updateLandmarksPosition
 
-            if dist <= 8.0 then 
-                let newBoxColor = 
-                    model.evaluationLandmarksWIM
-                    |> PList.updateAt model.evaluationCounter (fun el -> {el with color = C4b.Green})
+                else model
 
-                let newBoxColor1 = 
-                    model.evaluationLandmarks
-                    |> PList.updateAt model.evaluationCounter (fun el -> {el with color = C4b.Green})
-                
-                let newBoxColor2 = 
-                    model.evaluationLandmarksLook
-                    |> PList.updateAt model.evaluationCounter (fun el -> {el with color = C4b.Green})
+            //let model = 
+            //    match model.evaluationCounter with 
+            //    | x when x < 5 -> 
+            //        let newMenuMode = {model.menuModel with menu = MenuState.DroneModeController}
+            //        {model with menuModel = newMenuMode}
+            //    | x when x > = 5 && x < 10 -> 
+            //        let newMenuMode = {model.menuModel with menu = MenuState.WIM}
+            //        {model with menuModel = newMenuMode}
+            //    | x when x > = 10 && x < 15 -> 
+            //        let newMenuMode = {model.menuModel with menu = MenuState.Teleportation}
+            //        {model with menuModel = newMenuMode}
+            //    | _ -> model
 
-                let model = 
-                    {model with 
-                        evaluationCounter = model.evaluationCounter + 1; 
-                        evaluationLandmarksWIM = newBoxColor; 
-                        evaluationLandmarks = newBoxColor1;
-                        evaluationLandmarksLook = newBoxColor2
-                    }
-
-                model |> updateLandmarksPositionOnWIM
-            else model
+            model
         | _, _ -> model
 
-    
-
-
-
-        
-        
-        
-        
-
-
-
-        
+   

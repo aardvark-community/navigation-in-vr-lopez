@@ -237,14 +237,16 @@ module Demo =
                         |> WIMOpc.checkHoverUserWIM kind p
 
                     model 
-                    |> PlaceLandmark.hoverEvaluationLandmarksOnWIM kind p
+                    |> PlaceLandmark.hoverEvaluationLandmarks kind p
                 | _ -> 
                     let newControllersPosition = 
                         model 
                         |> OpcUtilities.updateControllersInfo kind p
         
                     {model with controllerInfos = newControllersPosition}
-                            
+                     
+            let printshite = printfn "counter: %d" model.evaluationCounter
+
             let controllerMenuUpdate = MenuApp.update model.controllerInfos state vr newModel.menuModel (MenuAction.UpdateControllerPose (kind, p))
             {newModel with 
                 menuModel = controllerMenuUpdate; 
@@ -376,7 +378,7 @@ module Demo =
                         }
 
                     newModel 
-                    |> PlaceLandmark.updateLandmarksPositionOnWIM
+                    |> PlaceLandmark.updateLandmarksPosition
                 | Menu.MenuState.WIMLandmarks ->
                     let newLandmark = OpcUtilities.mkFlags id.pose.deviceToWorld 1
                     let newUserPos = 
@@ -388,11 +390,9 @@ module Demo =
                     let newInitialUserPosWIMcone = 
                         OpcUtilities.mkCone Trafo3d.Identity 1
 
-                    //let newLandmarkList = OpcUtilities.mkEvalFlags (Trafo3d.Translation(V3d.One * 100000.0)) 5
-
                     let newModel = 
                         newModel 
-                        |> PlaceLandmark.updateLandmarksPositionOnWIM
+                        |> PlaceLandmark.updateLandmarksPosition
 
                     {newModel with 
                         landmarkOnController    = newLandmark
@@ -454,7 +454,6 @@ module Demo =
 
                     newModel 
                     |> Teleport.teleportUser
-                    
                 | Menu.MenuState.DroneMode -> 
                     let newDrone = 
                         if newModel.droneControl.drone.Count.Equals(0) then 
@@ -541,7 +540,7 @@ module Demo =
 
                     let newModel = 
                         newModel 
-                        |> PlaceLandmark.updateLandmarksPositionOnWIM   
+                        |> PlaceLandmark.updateLandmarksPosition   
 
                     newModel 
                     |> WIMOpc.moveUserToAnnotationSpaceFromWIM 
@@ -1056,32 +1055,6 @@ module Demo =
                 |> Sg.noEvents     
                 |> Sg.trafo m.WIMopcSpaceTrafo
 
-        let throwRay = 
-            //m.teleportRay
-            //|> Mod.map(fun ray -> 
-            //    [|ray.Line3d|]
-            //)
-            let ttt = m.teleportRay
-            adaptive{
-                let! rrr = ttt
-
-                return [|rrr.Line3d|]
-            }
-            
-        let throwRayLine = 
-            throwRay 
-            |> Sg.lines (Mod.constant C4b.Red)
-            |> Sg.noEvents
-            |> Sg.uniform "LineWidth" (Mod.constant 5) 
-            |> Sg.effect [
-                toEffect DefaultSurfaces.trafo
-                toEffect DefaultSurfaces.vertexColor
-                toEffect DefaultSurfaces.thickLine
-                ]
-            |> Sg.pass (RenderPass.after "lines" RenderPassOrder.Arbitrary RenderPass.main)
-            |> Sg.depthTest (Mod.constant DepthTestMode.None)
-            |> Sg.trafo m.opcSpaceTrafo
-
         let signature =
             runtime.CreateFramebufferSignature [
                 DefaultSemantic.Colors, { format = RenderbufferFormat.Rgba8; samples = 1 }
@@ -1246,27 +1219,6 @@ module Demo =
             |> Sg.trafo m.droneControl.screenPosition
             |> Sg.onOff mkDisappear
 
-        let borderSecondCameraOnController = 
-            let mkDisappear = 
-                let menuMode = m.menuModel.menu
-                
-                adaptive {
-                    let! newMenuMode = menuMode
-                    match newMenuMode with 
-                    | MenuState.DroneModeController -> return true 
-                    | _ -> return false
-                }
-            
-            m.droneControl.screen
-            |> AList.toASet 
-            |> ASet.map (fun b -> 
-                mkFlag m b 
-               )
-            |> Sg.set
-            |> defaultEffect
-            |> Sg.noEvents
-            |> Sg.onOff mkDisappear
-        
         let droneCylinder = 
             let color = 
                 let hsv = HSVf((1.0 - 60.0) * 0.625, 1.0, 1.0)
@@ -1317,20 +1269,6 @@ module Demo =
             |> Sg.scale 0.05
             |> Sg.trafo(m.droneDistanceToLandmark.trafo)
 
-        let cylinderCenterShow =     
-            m.cyllinderControl
-            |> AList.toASet
-            |> ASet.map (fun c -> 
-                mkCylinder m c
-            )
-            |> Sg.set
-            |> defaultEffect
-            //|> Sg.blendMode (Mod.constant BlendMode.Blend)
-            //|> Sg.cullMode (Mod.constant CullMode.Front)
-            //|> Sg.pass (RenderPass.after "" RenderPassOrder.Arbitrary RenderPass.main)
-            |> Sg.onOff mkDisappearInsideCylinder
-            |> Sg.noEvents
-       
         let teleport2intersection = 
             m.teleportBox
             |> AList.toASet 
@@ -1373,6 +1311,15 @@ module Demo =
             }
 
         let showDynamicLine = 
+            let mkDisappear = 
+                let menuMode = m.menuModel.menu
+                
+                adaptive {
+                    let! newMenuMode = menuMode
+                    match newMenuMode with 
+                    | MenuState.Teleportation -> return true 
+                    | _ -> return false
+                }
             rayLine
                 |> Sg.lines (Mod.constant C4b.Red)
                 |> Sg.noEvents
@@ -1385,10 +1332,11 @@ module Demo =
                 |> Sg.pass (RenderPass.after "lines" RenderPassOrder.Arbitrary RenderPass.main)
                 |> Sg.depthTest (Mod.constant DepthTestMode.None)
                 |> Sg.trafo m.opcSpaceTrafo
+                |> Sg.onOff mkDisappear
 
         let transformedSgs = 
             [
-                //landmarksOnAnnotationSpace
+                landmarksOnAnnotationSpace
                 evaluationLands
                 evaluationLandsLook
                 drones
@@ -1400,7 +1348,7 @@ module Demo =
 
         let WIMtransformedSgs = 
             [
-                //landmarksOnWIM 
+                landmarksOnWIM 
                 userPosOnWIM 
                 userPosOnAnnotationSpace |> Sg.trafo m.annotationSpaceTrafo
                 userConeOnWim
@@ -1416,7 +1364,7 @@ module Demo =
             [
                 deviceSgs
                 menuApp
-                //landmarks
+                landmarks
                 //throwRayLine
                 teleport2intersection
                 showDynamicLine
@@ -1474,7 +1422,7 @@ module Demo =
             OpcViewerFunc.restoreCamStateImport boundingBoxInit V3d.OOI
 
         let newEvalLandmarks = 
-            OpcUtilities.mkEvalFlags (Trafo3d.Translation(V3d.One * 100000.0)) 5
+            OpcUtilities.mkEvalFlags (Trafo3d.Translation(V3d.One * 100000.0)) 15
 
         Log.line "using path: %s" path
         //C:\Users\lopez\Desktop\VictoriaCrater\HiRISE_VictoriaCrater_SuperResolution
