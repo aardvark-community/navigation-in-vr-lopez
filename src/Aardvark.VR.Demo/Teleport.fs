@@ -106,7 +106,7 @@ module Teleport =
                 )
             | None -> model.teleportCone
 
-        let model = {model with teleportBox = moveBox; teleportCone = moveCone}
+        let model = {model with teleportBox = moveBox; teleportCone = moveCone; hitPoint = intersectionVector}
 
         model 
 

@@ -237,6 +237,7 @@ module Mutable =
         let _teleportRay = ResetMod.Create(__initial.teleportRay)
         let _teleportBox = MList.Create(__initial.teleportBox, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _teleportCone = MList.Create(__initial.teleportCone, (fun v -> Demo.Mutable.MVisibleCone.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleCone.Update(m, v)), (fun v -> v))
+        let _hitPoint = ResetMod.Create(__initial.hitPoint)
         
         member x.text = _text :> IMod<_>
         member x.vr = _vr :> IMod<_>
@@ -290,6 +291,7 @@ module Mutable =
         member x.teleportRay = _teleportRay :> IMod<_>
         member x.teleportBox = _teleportBox :> alist<_>
         member x.teleportCone = _teleportCone :> alist<_>
+        member x.hitPoint = _hitPoint :> IMod<_>
         
         member x.Current = __current :> IMod<_>
         member x.Update(v : Demo.Main.Model) =
@@ -346,6 +348,7 @@ module Mutable =
                 ResetMod.Update(_teleportRay,v.teleportRay)
                 MList.Update(_teleportBox, v.teleportBox)
                 MList.Update(_teleportCone, v.teleportCone)
+                ResetMod.Update(_hitPoint,v.hitPoint)
                 
         
         static member Create(__initial : Demo.Main.Model) : MModel = MModel(__initial)
@@ -673,4 +676,10 @@ module Mutable =
                     override x.Get(r) = r.teleportCone
                     override x.Set(r,v) = { r with teleportCone = v }
                     override x.Update(r,f) = { r with teleportCone = f r.teleportCone }
+                }
+            let hitPoint =
+                { new Lens<Demo.Main.Model, Aardvark.Base.V3d>() with
+                    override x.Get(r) = r.hitPoint
+                    override x.Set(r,v) = { r with hitPoint = v }
+                    override x.Update(r,f) = { r with hitPoint = f r.hitPoint }
                 }

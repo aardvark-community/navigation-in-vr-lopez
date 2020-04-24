@@ -141,7 +141,7 @@ type Model =
         teleportRay                 : Ray3d
         teleportBox                 : plist<VisibleBox> 
         teleportCone                : plist<VisibleCone>
-
+        hitPoint                    : V3d
 
         
     }
@@ -276,6 +276,7 @@ module Model =
             teleportRay                 = Ray3d.Invalid
             teleportBox                 = PList.empty
             teleportCone                = PList.empty
+            hitPoint                    = V3d.One * 5000.0
 
         }
 

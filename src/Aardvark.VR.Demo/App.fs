@@ -1352,6 +1352,40 @@ module Demo =
             |> defaultEffect
             |> Sg.trafo m.opcSpaceTrafo
 
+        let rayLine = 
+            let intersectionVector = m.hitPoint
+            let controller = m.menuModel.controllerMenuSelector
+            let newCP = m.controllerInfos |> AMap.tryFind (controller.kind.GetValue())
+            let conPos = 
+                newCP 
+                |> Mod.bind (fun cp -> 
+                    match cp with 
+                    | Some c -> c.pose.deviceToWorld 
+                    | None -> Mod.constant Trafo3d.Identity
+                )
+            let opcSpace = m.opcSpaceTrafo
+            adaptive {
+                let! con = conPos 
+                let! opc = opcSpace 
+                let! intersectPoint = intersectionVector 
+
+                return [|Line3d((con * opc.Inverse).GetModelOrigin(), intersectPoint)|]
+            }
+
+        let showDynamicLine = 
+            rayLine
+                |> Sg.lines (Mod.constant C4b.Red)
+                |> Sg.noEvents
+                |> Sg.uniform "LineWidth" (Mod.constant 5) 
+                |> Sg.effect [
+                    toEffect DefaultSurfaces.trafo
+                    toEffect DefaultSurfaces.vertexColor
+                    toEffect DefaultSurfaces.thickLine
+                    ]
+                |> Sg.pass (RenderPass.after "lines" RenderPassOrder.Arbitrary RenderPass.main)
+                |> Sg.depthTest (Mod.constant DepthTestMode.None)
+                |> Sg.trafo m.opcSpaceTrafo
+
         let transformedSgs = 
             [
                 //landmarksOnAnnotationSpace
@@ -1385,6 +1419,7 @@ module Demo =
                 //landmarks
                 //throwRayLine
                 teleport2intersection
+                showDynamicLine
                 teleportationCone
                 showSecondCamera
                 borderSecondCamera
@@ -1537,6 +1572,7 @@ module Demo =
             teleportRay                 = Ray3d.Invalid
             teleportBox                 = PList.empty
             teleportCone                = PList.empty
+            hitPoint                    = V3d.One * 5000.0
 
         }
     let app (runtime : IRuntime) =
