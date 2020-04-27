@@ -78,7 +78,7 @@ module Teleport =
         let intersectionVector = 
             match checkIntersection with 
             | Some intersection -> model.teleportRay.GetPointOnRay(intersection)
-            | None -> V3d.Zero
+            | None -> model.hitPoint//V3d.Zero
 
         let moveBox = 
             model.teleportBox

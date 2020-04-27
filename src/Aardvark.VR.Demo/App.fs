@@ -257,8 +257,6 @@ module Demo =
                         |> OpcUtilities.updateControllersInfo kind p
         
                     {model with controllerInfos = newControllersPosition}
-                     
-            let printshite = printfn "menustate: %s" (model.menuModel.menu.ToString())
 
             let controllerMenuUpdate = MenuApp.update model.controllerInfos state vr newModel.menuModel (MenuAction.UpdateControllerPose (kind, p))
             {newModel with 
@@ -335,41 +333,6 @@ module Demo =
             match controllerPos with 
             | Some id -> 
                 match newModel.menuModel.menu with 
-                | Menu.MenuState.PlaceLandmarks -> 
-                    let newLandmark = OpcUtilities.mkFlags id.pose.deviceToWorld 1
-                        
-                    {newModel with landmarkOnController = newLandmark}
-                | Menu.MenuState.Scale -> 
-                    let newModel = newModel |> NavigationOpc.initialSceneInfo
-                    {newModel with 
-                        landmarkOnController = PList.empty;
-                        WIMopcSpaceTrafo = Trafo3d.Translation(V3d(1000000.0, 1000000.0, 1000000.0)); 
-                        WIMlandmarkOnAnnotationSpace = PList.empty;
-                        droneControl = Drone.initial;
-                        WIMuserPos = PList.empty
-                        cyllinderControl = PList.empty
-                    }
-                | Menu.MenuState.Cyllinder -> 
-                    let newCyllinder = OpcUtilities.mkCyllinder Trafo3d.Identity 1 1.0
-                    let newLandmark = OpcUtilities.mkFlags id.pose.deviceToWorld 1
-                    let newUserPosWIM = 
-                        if newModel.WIMuserPos.Count.Equals(0) then 
-                            OpcUtilities.mkFlagsUser Trafo3d.Identity 1 
-                        else newModel.WIMuserPos
-                    let newInitialUserPosWIM = 
-                        OpcUtilities.mkFlags (Trafo3d.Translation(V3d.One * 1000000.0)) 1
-                    let newUserPos = 
-                        if newModel.userPosOnAnnotationSpace.Count.Equals(0) then 
-                            OpcUtilities.mkFlags id.pose.deviceToWorld 1
-                        else newModel.userPosOnAnnotationSpace
-                    
-                    {newModel with 
-                        cyllinderControl            = newCyllinder; 
-                        landmarkOnController        = newLandmark
-                        WIMuserPos                  = newUserPosWIM;
-                        userPosOnAnnotationSpace    = newUserPos;
-                        WIMinitialUserPos           = newInitialUserPosWIM
-                    }
                 | Menu.MenuState.WIM -> 
                     let newUserPosWIM = OpcUtilities.mkFlagsUser Trafo3d.Identity 1 
                     
@@ -417,8 +380,6 @@ module Demo =
                         //evaluationLandmarksWIM2RealWorld = newLandmarkList
                         //evaluationLandmarksWIM = newLandmarkList
                     }
-                | Menu.MenuState.Reset -> 
-                    initial
                 | Menu.MenuState.Teleportation -> 
                     let controllTrafo = id.pose.deviceToWorld
                     
@@ -467,37 +428,6 @@ module Demo =
 
                     newModel 
                     |> Teleport.teleportUser
-                | Menu.MenuState.DroneMode -> 
-                    let newDrone = 
-                        if newModel.droneControl.drone.Count.Equals(0) then 
-                            let newTrafo = Trafo3d.Translation(V3d(id.pose.deviceToWorld.GetModelOrigin().X + 2.0, id.pose.deviceToWorld.GetModelOrigin().Y, id.pose.deviceToWorld.GetModelOrigin().Z))
-                            OpcUtilities.mkDrone newTrafo 1
-                        else newModel.droneControl.drone
-                    
-                    let newDroneScreen = 
-                        if newModel.droneControl.screen.Count.Equals(0) then 
-                            VisibleBox.createDroneScreen C4b.Red (newModel.droneControl.cameraPosition.GetModelOrigin() + V3d(0.2, -0.25, -0.25))
-                            |> PList.single
-                        else newModel.droneControl.screen
-
-                    let updateDrones = 
-                        {newModel.droneControl with 
-                            drone = newDrone; 
-                            screen = newDroneScreen
-                        }
-
-                    let newModel = 
-                        {newModel with 
-                            landmarkOnController            = PList.empty;
-                            WIMopcSpaceTrafo                = Trafo3d.Translation(V3d(1000000.0, 1000000.0, 1000000.0)); 
-                            WIMlandmarkOnAnnotationSpace    = PList.empty;
-                            WIMuserPos                      = PList.empty;
-                            droneControl                    = updateDrones
-                            cyllinderControl                = PList.empty
-                        }
-
-                    newModel
-                    |> DroneControlCenter.moveUserToDronePos
                 | Menu.MenuState.DroneModeController -> 
                     let newDrone = 
                         if newModel.droneControl.drone.Count.Equals(0) then 
@@ -531,6 +461,74 @@ module Demo =
                     let newModel = 
                         newModel 
                         |> PlaceLandmark.updateLandmarksPosition
+
+                    newModel
+                    |> DroneControlCenter.moveUserToDronePos
+                | Menu.MenuState.Reset -> 
+                    initial
+                | Menu.MenuState.PlaceLandmarks -> 
+                    let newLandmark = OpcUtilities.mkFlags id.pose.deviceToWorld 1
+                        
+                    {newModel with landmarkOnController = newLandmark}
+                | Menu.MenuState.Scale -> 
+                    let newModel = newModel |> NavigationOpc.initialSceneInfo
+                    {newModel with 
+                        landmarkOnController = PList.empty;
+                        WIMopcSpaceTrafo = Trafo3d.Translation(V3d(1000000.0, 1000000.0, 1000000.0)); 
+                        WIMlandmarkOnAnnotationSpace = PList.empty;
+                        droneControl = Drone.initial;
+                        WIMuserPos = PList.empty
+                        cyllinderControl = PList.empty
+                    }
+                | Menu.MenuState.Cyllinder -> 
+                    let newCyllinder = OpcUtilities.mkCyllinder Trafo3d.Identity 1 1.0
+                    let newLandmark = OpcUtilities.mkFlags id.pose.deviceToWorld 1
+                    let newUserPosWIM = 
+                        if newModel.WIMuserPos.Count.Equals(0) then 
+                            OpcUtilities.mkFlagsUser Trafo3d.Identity 1 
+                        else newModel.WIMuserPos
+                    let newInitialUserPosWIM = 
+                        OpcUtilities.mkFlags (Trafo3d.Translation(V3d.One * 1000000.0)) 1
+                    let newUserPos = 
+                        if newModel.userPosOnAnnotationSpace.Count.Equals(0) then 
+                            OpcUtilities.mkFlags id.pose.deviceToWorld 1
+                        else newModel.userPosOnAnnotationSpace
+                    
+                    {newModel with 
+                        cyllinderControl            = newCyllinder; 
+                        landmarkOnController        = newLandmark
+                        WIMuserPos                  = newUserPosWIM;
+                        userPosOnAnnotationSpace    = newUserPos;
+                        WIMinitialUserPos           = newInitialUserPosWIM
+                    }
+                | Menu.MenuState.DroneMode -> 
+                    let newDrone = 
+                        if newModel.droneControl.drone.Count.Equals(0) then 
+                            let newTrafo = Trafo3d.Translation(V3d(id.pose.deviceToWorld.GetModelOrigin().X + 2.0, id.pose.deviceToWorld.GetModelOrigin().Y, id.pose.deviceToWorld.GetModelOrigin().Z))
+                            OpcUtilities.mkDrone newTrafo 1
+                        else newModel.droneControl.drone
+                    
+                    let newDroneScreen = 
+                        if newModel.droneControl.screen.Count.Equals(0) then 
+                            VisibleBox.createDroneScreen C4b.Red (newModel.droneControl.cameraPosition.GetModelOrigin() + V3d(0.2, -0.25, -0.25))
+                            |> PList.single
+                        else newModel.droneControl.screen
+
+                    let updateDrones = 
+                        {newModel.droneControl with 
+                            drone = newDrone; 
+                            screen = newDroneScreen
+                        }
+
+                    let newModel = 
+                        {newModel with 
+                            landmarkOnController            = PList.empty;
+                            WIMopcSpaceTrafo                = Trafo3d.Translation(V3d(1000000.0, 1000000.0, 1000000.0)); 
+                            WIMlandmarkOnAnnotationSpace    = PList.empty;
+                            WIMuserPos                      = PList.empty;
+                            droneControl                    = updateDrones
+                            cyllinderControl                = PList.empty
+                        }
 
                     newModel
                     |> DroneControlCenter.moveUserToDronePos
@@ -1136,7 +1134,7 @@ module Demo =
                 CameraView.look p d.Normalized V3d.OOI
                 //CameraView.lookAt loc cen V3d.OOI 
                     |> CameraView.viewTrafo 
-                ) dronePos dirController
+                ) dronePos droneDir
             )
             // since our render target size is dynamic, we compute a proj trafo using standard techniques
             |> Sg.projTrafo (size |> Mod.map (fun actualSize -> 
@@ -1182,7 +1180,7 @@ module Demo =
 
             let boxCenter = V3d(m.droneControl.cameraPosition.GetValue().GetModelOrigin().X, m.droneControl.cameraPosition.GetValue().GetModelOrigin().Y, m.droneControl.cameraPosition.GetValue().GetModelOrigin().Z + 0.25)
 
-            Sg.box (Mod.constant C4b.White) (Mod.constant (Box3d.FromCenterAndSize(boxCenter, V3d(0.1, 0.5, 0.5))))
+            Sg.box (Mod.constant C4b.White) (Mod.constant (Box3d.FromCenterAndSize(boxCenter, V3d(0.5, 0.1, 0.5)))) //V3d(0.1, 0.5, 0.5)
             |> Sg.diffuseTexture offscreenTexture
             |> Sg.shader {
                 do! DefaultSurfaces.trafo
@@ -1224,9 +1222,9 @@ module Demo =
                     | _ -> return false
                 }
 
-            let boxCenter = V3d(m.droneControl.cameraPosition.GetValue().GetModelOrigin().X - 0.12, m.droneControl.cameraPosition.GetValue().GetModelOrigin().Y, m.droneControl.cameraPosition.GetValue().GetModelOrigin().Z + 0.20)
+            let boxCenter = V3d(m.droneControl.cameraPosition.GetValue().GetModelOrigin().X, m.droneControl.cameraPosition.GetValue().GetModelOrigin().Y  + 0.12, m.droneControl.cameraPosition.GetValue().GetModelOrigin().Z + 0.20)
             
-            Sg.box (Mod.constant C4b.Red) (Mod.constant (Box3d.FromCenterAndSize(boxCenter, V3d(0.12, 0.70, 0.70))))
+            Sg.box (Mod.constant C4b.Red) (Mod.constant (Box3d.FromCenterAndSize(boxCenter, V3d(0.70, 0.12, 0.70))))
             |> Sg.noEvents
             |> defaultEffect
             |> Sg.trafo m.droneControl.screenPosition
@@ -1349,19 +1347,18 @@ module Demo =
 
         let transformedSgs = 
             [
-                landmarksOnAnnotationSpace
+                //landmarksOnAnnotationSpace
                 evaluationLands
                 evaluationLandsLook
                 drones
                 droneCylinder
-                //cylinderCenterShow
             ]
             |> Sg.ofList
             |> Sg.trafo m.annotationSpaceTrafo
 
         let WIMtransformedSgs = 
             [
-                landmarksOnWIM 
+                //landmarksOnWIM 
                 userPosOnWIM 
                 userPosOnAnnotationSpace |> Sg.trafo m.annotationSpaceTrafo
                 userConeOnWim
@@ -1377,18 +1374,16 @@ module Demo =
             [
                 deviceSgs
                 menuApp
-                landmarks
-                //throwRayLine
+                //landmarks
                 teleport2intersection
                 showDynamicLine
                 teleportationCone
                 showSecondCamera
                 borderSecondCamera
                 borderSecondCameracontrollerTest
-                //borderSecondCameraOnController
                 showSecondCameraOnController
-                //showDroneHeight
-                showDroneDist2Landmark
+                showDroneHeight
+                //showDroneDist2Landmark
             ] |> Sg.ofList
 
         Sg.ofList [transformedSgs; WIMtransformedSgs; notTransformedSgs; opcs; WIMopcs]
@@ -1403,12 +1398,6 @@ module Demo =
         }
 
     let initial =
-        let kdTreesSerializable = SerializationOpc.registry.RegisterFactory (fun _ -> KdTrees.level0KdTreePickler)
-
-        let startLandmark = 
-            let ttt = OpcUtilities.mkFlags (Trafo3d.Translation(V3d(-1.14622000066486, 0.188908132549816, 0.456057644407983))) 1
-            ttt
-            
         let rotateBoxInit = false
         let marcPath = @"C:\Users\lopez\Desktop\VictoriaCrater\HiRISE_VictoriaCrater_SuperResolution"
         let publishPath = @"..\data"
@@ -1502,7 +1491,6 @@ module Demo =
 
             landmarkOnController        = PList.empty
             landmarkOnAnnotationSpace   = PList.empty
-            //landmarkFromStart           = startLandmark
             WIMopcSpaceTrafo            = Trafo3d.Translation(V3d(1000000.0, 1000000.0, 1000000.0)) * upRotationTrafo
             WIMworkSpaceTrafo           = Trafo3d.Identity
             WIMannotationSpaceTrafo     = Trafo3d.Identity
@@ -1516,7 +1504,7 @@ module Demo =
             userPosOnAnnotationSpace    = PList.empty
             cyllinderControl            = PList.empty
 
-            evaluationLandmarks         = newEvalLandmarks //PList.empty
+            evaluationLandmarks         = newEvalLandmarks
             evaluationLandmarksWIM      = PList.empty
             evaluationLandmarksWIM2RealWorld= PList.empty
 

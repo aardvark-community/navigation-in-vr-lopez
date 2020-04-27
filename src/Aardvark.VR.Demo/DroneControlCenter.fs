@@ -46,8 +46,25 @@ module DroneControlCenter =
                     match droneFirst with 
                     | Some dd -> 
                         let newDroneHeightTrafo = Trafo3d.Translation(V3d(newModel.droneControl.cameraPosition.GetModelOrigin().X, newModel.droneControl.cameraPosition.GetModelOrigin().Y - 0.75, newModel.droneControl.cameraPosition.GetModelOrigin().Z))
+                        let rayHeight = 
+                            let dronePos2OpcSpace = dd.trafo * newModel.opcSpaceTrafo.Inverse
+                            let origin = dronePos2OpcSpace.Forward.TransformPos V3d.Zero
+                            let controllDir = dronePos2OpcSpace.Forward.TransformDir V3d.ZAxis //should try z negative or something
+                            let testRay = Ray3d(origin, controllDir) 
+                            let newFastRay = FastRay3d(testRay)
+
+                            let checkIntersection = OpcViewer.Base.Picking.Intersect.intersectWithOpc (Some newModel.kdTree) newFastRay
+
+                            let intersectionString = 
+                                match checkIntersection with 
+                                | Some intersection -> intersection
+                                | None -> 0.0 //newModel.droneHeight.text
+                            
+                            intersectionString
+                        
                         let updateDroneHeight = 
-                            {newModel.droneHeight with text = "Drone height: " + dd.trafo.GetModelOrigin().Z.ToString(); trafo = newDroneHeightTrafo}
+                            //{newModel.droneHeight with text = "Drone height: " + dd.trafo.GetModelOrigin().Z.ToString(); trafo = newDroneHeightTrafo}
+                            {newModel.droneHeight with text = "Drone height: " + rayHeight.ToString(); trafo = newDroneHeightTrafo}
                         {newModel with droneHeight = updateDroneHeight}
                     | None -> newModel
 
@@ -168,7 +185,7 @@ module DroneControlCenter =
             let rtLmkC = newLmkC.GetOrthoNormalOrientation()
             let rotLmkC = Rot3d.FromFrame(rtLmkC.Forward.C0.XYZ, rtLmkC.Forward.C1.XYZ, rtLmkC.Forward.C2.XYZ)
             let rotation = rotLmkC.GetEulerAngles()
-            let rotation1 = V3d(0.0, 0.0, rotation.Z - Math.PI / 2.0)
+            let rotation1 = V3d(rotation.X, rotation.Y, rotation.Z - Math.PI / 2.0)
 
             let translation = V3d(newLmkC.GetModelOrigin().X + 0.1, newLmkC.GetModelOrigin().Y + 0.6, newLmkC.GetModelOrigin().Z )
             let translationCameraPosition = V3d(newLmkC.GetModelOrigin().X, newLmkC.GetModelOrigin().Y, newLmkC.GetModelOrigin().Z)
@@ -177,8 +194,8 @@ module DroneControlCenter =
             let scale = V3d.One
 
             let newTrafo = Trafo3d.FromComponents(scale, rotation1, translation) //* Trafo3d.RotationInDegrees(V3d(0.0,0.0,90.0))
-            let newTrafoCameraPosition = Trafo3d.FromComponents(scale, rotation1, translationCameraPosition) //* Trafo3d.RotationInDegrees(V3d(0.0,0.0,90.0))
-            let newTrafoScreenPosition = Trafo3d.FromComponents(scale, rotation1, translationScreenPosition) //* Trafo3d.RotationInDegrees(V3d(0.0,0.0,90.0))
+            let newTrafoCameraPosition = con2.pose.deviceToWorld //Trafo3d.FromComponents(scale, rotation1, translationCameraPosition) //* Trafo3d.RotationInDegrees(V3d(0.0,0.0,90.0))
+            let newTrafoScreenPosition = con2.pose.deviceToWorld  //Trafo3d.FromComponents(scale, rotation1, translationScreenPosition) //* Trafo3d.RotationInDegrees(V3d(0.0,0.0,90.0))
 
             let newScreenPos = 
                 model.droneControl.screen 
@@ -188,8 +205,8 @@ module DroneControlCenter =
                     
             let newDroneCameraPos = 
                 {model.droneControl with 
-                    cameraPosition = newTrafoCameraPosition
                     screen = newScreenPos 
+                    cameraPosition = newTrafoCameraPosition
                     screenPosition = newTrafoScreenPosition
                 }
             {model  with droneControl = newDroneCameraPos}

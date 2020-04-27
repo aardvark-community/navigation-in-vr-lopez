@@ -212,11 +212,11 @@ module PlaceLandmark =
                 if dist <= 8.0 then 
                     let newBoxColor = 
                         model.evaluationLandmarks
-                        |> PList.updateAt model.evaluationCounter (fun el -> {el with color = C4b.Green})
+                        |> PList.updateAt model.evaluationCounter (fun el -> {el with color = C4b.Green}) //i can make the boxes that are already seen smaller so that it is not that confusing here
                     
                     let newBoxColor1 = 
                         model.evaluationLandmarksLook
-                        |> PList.updateAt model.evaluationCounter (fun el -> {el with color = C4b.Green})
+                        |> PList.updateAt model.evaluationCounter (fun el -> {el with color = C4b.DarkGreen})
                     
                     let model = {model with evaluationCounter = model.evaluationCounter + 1; evaluationLandmarks = newBoxColor; evaluationLandmarksLook = newBoxColor1}
                     
