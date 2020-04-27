@@ -1346,7 +1346,7 @@ module Demo =
                 |> Sg.onOff mkDisappear
 
         let lookHereString = 
-            Sg.textWithConfig { TextConfig.Default with renderStyle = RenderStyle.Billboard; align = TextAlignment.Center; flipViewDependent = true } m.evaluationLookAtLand.text
+            Sg.textWithConfig { TextConfig.Default with renderStyle = RenderStyle.Billboard; align = TextAlignment.Center; flipViewDependent = true } (Mod.constant "Look Here")
             |> Sg.noEvents
             |> Sg.scale 5.0
             |> Sg.trafo(m.evaluationLookAtLand.trafo)
@@ -1356,8 +1356,8 @@ module Demo =
             [
                 //landmarksOnAnnotationSpace
                 evaluationLands
-                evaluationLandsLook
-                lookHereString
+                //evaluationLandsLook
+                //lookHereString
                 drones
                 droneCylinder
             ]
@@ -1373,7 +1373,7 @@ module Demo =
                 initialUserPosOnWIM
                 initialUserConeOnWim
                 evaluationLandsOnWIM
-                evaluationLandsOnWIMLook
+                //evaluationLandsOnWIMLook
                 evaluationLandsOnWIM2RealWorld |> Sg.trafo m.annotationSpaceTrafo
             ]
             |> Sg.ofList
@@ -1390,7 +1390,7 @@ module Demo =
                 borderSecondCamera
                 borderSecondCameracontrollerTest
                 showSecondCameraOnController
-                showDroneHeight
+                //showDroneHeight
                 //showDroneDist2Landmark
             ] |> Sg.ofList
 
