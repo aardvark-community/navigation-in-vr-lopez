@@ -131,6 +131,7 @@ type Model =
         evaluationLandmarksLook     : plist<VisibleBox> 
         evaluationLandmarksWIMLook  : plist<VisibleBox>
         evaluationLandmarksWIM2RealWorldLook : plist<VisibleBox>
+        evaluationLookAtLand        : StringInfo
 
         evaluationCounter           : int
 
@@ -262,6 +263,7 @@ module Model =
             evaluationLandmarks         = PList.empty
             evaluationLandmarksWIM      = PList.empty
             evaluationLandmarksWIM2RealWorld= PList.empty
+            evaluationLookAtLand        = StringInfo.initial
             
             evaluationLandmarksLook     = PList.empty 
             evaluationLandmarksWIMLook  = PList.empty

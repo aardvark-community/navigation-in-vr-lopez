@@ -1345,11 +1345,19 @@ module Demo =
                 |> Sg.trafo m.opcSpaceTrafo
                 |> Sg.onOff mkDisappear
 
+        let lookHereString = 
+            Sg.textWithConfig { TextConfig.Default with renderStyle = RenderStyle.Billboard; align = TextAlignment.Center; flipViewDependent = true } m.evaluationLookAtLand.text
+            |> Sg.noEvents
+            |> Sg.scale 5.0
+            |> Sg.trafo(m.evaluationLookAtLand.trafo)
+
+        
         let transformedSgs = 
             [
                 //landmarksOnAnnotationSpace
                 evaluationLands
                 evaluationLandsLook
+                lookHereString
                 drones
                 droneCylinder
             ]
@@ -1511,6 +1519,7 @@ module Demo =
             evaluationLandmarksLook     = newEvalLandmarks 
             evaluationLandmarksWIMLook  = PList.empty
             evaluationLandmarksWIM2RealWorldLook = PList.empty
+            evaluationLookAtLand        = StringInfo.initial
 
             evaluationCounter           = 0
             

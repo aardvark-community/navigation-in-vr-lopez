@@ -230,6 +230,7 @@ module Mutable =
         let _evaluationLandmarksLook = MList.Create(__initial.evaluationLandmarksLook, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _evaluationLandmarksWIMLook = MList.Create(__initial.evaluationLandmarksWIMLook, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _evaluationLandmarksWIM2RealWorldLook = MList.Create(__initial.evaluationLandmarksWIM2RealWorldLook, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
+        let _evaluationLookAtLand = MStringInfo.Create(__initial.evaluationLookAtLand)
         let _evaluationCounter = ResetMod.Create(__initial.evaluationCounter)
         let _droneControl = MDrone.Create(__initial.droneControl)
         let _droneDistanceToLandmark = MStringInfo.Create(__initial.droneDistanceToLandmark)
@@ -284,6 +285,7 @@ module Mutable =
         member x.evaluationLandmarksLook = _evaluationLandmarksLook :> alist<_>
         member x.evaluationLandmarksWIMLook = _evaluationLandmarksWIMLook :> alist<_>
         member x.evaluationLandmarksWIM2RealWorldLook = _evaluationLandmarksWIM2RealWorldLook :> alist<_>
+        member x.evaluationLookAtLand = _evaluationLookAtLand
         member x.evaluationCounter = _evaluationCounter :> IMod<_>
         member x.droneControl = _droneControl
         member x.droneDistanceToLandmark = _droneDistanceToLandmark
@@ -341,6 +343,7 @@ module Mutable =
                 MList.Update(_evaluationLandmarksLook, v.evaluationLandmarksLook)
                 MList.Update(_evaluationLandmarksWIMLook, v.evaluationLandmarksWIMLook)
                 MList.Update(_evaluationLandmarksWIM2RealWorldLook, v.evaluationLandmarksWIM2RealWorldLook)
+                MStringInfo.Update(_evaluationLookAtLand, v.evaluationLookAtLand)
                 ResetMod.Update(_evaluationCounter,v.evaluationCounter)
                 MDrone.Update(_droneControl, v.droneControl)
                 MStringInfo.Update(_droneDistanceToLandmark, v.droneDistanceToLandmark)
@@ -634,6 +637,12 @@ module Mutable =
                     override x.Get(r) = r.evaluationLandmarksWIM2RealWorldLook
                     override x.Set(r,v) = { r with evaluationLandmarksWIM2RealWorldLook = v }
                     override x.Update(r,f) = { r with evaluationLandmarksWIM2RealWorldLook = f r.evaluationLandmarksWIM2RealWorldLook }
+                }
+            let evaluationLookAtLand =
+                { new Lens<Demo.Main.Model, Demo.Main.StringInfo>() with
+                    override x.Get(r) = r.evaluationLookAtLand
+                    override x.Set(r,v) = { r with evaluationLookAtLand = v }
+                    override x.Update(r,f) = { r with evaluationLookAtLand = f r.evaluationLookAtLand }
                 }
             let evaluationCounter =
                 { new Lens<Demo.Main.Model, System.Int32>() with

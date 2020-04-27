@@ -216,9 +216,24 @@ module PlaceLandmark =
                     
                     let newBoxColor1 = 
                         model.evaluationLandmarksLook
-                        |> PList.updateAt model.evaluationCounter (fun el -> {el with color = C4b.DarkGreen})
+                        |> PList.updateAt model.evaluationCounter (fun el -> {el with color = C4b.Green})
                     
-                    let model = {model with evaluationCounter = model.evaluationCounter + 1; evaluationLandmarks = newBoxColor; evaluationLandmarksLook = newBoxColor1}
+                    let lookHereUpdate = 
+                        let getLandmarkTrafo = 
+                            model.evaluationLandmarksLook |> PList.tryAt model.evaluationCounter
+                        match getLandmarkTrafo with 
+                        | Some trafo -> 
+                            let newTrafo = Trafo3d.Translation(V3d(trafo.trafo.GetModelOrigin().X, trafo.trafo.GetModelOrigin().Y, trafo.trafo.GetModelOrigin().Z + 15.5))
+                            {model.evaluationLookAtLand with text = "Look Here"; trafo = newTrafo}
+                        | None -> model.evaluationLookAtLand
+
+                    let model = 
+                        {model with 
+                            evaluationCounter = model.evaluationCounter + 1; 
+                            evaluationLandmarks = newBoxColor; 
+                            evaluationLandmarksLook = newBoxColor1;
+                            evaluationLookAtLand = lookHereUpdate    
+                        }
                     
                     model |> updateLandmarksPosition
 
