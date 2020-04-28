@@ -210,20 +210,15 @@ module Mutable =
         let _initControlTrafo = ResetMod.Create(__initial.initControlTrafo)
         let _init2ControlTrafo = ResetMod.Create(__initial.init2ControlTrafo)
         let _menuModel = Demo.Menu.Mutable.MMenuModel.Create(__initial.menuModel)
-        let _landmarkOnController = MList.Create(__initial.landmarkOnController, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
-        let _landmarkOnAnnotationSpace = MList.Create(__initial.landmarkOnAnnotationSpace, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _WIMopcSpaceTrafo = ResetMod.Create(__initial.WIMopcSpaceTrafo)
         let _WIMworkSpaceTrafo = ResetMod.Create(__initial.WIMworkSpaceTrafo)
         let _WIMannotationSpaceTrafo = ResetMod.Create(__initial.WIMannotationSpaceTrafo)
         let _WIMopcInfos = MMap.Create(__initial.WIMopcInfos, (fun v -> OpcViewer.Base.Picking.Mutable.MOpcData.Create(v)), (fun (m,v) -> OpcViewer.Base.Picking.Mutable.MOpcData.Update(m, v)), (fun v -> v))
-        let _WIMlandmarkOnController = MList.Create(__initial.WIMlandmarkOnController, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
-        let _WIMlandmarkOnAnnotationSpace = MList.Create(__initial.WIMlandmarkOnAnnotationSpace, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _WIMuserPos = MList.Create(__initial.WIMuserPos, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _WIMuserPosCone = MList.Create(__initial.WIMuserPosCone, (fun v -> Demo.Mutable.MVisibleCone.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleCone.Update(m, v)), (fun v -> v))
         let _WIMinitialUserPos = MList.Create(__initial.WIMinitialUserPos, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _WIMinitialUserPosCone = MList.Create(__initial.WIMinitialUserPosCone, (fun v -> Demo.Mutable.MVisibleCone.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleCone.Update(m, v)), (fun v -> v))
         let _userPosOnAnnotationSpace = MList.Create(__initial.userPosOnAnnotationSpace, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
-        let _cyllinderControl = MList.Create(__initial.cyllinderControl, (fun v -> Demo.Mutable.MVisibleCylinder.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleCylinder.Update(m, v)), (fun v -> v))
         let _evaluationLandmarks = MList.Create(__initial.evaluationLandmarks, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _evaluationLandmarksWIM = MList.Create(__initial.evaluationLandmarksWIM, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _evaluationLandmarksWIM2RealWorld = MList.Create(__initial.evaluationLandmarksWIM2RealWorld, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
@@ -265,20 +260,15 @@ module Mutable =
         member x.initControlTrafo = _initControlTrafo :> IMod<_>
         member x.init2ControlTrafo = _init2ControlTrafo :> IMod<_>
         member x.menuModel = _menuModel
-        member x.landmarkOnController = _landmarkOnController :> alist<_>
-        member x.landmarkOnAnnotationSpace = _landmarkOnAnnotationSpace :> alist<_>
         member x.WIMopcSpaceTrafo = _WIMopcSpaceTrafo :> IMod<_>
         member x.WIMworkSpaceTrafo = _WIMworkSpaceTrafo :> IMod<_>
         member x.WIMannotationSpaceTrafo = _WIMannotationSpaceTrafo :> IMod<_>
         member x.WIMopcInfos = _WIMopcInfos :> amap<_,_>
-        member x.WIMlandmarkOnController = _WIMlandmarkOnController :> alist<_>
-        member x.WIMlandmarkOnAnnotationSpace = _WIMlandmarkOnAnnotationSpace :> alist<_>
         member x.WIMuserPos = _WIMuserPos :> alist<_>
         member x.WIMuserPosCone = _WIMuserPosCone :> alist<_>
         member x.WIMinitialUserPos = _WIMinitialUserPos :> alist<_>
         member x.WIMinitialUserPosCone = _WIMinitialUserPosCone :> alist<_>
         member x.userPosOnAnnotationSpace = _userPosOnAnnotationSpace :> alist<_>
-        member x.cyllinderControl = _cyllinderControl :> alist<_>
         member x.evaluationLandmarks = _evaluationLandmarks :> alist<_>
         member x.evaluationLandmarksWIM = _evaluationLandmarksWIM :> alist<_>
         member x.evaluationLandmarksWIM2RealWorld = _evaluationLandmarksWIM2RealWorld :> alist<_>
@@ -323,20 +313,15 @@ module Mutable =
                 ResetMod.Update(_initControlTrafo,v.initControlTrafo)
                 ResetMod.Update(_init2ControlTrafo,v.init2ControlTrafo)
                 Demo.Menu.Mutable.MMenuModel.Update(_menuModel, v.menuModel)
-                MList.Update(_landmarkOnController, v.landmarkOnController)
-                MList.Update(_landmarkOnAnnotationSpace, v.landmarkOnAnnotationSpace)
                 ResetMod.Update(_WIMopcSpaceTrafo,v.WIMopcSpaceTrafo)
                 ResetMod.Update(_WIMworkSpaceTrafo,v.WIMworkSpaceTrafo)
                 ResetMod.Update(_WIMannotationSpaceTrafo,v.WIMannotationSpaceTrafo)
                 MMap.Update(_WIMopcInfos, v.WIMopcInfos)
-                MList.Update(_WIMlandmarkOnController, v.WIMlandmarkOnController)
-                MList.Update(_WIMlandmarkOnAnnotationSpace, v.WIMlandmarkOnAnnotationSpace)
                 MList.Update(_WIMuserPos, v.WIMuserPos)
                 MList.Update(_WIMuserPosCone, v.WIMuserPosCone)
                 MList.Update(_WIMinitialUserPos, v.WIMinitialUserPos)
                 MList.Update(_WIMinitialUserPosCone, v.WIMinitialUserPosCone)
                 MList.Update(_userPosOnAnnotationSpace, v.userPosOnAnnotationSpace)
-                MList.Update(_cyllinderControl, v.cyllinderControl)
                 MList.Update(_evaluationLandmarks, v.evaluationLandmarks)
                 MList.Update(_evaluationLandmarksWIM, v.evaluationLandmarksWIM)
                 MList.Update(_evaluationLandmarksWIM2RealWorld, v.evaluationLandmarksWIM2RealWorld)
@@ -518,18 +503,6 @@ module Mutable =
                     override x.Set(r,v) = { r with menuModel = v }
                     override x.Update(r,f) = { r with menuModel = f r.menuModel }
                 }
-            let landmarkOnController =
-                { new Lens<Demo.Main.Model, Aardvark.Base.plist<Demo.VisibleBox>>() with
-                    override x.Get(r) = r.landmarkOnController
-                    override x.Set(r,v) = { r with landmarkOnController = v }
-                    override x.Update(r,f) = { r with landmarkOnController = f r.landmarkOnController }
-                }
-            let landmarkOnAnnotationSpace =
-                { new Lens<Demo.Main.Model, Aardvark.Base.plist<Demo.VisibleBox>>() with
-                    override x.Get(r) = r.landmarkOnAnnotationSpace
-                    override x.Set(r,v) = { r with landmarkOnAnnotationSpace = v }
-                    override x.Update(r,f) = { r with landmarkOnAnnotationSpace = f r.landmarkOnAnnotationSpace }
-                }
             let WIMopcSpaceTrafo =
                 { new Lens<Demo.Main.Model, Aardvark.Base.Trafo3d>() with
                     override x.Get(r) = r.WIMopcSpaceTrafo
@@ -553,18 +526,6 @@ module Mutable =
                     override x.Get(r) = r.WIMopcInfos
                     override x.Set(r,v) = { r with WIMopcInfos = v }
                     override x.Update(r,f) = { r with WIMopcInfos = f r.WIMopcInfos }
-                }
-            let WIMlandmarkOnController =
-                { new Lens<Demo.Main.Model, Aardvark.Base.plist<Demo.VisibleBox>>() with
-                    override x.Get(r) = r.WIMlandmarkOnController
-                    override x.Set(r,v) = { r with WIMlandmarkOnController = v }
-                    override x.Update(r,f) = { r with WIMlandmarkOnController = f r.WIMlandmarkOnController }
-                }
-            let WIMlandmarkOnAnnotationSpace =
-                { new Lens<Demo.Main.Model, Aardvark.Base.plist<Demo.VisibleBox>>() with
-                    override x.Get(r) = r.WIMlandmarkOnAnnotationSpace
-                    override x.Set(r,v) = { r with WIMlandmarkOnAnnotationSpace = v }
-                    override x.Update(r,f) = { r with WIMlandmarkOnAnnotationSpace = f r.WIMlandmarkOnAnnotationSpace }
                 }
             let WIMuserPos =
                 { new Lens<Demo.Main.Model, Aardvark.Base.plist<Demo.VisibleBox>>() with
@@ -595,12 +556,6 @@ module Mutable =
                     override x.Get(r) = r.userPosOnAnnotationSpace
                     override x.Set(r,v) = { r with userPosOnAnnotationSpace = v }
                     override x.Update(r,f) = { r with userPosOnAnnotationSpace = f r.userPosOnAnnotationSpace }
-                }
-            let cyllinderControl =
-                { new Lens<Demo.Main.Model, Aardvark.Base.plist<Demo.VisibleCylinder>>() with
-                    override x.Get(r) = r.cyllinderControl
-                    override x.Set(r,v) = { r with cyllinderControl = v }
-                    override x.Update(r,f) = { r with cyllinderControl = f r.cyllinderControl }
                 }
             let evaluationLandmarks =
                 { new Lens<Demo.Main.Model, Aardvark.Base.plist<Demo.VisibleBox>>() with

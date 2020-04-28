@@ -347,7 +347,6 @@ module Demo =
                     let newModel = 
                         {newModel with 
                             droneControl = Drone.initial; 
-                            cyllinderControl = PList.empty
                             evaluationLandmarksWIM2RealWorld = newLandmarkList
                             evaluationLandmarksWIM = newLandmarkList 
                             evaluationLandmarksWIMLook = newLandmarkList
@@ -356,7 +355,6 @@ module Demo =
                     newModel 
                     |> PlaceLandmark.updateLandmarksPosition
                 | Menu.MenuState.WIMLandmarks ->
-                    let newLandmark = OpcUtilities.mkFlags id.pose.deviceToWorld 1
                     let newUserPos = 
                         if newModel.userPosOnAnnotationSpace.Count.Equals(0) then 
                             OpcUtilities.mkFlags id.pose.deviceToWorld 1
@@ -371,12 +369,10 @@ module Demo =
                         |> PlaceLandmark.updateLandmarksPosition
 
                     {newModel with 
-                        landmarkOnController    = newLandmark
                         userPosOnAnnotationSpace= newUserPos
                         WIMinitialUserPos       = newInitialUserPosWIM
                         WIMinitialUserPosCone   = newInitialUserPosWIMcone
                         droneControl            = Drone.initial;
-                        cyllinderControl        = PList.empty
                         //evaluationLandmarksWIM2RealWorld = newLandmarkList
                         //evaluationLandmarksWIM = newLandmarkList
                     }
@@ -417,7 +413,6 @@ module Demo =
                         {newModel with 
                             teleportRay = testRay; 
                             droneControl = Drone.initial; 
-                            cyllinderControl = PList.empty; 
                             teleportBox = newBox;
                             teleportCone = newTeleportCone
                         }
@@ -450,12 +445,9 @@ module Demo =
 
                     let newModel = 
                         {newModel with 
-                            landmarkOnController            = PList.empty;
                             WIMopcSpaceTrafo                = Trafo3d.Translation(V3d(1000000.0, 1000000.0, 1000000.0)); 
-                            WIMlandmarkOnAnnotationSpace    = PList.empty;
                             WIMuserPos                      = PList.empty;
                             droneControl                    = updateDrones
-                            cyllinderControl                = PList.empty
                         }
 
                     let newModel = 
@@ -466,23 +458,15 @@ module Demo =
                     |> DroneControlCenter.moveUserToDronePos
                 | Menu.MenuState.Reset -> 
                     initial
-                | Menu.MenuState.PlaceLandmarks -> 
-                    let newLandmark = OpcUtilities.mkFlags id.pose.deviceToWorld 1
-                        
-                    {newModel with landmarkOnController = newLandmark}
+                | Menu.MenuState.PlaceLandmarks -> newModel
                 | Menu.MenuState.Scale -> 
                     let newModel = newModel |> NavigationOpc.initialSceneInfo
                     {newModel with 
-                        landmarkOnController = PList.empty;
                         WIMopcSpaceTrafo = Trafo3d.Translation(V3d(1000000.0, 1000000.0, 1000000.0)); 
-                        WIMlandmarkOnAnnotationSpace = PList.empty;
                         droneControl = Drone.initial;
                         WIMuserPos = PList.empty
-                        cyllinderControl = PList.empty
                     }
                 | Menu.MenuState.Cyllinder -> 
-                    let newCyllinder = OpcUtilities.mkCyllinder Trafo3d.Identity 1 1.0
-                    let newLandmark = OpcUtilities.mkFlags id.pose.deviceToWorld 1
                     let newUserPosWIM = 
                         if newModel.WIMuserPos.Count.Equals(0) then 
                             OpcUtilities.mkFlagsUser Trafo3d.Identity 1 
@@ -495,8 +479,6 @@ module Demo =
                         else newModel.userPosOnAnnotationSpace
                     
                     {newModel with 
-                        cyllinderControl            = newCyllinder; 
-                        landmarkOnController        = newLandmark
                         WIMuserPos                  = newUserPosWIM;
                         userPosOnAnnotationSpace    = newUserPos;
                         WIMinitialUserPos           = newInitialUserPosWIM
@@ -522,12 +504,9 @@ module Demo =
 
                     let newModel = 
                         {newModel with 
-                            landmarkOnController            = PList.empty;
                             WIMopcSpaceTrafo                = Trafo3d.Translation(V3d(1000000.0, 1000000.0, 1000000.0)); 
-                            WIMlandmarkOnAnnotationSpace    = PList.empty;
                             WIMuserPos                      = PList.empty;
                             droneControl                    = updateDrones
-                            cyllinderControl                = PList.empty
                         }
 
                     newModel
@@ -546,7 +525,6 @@ module Demo =
                             WIMinitialUserPos       = newInitialUserPosWIM1;
                             WIMinitialUserPosCone   = newInitialUserPosWIMcone;
                             droneControl            = Drone.initial;
-                            cyllinderControl        = PList.empty
                         }
 
                     let newModel = 
@@ -797,33 +775,6 @@ module Demo =
                 toEffect DefaultSurfaces.simpleLighting                              
             ]       
 
-        let mkDisappearInsideCylinder = 
-                let cylBool = 
-                    m.cyllinderControl
-                    |> AList.toMod
-                    |> Mod.bind (fun cyl -> 
-                        let getFirstCyllinder = 
-                            cyl
-                            |> PList.tryFirst
-                        match getFirstCyllinder with 
-                        | Some c -> c.isNotInside
-                        | None -> Mod.constant true
-                    )
-                adaptive {
-                    let! cb = cylBool
-                    return cb
-                }
-
-        let landmarks = 
-            m.landmarkOnController
-            |> AList.toASet 
-            |> ASet.map (fun b -> 
-                mkFlag m b 
-               )
-            |> Sg.set
-            |> defaultEffect
-            |> Sg.noEvents
-
         let drones = 
             m.droneControl.drone
             |> AList.toASet 
@@ -873,17 +824,12 @@ module Demo =
             |> defaultEffect
 
         let userPosOnAnnotationSpace =  
-
             let mkDisappear = 
                 let menuMode = m.menuModel.menu
                 let controllerPos = m.menuModel.controllerMenuSelector
                 let con = m.controllerInfos |> AMap.tryFind (controllerPos.kind.GetValue())
-                let con2 = 
-                    if controllerPos.kind.Equals(ControllerKind.ControllerA) then
-                        m.controllerInfos |> AMap.tryFind ControllerKind.ControllerA
-                    else m.controllerInfos |> AMap.tryFind ControllerKind.ControllerB
                 let conBackButton = 
-                    con2
+                    con
                     |> Mod.bind (fun c -> 
                         match c with 
                         | Some cc -> cc.backButtonPressed
@@ -911,17 +857,6 @@ module Demo =
             |> Sg.noEvents
             |> Sg.onOff mkDisappear
 
-        let landmarksOnAnnotationSpace = 
-            m.landmarkOnAnnotationSpace
-            |> AList.toASet 
-            |> ASet.map (fun b -> 
-                mkFlag m b 
-               )
-            |> Sg.set
-            |> defaultEffect
-            |> Sg.noEvents
-            |> Sg.onOff mkDisappearInsideCylinder
-
         let evaluationLands = 
             m.evaluationLandmarks
             |> AList.toASet 
@@ -931,7 +866,6 @@ module Demo =
             |> Sg.set
             |> defaultEffect
             |> Sg.noEvents
-            |> Sg.onOff mkDisappearInsideCylinder
 
         let evaluationLandsLook = 
             m.evaluationLandmarksLook
@@ -942,7 +876,6 @@ module Demo =
             |> Sg.set
             |> defaultEffect
             |> Sg.noEvents
-            |> Sg.onOff mkDisappearInsideCylinder
 
         let evaluationLandsOnWIM = 
             m.evaluationLandmarksWIM
@@ -953,7 +886,6 @@ module Demo =
             |> Sg.set
             |> defaultEffect
             |> Sg.noEvents
-            |> Sg.onOff mkDisappearInsideCylinder
 
         let evaluationLandsOnWIMLook = 
             m.evaluationLandmarksWIMLook
@@ -964,7 +896,6 @@ module Demo =
             |> Sg.set
             |> defaultEffect
             |> Sg.noEvents
-            |> Sg.onOff mkDisappearInsideCylinder
 
         let evaluationLandsOnWIM2RealWorld = 
             m.evaluationLandmarksWIM2RealWorld
@@ -972,17 +903,6 @@ module Demo =
             |> ASet.map (fun b ->
                 mkFlag m b
             )
-            |> Sg.set
-            |> defaultEffect
-            |> Sg.noEvents
-            |> Sg.onOff mkDisappearInsideCylinder
-
-        let landmarksOnWIM = 
-            m.WIMlandmarkOnAnnotationSpace
-            |> AList.toASet 
-            |> ASet.map (fun b -> 
-                mkFlag m b 
-               )
             |> Sg.set
             |> defaultEffect
             |> Sg.noEvents
@@ -1028,7 +948,6 @@ module Demo =
                 |> Sg.map OpcViewerMsg
                 |> Sg.noEvents     
                 |> Sg.trafo m.opcSpaceTrafo
-                |> Sg.onOff mkDisappearInsideCylinder
 
         let opcsCamera = 
             let startOpcTrafo = Trafo3d.FromBasis(V3d(0.0138907544072255, 0.0370928394273679, 0.410690910035505), V3d(0.11636514267386, 0.393870197365478, -0.0395094556451799), V3d(-0.395603213079913, 0.117157783795495, 0.0027988969790869), V3d(-57141.4217354136, 16979.9987604353, -1399135.09579421))
@@ -1047,7 +966,6 @@ module Demo =
                 |> Sg.map OpcViewerMsg
                 |> Sg.noEvents     
                 |> Sg.trafo (Mod.constant startOpcTrafo)
-                |> Sg.onOff mkDisappearInsideCylinder
 
         let WIMopcs = 
             m.WIMopcInfos
@@ -1510,20 +1428,15 @@ module Demo =
 
             menuModel                   = Menu.MenuModel.init
 
-            landmarkOnController        = PList.empty
-            landmarkOnAnnotationSpace   = PList.empty
             WIMopcSpaceTrafo            = Trafo3d.Translation(V3d(1000000.0, 1000000.0, 1000000.0)) * upRotationTrafo
             WIMworkSpaceTrafo           = Trafo3d.Identity
             WIMannotationSpaceTrafo     = Trafo3d.Identity
             WIMopcInfos                 = opcInfosInit
-            WIMlandmarkOnController     = PList.empty
-            WIMlandmarkOnAnnotationSpace= PList.empty
             WIMuserPos                  = PList.empty
             WIMuserPosCone              = PList.empty
             WIMinitialUserPos           = PList.empty
             WIMinitialUserPosCone       = PList.empty
             userPosOnAnnotationSpace    = PList.empty
-            cyllinderControl            = PList.empty
 
             evaluationLandmarks         = newEvalLandmarks
             evaluationLandmarksWIM      = PList.empty

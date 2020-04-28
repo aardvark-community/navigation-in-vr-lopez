@@ -41,33 +41,7 @@ module PlaceLandmark =
         let newCP = newModel.controllerInfos |> HMap.tryFind controllerPos.kind
                     
         match newCP with 
-        | Some id -> 
-            let newModel = 
-                let updateFlagPos = 
-                    newModel.landmarkOnController
-                    |> PList.map (fun landmark -> {landmark with trafo = id.pose.deviceToWorld})
-                
-                match id.backButtonPressed with 
-                | true -> 
-                    let landMarkOnController = 
-                        newModel.landmarkOnController
-                        |> PList.tryFirst
-
-                    match landMarkOnController with 
-                    | Some landmark ->
-                        let updateLandmark = {landmark with trafo = id.pose.deviceToWorld * newModel.workSpaceTrafo.Inverse}
-                        let newlandMarkOnAnnotationSpace = 
-                            newModel.landmarkOnAnnotationSpace
-                            |> PList.prepend updateLandmark
-
-                        {newModel with 
-                            landmarkOnController = PList.empty; 
-                            landmarkOnAnnotationSpace = newlandMarkOnAnnotationSpace
-                        }
-                    | None -> newModel
-                | false -> {newModel with landmarkOnController = updateFlagPos}
-
-            newModel
+        | Some id -> newModel
         | None -> newModel
 
     let placingOnWIM kind p model : Model =         
@@ -81,53 +55,7 @@ module PlaceLandmark =
         let newCP = newModel.controllerInfos |> HMap.tryFind controllerPos.kind
         
         match newCP with 
-        | Some id -> 
-            let newModel = 
-                let updateLandmarkPos = 
-                    newModel.landmarkOnController
-                    |> PList.map (fun landmark -> 
-                        {landmark with 
-                            trafo = id.pose.deviceToWorld
-                        }
-                    )
-
-                match id.backButtonPressed with 
-                | true -> 
-                    let landMarkOnController = 
-                        newModel.landmarkOnController
-                        |> PList.tryFirst
-
-                    match landMarkOnController with 
-                    | Some landmark ->
-                        let updateLandmark = 
-                            let newTrafo = Trafo3d.Translation(id.pose.deviceToWorld.GetModelOrigin())
-                            {landmark with 
-                                trafo = newTrafo * newModel.WIMworkSpaceTrafo.Inverse 
-                            }
-                        let newlandMarkOnAnnotationSpace = 
-                            newModel.landmarkOnAnnotationSpace
-                            |> PList.prepend updateLandmark
-                            
-                        let updateWIMLandmark = 
-                            let newTrafo = Trafo3d.Translation(id.pose.deviceToWorld.GetModelOrigin())
-                            {landmark with 
-                                trafo = newTrafo 
-                            }
-                        let newlandMarkOnWIMAnnotationSpace = 
-                            newModel.WIMlandmarkOnAnnotationSpace
-                            |> PList.prepend updateWIMLandmark
-
-                        {newModel with 
-                            landmarkOnController = PList.empty; 
-                            WIMlandmarkOnAnnotationSpace = newlandMarkOnWIMAnnotationSpace;
-                            landmarkOnAnnotationSpace = newlandMarkOnAnnotationSpace
-                        }
-                    | None -> newModel
-                | false -> 
-                    {newModel with 
-                        landmarkOnController = updateLandmarkPos
-                    }
-            newModel
+        | Some id -> newModel
         | None -> newModel
 
     let updateLandmarksPosition model : Model = 

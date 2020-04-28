@@ -107,22 +107,16 @@ type Model =
 
         menuModel                   : MenuModel
 
-        // tranportation additions
-        landmarkOnController        : plist<VisibleBox>
-        landmarkOnAnnotationSpace   : plist<VisibleBox>
         //landmarkFromStart           : plist<VisibleBox>
         WIMopcSpaceTrafo            : Trafo3d
         WIMworkSpaceTrafo           : Trafo3d
         WIMannotationSpaceTrafo     : Trafo3d
         WIMopcInfos                 : hmap<Box3d, OpcData>
-        WIMlandmarkOnController     : plist<VisibleBox>
-        WIMlandmarkOnAnnotationSpace: plist<VisibleBox>
         WIMuserPos                  : plist<VisibleBox>
         WIMuserPosCone              : plist<VisibleCone>
         WIMinitialUserPos           : plist<VisibleBox>
         WIMinitialUserPosCone       : plist<VisibleCone>
         userPosOnAnnotationSpace    : plist<VisibleBox>
-        cyllinderControl            : plist<VisibleCylinder>
 
         evaluationLandmarks         : plist<VisibleBox>
         evaluationLandmarksWIM      : plist<VisibleBox>
@@ -240,25 +234,16 @@ module Model =
 
             menuModel                   = Menu.MenuModel.init
             
-            // Navigation parameters
-            landmarkOnController        = PList.empty
-            landmarkOnAnnotationSpace   = PList.empty
-            //landmarkFromStart           = PList.empty
-
             WIMopcSpaceTrafo            = Trafo3d.Translation(V3d(1000000.0, 1000000.0, 1000000.0)) * upRotationTrafo
             WIMworkSpaceTrafo           = Trafo3d.Identity
             WIMannotationSpaceTrafo     = Trafo3d.Identity
             
             WIMopcInfos                 = opcInfosInit
-            WIMlandmarkOnController     = PList.empty
-            WIMlandmarkOnAnnotationSpace= PList.empty
             WIMuserPos                  = PList.empty
             WIMuserPosCone              = PList.empty
             WIMinitialUserPos           = PList.empty
             WIMinitialUserPosCone       = PList.empty
             userPosOnAnnotationSpace    = PList.empty
-            cyllinderControl            = PList.empty
-
 
             evaluationLandmarks         = PList.empty
             evaluationLandmarksWIM      = PList.empty
