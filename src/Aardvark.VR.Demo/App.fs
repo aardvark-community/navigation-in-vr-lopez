@@ -1351,12 +1351,25 @@ module Demo =
             |> Sg.scale 5.0
             |> Sg.trafo(m.evaluationLookAtLand.trafo)
 
+        let texturedQuad = 
+            Sg.quad
+            |> Sg.billboard
+            |> Sg.noEvents
+            //|> Sg.diffuseFileTexture' "path to texture" true
+            |> Sg.shader {
+                    do! DefaultSurfaces.trafo
+                    do! DefaultSurfaces.constantColor C4f.White
+                    //do! DefaultSurfaces.diffuseTexture
+               }
+            |> Sg.trafo(m.evaluationLookAtLand.trafo)       
+            |> Sg.scale 10.0
         
         let transformedSgs = 
             [
                 //landmarksOnAnnotationSpace
                 evaluationLands
-                //evaluationLandsLook
+                evaluationLandsLook
+                texturedQuad
                 //lookHereString
                 drones
                 droneCylinder
@@ -1373,7 +1386,7 @@ module Demo =
                 initialUserPosOnWIM
                 initialUserConeOnWim
                 evaluationLandsOnWIM
-                //evaluationLandsOnWIMLook
+                evaluationLandsOnWIMLook
                 evaluationLandsOnWIM2RealWorld |> Sg.trafo m.annotationSpaceTrafo
             ]
             |> Sg.ofList

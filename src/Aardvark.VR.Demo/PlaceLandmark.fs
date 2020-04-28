@@ -184,34 +184,6 @@ module PlaceLandmark =
                 })
 
         let model = {model with evaluationLandmarks = newBoxPos; evaluationLandmarksLook = newBoxPos1}
-        
-        let newBoxPos2 = 
-            model.evaluationLandmarks
-            |> PList.updateAt (model.evaluationCounter + 1) (fun el -> 
-                let newPositions = 
-                    [V3d(151.104545593262, 17.6482200622559, -1.07669830322266);
-                    V3d(41.4958953857422, -86.480712890625, 9.59806442260742); 
-                    V3d(-28.3977508544922, 82.3419570922852, 20.4675674438477);
-                    V3d(47.2373962402344, -146.375179290771, 3.89385223388672);
-                    V3d(158.316850662231, -14.4028663635254, -2.29530334472656);
-                    V3d(26.3594150543213, -195.874500274658, 18.9978122711182);
-                    V3d(52.1530628204346, 29.5162200927734, -5.88483810424805);
-                    V3d(25.4886627197266, -58.6039543151855, -4.27331924438477);
-                    V3d(181.050395965576, -126.30672454834, 8.62436294555664);
-                    V3d(-39.9592399597168, -44.0988540649414, -1.48630142211914);
-                    V3d(109.532499313354, 35.3672981262207, -2.02255249023438);
-                    V3d(25.2892017364502, -97.76611328125, 7.16843605041504);
-                    V3d(-39.0450477600098, -19.5907592773438, 1.12066268920898);
-                    V3d(55.6381225585938, -57.164478302002, -1.92041397094727);
-                    V3d(187.817573547363, 34.8072052001953, 7.72666931152344);]
-                    
-                {el with 
-                    trafo = Trafo3d.Translation(newPositions.Item (model.evaluationCounter + 1));
-                    geometry = Box3d.FromSize(V3d(1.0, 1.0, 15.0));
-                    color = C4b.Blue
-                })
-        
-        let model = {model with evaluationLandmarks = newBoxPos2}
         model
     
     let hoverEvaluationLandmarks kind p model : Model = 
@@ -222,13 +194,20 @@ module PlaceLandmark =
         let model = { model with controllerInfos = newControllersPosition}
         
         let controllerPos = model.menuModel.controllerMenuSelector
+        
         let newCP = model.controllerInfos |> HMap.tryFind controllerPos.kind
+
+        let secondCon = 
+            if controllerPos.kind.Equals(ControllerKind.ControllerA) then
+                model.controllerInfos |> HMap.tryFind ControllerKind.ControllerB
+            else model.controllerInfos |> HMap.tryFind ControllerKind.ControllerA
+
         let evalLandmark = 
             model.evaluationLandmarks
             |> PList.tryAt model.evaluationCounter
-        match newCP, evalLandmark with
-        | Some con, Some evalLand ->
-            
+
+        match newCP, evalLandmark, secondCon with
+        | Some con, Some evalLand, Some con2 ->
             let controllerOnAnnotationSpace = con.pose.deviceToWorld * model.workSpaceTrafo.Inverse
             let dist = System.Math.Round(V3d.Distance(controllerOnAnnotationSpace.GetModelOrigin(), evalLand.trafo.GetModelOrigin()), 3)
             //printfn "dist: %A" dist
@@ -243,31 +222,28 @@ module PlaceLandmark =
                         model.evaluationLandmarks
                         |> PList.updateAt model.evaluationCounter (fun el -> {el with color = C4b.Green}) //i can make the boxes that are already seen smaller so that it is not that confusing here
                     
-                    let newBoxColor1 = 
-                        model.evaluationLandmarksLook
-                        |> PList.updateAt model.evaluationCounter (fun el -> {el with color = C4b.Green})
-                    
-                    let lookHereUpdate = 
-                        let getLandmarkTrafo = 
-                            model.evaluationLandmarksLook |> PList.tryAt model.evaluationCounter
-                        match getLandmarkTrafo with 
-                        | Some trafo -> 
-                            let newTrafo = Trafo3d.Translation(V3d(trafo.trafo.GetModelOrigin().X, trafo.trafo.GetModelOrigin().Y, trafo.trafo.GetModelOrigin().Z + 15.5))
-                            {model.evaluationLookAtLand with text = "Look Here"; trafo = newTrafo}
-                        | None -> model.evaluationLookAtLand
+                    let model = {model with evaluationLandmarks = newBoxColor}
 
                     let model = 
-                        {model with 
-                            evaluationCounter = model.evaluationCounter + 1; 
-                            evaluationLandmarks = newBoxColor; 
-                            evaluationLandmarksLook = newBoxColor1;
-                            evaluationLookAtLand = lookHereUpdate    
-                        }
-                    
-                    model |> updateLandmarksPosition
+                        match con2.backButtonPressed with 
+                        | true -> 
+                            let newBoxColor1 = 
+                                model.evaluationLandmarksLook
+                                |> PList.updateAt (model.evaluationCounter) (fun el -> {el with color = C4b.Green})
 
+                            let model = 
+                                {model with 
+                                    evaluationCounter = model.evaluationCounter + 1; 
+                                    evaluationLandmarks = newBoxColor; 
+                                    evaluationLandmarksLook = newBoxColor1;
+                                }
+                    
+                            model |> updateLandmarksPosition
+                        | false -> model
+                    model 
                 else model
             model
-        | _, _ -> model
+        | _, _, _ -> model
+
 
    
