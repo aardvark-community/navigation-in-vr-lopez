@@ -185,6 +185,7 @@ module Demo =
                         |> PlaceLandmark.placingOnWIM kind p
 
                     model 
+                    |> PlaceLandmark.hoverEvaluationLandmarks kind p 
                 | Menu.MenuState.Teleportation -> 
                     let model = 
                         model 
@@ -372,7 +373,7 @@ module Demo =
                         userPosOnAnnotationSpace= newUserPos
                         WIMinitialUserPos       = newInitialUserPosWIM
                         WIMinitialUserPosCone   = newInitialUserPosWIMcone
-                        droneControl            = Drone.initial;
+                        //droneControl            = Drone.initial;
                         //evaluationLandmarksWIM2RealWorld = newLandmarkList
                         //evaluationLandmarksWIM = newLandmarkList
                     }
@@ -726,11 +727,22 @@ module Demo =
                 //do! DefaultSurfaces.simpleLighting
             }
 
-    let mkControllerBox (cp : MPose) =
+    let mkControllerBox (cp : MControllerInfo) (model : MModel) =
+        let mkDisappear = 
+            let conKind = cp.kind
+                
+            adaptive {
+                let! ck = conKind
+                match ck with 
+                | ControllerKind.ControllerA -> return true 
+                | _ -> return false
+            }
         Sg.cone' 20 C4b.Cyan 0.5 5.0 
             |> Sg.noEvents
             |> Sg.scale 0.01
             |> Sg.trafo (Mod.constant (Trafo3d.RotationInDegrees(V3d(-90.0,90.0,0.0))))
+            |> Sg.trafo cp.pose.deviceToWorld
+            |> Sg.onOff mkDisappear
 
     let ui' (info : VrSystemInfo) (m : MModel) = 
         let text = m.vr |> Mod.map (function true -> "Stop VR" | false -> "Start VR")
@@ -775,6 +787,15 @@ module Demo =
                 toEffect DefaultSurfaces.simpleLighting                              
             ]       
 
+        let showControllerCones = 
+            m.controllerInfos
+            |> AMap.toASet
+            |> ASet.map (fun boxController -> 
+                let ci_pose = snd boxController
+                mkControllerBox ci_pose m)
+            |> Sg.set
+            |> defaultEffect
+        
         let drones = 
             m.droneControl.drone
             |> AList.toASet 
@@ -1023,12 +1044,14 @@ module Demo =
 
         let dirController = 
             let controllerPos = m.menuModel.controllerMenuSelector 
+            let controllerPosKind = controllerPos.kind
+            let con = m.controllerInfos |> AMap.tryFind (controllerPos.kind.GetValue()) //check if the reason the vulkan error is this, because when i use the controller contrary to the line attached to controller in teleportation, it works, when i use the same cnotroller as teh line projected in teleportation it never works. 
             let secondCon = 
                 if controllerPos.kind.Equals(ControllerKind.ControllerA) then
                     m.controllerInfos |> AMap.tryFind ControllerKind.ControllerA
                 else m.controllerInfos |> AMap.tryFind ControllerKind.ControllerB
             let findHMD = 
-                secondCon
+                con
                 |> Mod.bind (fun x -> 
                     match x with 
                     | Some id -> id.pose.deviceToWorld
@@ -1036,6 +1059,7 @@ module Demo =
                 )
                 
             adaptive {
+                let! conKind = controllerPosKind
                 let! hmd = findHMD
                 return hmd.Forward.C1.XYZ    
             }
@@ -1052,7 +1076,7 @@ module Demo =
                 CameraView.look p d.Normalized V3d.OOI
                 //CameraView.lookAt loc cen V3d.OOI 
                     |> CameraView.viewTrafo 
-                ) dronePos droneDir
+                ) dronePos dirController
             )
             // since our render target size is dynamic, we compute a proj trafo using standard techniques
             |> Sg.projTrafo (size |> Mod.map (fun actualSize -> 
@@ -1187,10 +1211,20 @@ module Demo =
             |> Sg.onOff mkDisappear
         
         let showDroneHeight = 
+            let mkDisappear = 
+                let menuMode = m.menuModel.menu
+                
+                adaptive {
+                    let! newMenuMode = menuMode
+                    match newMenuMode with 
+                    | MenuState.DroneModeController | MenuState.HoverDroneScreen -> return true 
+                    | _ -> return false
+                }
             Sg.textWithConfig { TextConfig.Default with renderStyle = RenderStyle.Billboard; align = TextAlignment.Center; flipViewDependent = true } m.droneHeight.text
             |> Sg.noEvents
             |> Sg.scale 0.05
             |> Sg.trafo(m.droneHeight.trafo)
+            |> Sg.onOff mkDisappear
 
         let showDroneDist2Landmark = 
             Sg.textWithConfig { TextConfig.Default with renderStyle = RenderStyle.Billboard; align = TextAlignment.Center; flipViewDependent = true } m.droneDistanceToLandmark.text
@@ -1199,6 +1233,15 @@ module Demo =
             |> Sg.trafo(m.droneDistanceToLandmark.trafo)
 
         let teleport2intersection = 
+            let mkDisappear = 
+                let menuMode = m.menuModel.menu
+                
+                adaptive {
+                    let! newMenuMode = menuMode
+                    match newMenuMode with 
+                    | MenuState.Teleportation -> return true 
+                    | _ -> return false
+                }
             m.teleportBox
             |> AList.toASet 
             |> ASet.map (fun b -> 
@@ -1208,8 +1251,18 @@ module Demo =
             |> defaultEffect
             |> Sg.noEvents
             |> Sg.trafo m.opcSpaceTrafo
+            |> Sg.onOff mkDisappear
         
         let teleportationCone = 
+            let mkDisappear = 
+                let menuMode = m.menuModel.menu
+                
+                adaptive {
+                    let! newMenuMode = menuMode
+                    match newMenuMode with 
+                    | MenuState.Teleportation -> return true 
+                    | _ -> return false
+                }
             m.teleportCone
             |> AList.toASet
             |> ASet.map (fun b -> 
@@ -1218,6 +1271,7 @@ module Demo =
             |> Sg.set
             |> defaultEffect
             |> Sg.trafo m.opcSpaceTrafo
+            |> Sg.onOff mkDisappear
 
         let rayLine = 
             let intersectionVector = m.hitPoint
@@ -1263,12 +1317,6 @@ module Demo =
                 |> Sg.trafo m.opcSpaceTrafo
                 |> Sg.onOff mkDisappear
 
-        let lookHereString = 
-            Sg.textWithConfig { TextConfig.Default with renderStyle = RenderStyle.Billboard; align = TextAlignment.Center; flipViewDependent = true } (Mod.constant "Look Here")
-            |> Sg.noEvents
-            |> Sg.scale 5.0
-            |> Sg.trafo(m.evaluationLookAtLand.trafo)
-
         let texturedQuad = 
             Sg.quad
             |> Sg.billboard
@@ -1284,7 +1332,6 @@ module Demo =
         
         let transformedSgs = 
             [
-                //landmarksOnAnnotationSpace
                 evaluationLands
                 evaluationLandsLook
                 texturedQuad
@@ -1297,7 +1344,6 @@ module Demo =
 
         let WIMtransformedSgs = 
             [
-                //landmarksOnWIM 
                 userPosOnWIM 
                 userPosOnAnnotationSpace |> Sg.trafo m.annotationSpaceTrafo
                 userConeOnWim
@@ -1313,7 +1359,6 @@ module Demo =
             [
                 deviceSgs
                 menuApp
-                //landmarks
                 teleport2intersection
                 showDynamicLine
                 teleportationCone
@@ -1322,7 +1367,8 @@ module Demo =
                 borderSecondCameracontrollerTest
                 showSecondCameraOnController
                 //showDroneHeight
-                //showDroneDist2Landmark
+                showControllerCones
+                showDroneDist2Landmark
             ] |> Sg.ofList
 
         Sg.ofList [transformedSgs; WIMtransformedSgs; notTransformedSgs; opcs; WIMopcs]

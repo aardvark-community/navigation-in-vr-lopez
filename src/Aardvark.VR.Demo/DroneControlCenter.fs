@@ -45,7 +45,7 @@ module DroneControlCenter =
                     let droneFirst = newModel.droneControl.drone |> PList.tryFirst
                     match droneFirst with 
                     | Some dd -> 
-                        let newDroneHeightTrafo = Trafo3d.Translation(V3d(newModel.droneControl.cameraPosition.GetModelOrigin().X, newModel.droneControl.cameraPosition.GetModelOrigin().Y - 0.75, newModel.droneControl.cameraPosition.GetModelOrigin().Z))
+                        let newDroneHeightTrafo = Trafo3d.Translation(V3d(id.pose.deviceToWorld.GetModelOrigin().X, id.pose.deviceToWorld.GetModelOrigin().Y - 0.75, id.pose.deviceToWorld.GetModelOrigin().Z))
                         let rayHeight = 
                             let dronePos2OpcSpace = dd.trafo * newModel.opcSpaceTrafo.Inverse
                             let origin = dronePos2OpcSpace.Forward.TransformPos V3d.Zero

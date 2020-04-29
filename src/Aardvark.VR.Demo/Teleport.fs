@@ -54,6 +54,7 @@ module Teleport =
                     let newOpcSpace = model.initOpcSpaceTrafo * newWorkSpace
                     let newFlagSpace = model.initAnnotationSpaceTrafo * newWorkSpace
 
+
                     { model with 
                         workSpaceTrafo              = newWorkSpace
                         opcSpaceTrafo               = newOpcSpace
