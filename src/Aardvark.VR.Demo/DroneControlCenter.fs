@@ -24,7 +24,7 @@ module DroneControlCenter =
         let newModel = { model with controllerInfos = newControllersPosition}
         
         let controllerPos = newModel.menuModel.controllerMenuSelector
-        let newCP = newModel.controllerInfos |> HMap.tryFind controllerPos.kind
+        let newCP = newModel.controllerInfos |> HMap.tryFind ControllerKind.ControllerA //controllerPos.kind
         let userHMd = newModel.controllerInfos |> HMap.tryFind ControllerKind.HMD
         match newCP, userHMd with 
         | Some id, Some hmd -> 
@@ -77,7 +77,7 @@ module DroneControlCenter =
 
     let moveUserToDronePos model : Model =
         let controllerPos = model.menuModel.controllerMenuSelector
-        let newCP = model.controllerInfos |> HMap.tryFind controllerPos.kind
+        let newCP = model.controllerInfos |> HMap.tryFind ControllerKind.ControllerA//controllerPos.kind
         
         match newCP with 
         | Some id -> 
@@ -172,12 +172,12 @@ module DroneControlCenter =
         
         let controllerPos = model.menuModel.controllerMenuSelector
         
-        let secondCon = 
-            if controllerPos.kind.Equals(ControllerKind.ControllerA) then
-                model.controllerInfos |> HMap.tryFind ControllerKind.ControllerB
-            else model.controllerInfos |> HMap.tryFind ControllerKind.ControllerA
+        let secondCon = model.controllerInfos |> HMap.tryFind ControllerKind.ControllerB
+            //if controllerPos.kind.Equals(ControllerKind.ControllerA) then
+            //    model.controllerInfos |> HMap.tryFind ControllerKind.ControllerB
+            //else model.controllerInfos |> HMap.tryFind ControllerKind.ControllerA
         
-        let newCP = model.controllerInfos |> HMap.tryFind controllerPos.kind
+        let newCP = model.controllerInfos |> HMap.tryFind ControllerKind.ControllerA //controllerPos.kind
  
         match newCP, secondCon with 
         | Some con, Some con2 -> 

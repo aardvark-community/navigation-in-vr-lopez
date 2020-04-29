@@ -797,6 +797,15 @@ module Demo =
             |> defaultEffect
         
         let drones = 
+            let mkDisappear = 
+                let menuMode = m.menuModel.menu
+                
+                adaptive {
+                    let! newMenuMode = menuMode
+                    match newMenuMode with 
+                    | MenuState.DroneMode | MenuState.HoverDroneScreen | MenuState.DroneModeController -> return true 
+                    | _ -> return false
+                }
             m.droneControl.drone
             |> AList.toASet 
             |> ASet.map (fun b -> 
@@ -805,6 +814,7 @@ module Demo =
             |> Sg.set
             |> defaultEffect
             |> Sg.noEvents
+            |> Sg.onOff mkDisappear
 
         let userPosOnWIM = 
             m.WIMuserPos
