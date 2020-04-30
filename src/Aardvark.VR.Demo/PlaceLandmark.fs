@@ -140,7 +140,7 @@ module PlaceLandmark =
             let dist = System.Math.Round(V3d.Distance(controllerOnAnnotationSpace.GetModelOrigin(), evalLand.trafo.GetModelOrigin()), 3)
             //printfn "dist: %A" dist
             let model = 
-                let newTrafo = Trafo3d.Translation(V3d(model.droneControl.cameraPosition.GetModelOrigin().X + 0.30, model.droneControl.cameraPosition.GetModelOrigin().Y - 0.75, model.droneControl.cameraPosition.GetModelOrigin().Z))
+                let newTrafo = Trafo3d.Translation(V3d(con.pose.deviceToWorld.GetModelOrigin().X + 0.30, con.pose.deviceToWorld.GetModelOrigin().Y - 0.75, con.pose.deviceToWorld.GetModelOrigin().Z))
                 let updateDrone = {model.droneDistanceToLandmark with text = "distance to next landmark: " + dist.ToString(); trafo = newTrafo}
                 {model with droneDistanceToLandmark = updateDrone}
 
