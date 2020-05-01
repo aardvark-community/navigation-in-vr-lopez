@@ -130,19 +130,6 @@ module Demo =
         | CameraMessage m -> 
             { model with cameraState = FreeFlyController.update model.cameraState m }   
         | SetControllerPosition (kind, p) ->    
-            //let model = 
-            //    match model.evaluationCounter with 
-            //    | x when x < 2 -> 
-            //        let newMenuMode = {model.menuModel with menu = MenuState.DroneModeController}
-            //        {model with menuModel = newMenuMode}
-            //    | x when x >= 2 && x < 4 -> 
-            //        let newMenuMode = {model.menuModel with menu = MenuState.WIMLandmarks}
-            //        {model with menuModel = newMenuMode}
-            //    | x when x >= 4 && x < 15 -> 
-            //        let newMenuMode = {model.menuModel with menu = MenuState.Teleportation}
-            //        {model with menuModel = newMenuMode}
-            //    | _ -> model
-            
             let newModel = 
                 match model.menuModel.menu with 
                 | Menu.MenuState.PlaceLandmarks ->
@@ -176,6 +163,10 @@ module Demo =
 
                     newModel 
                 | Menu.MenuState.WIMLandmarks -> 
+                    let model = 
+                        model
+                        |> WIMOpc.editMiniMap kind p
+
                     let model = 
                         model
                         |> WIMOpc.checkHoverUserWIM kind p
@@ -817,6 +808,15 @@ module Demo =
             |> Sg.onOff mkDisappear
 
         let userPosOnWIM = 
+            let mkDisappear = 
+                let menuMode = m.menuModel.menu
+                
+                adaptive {
+                    let! newMenuMode = menuMode
+                    match newMenuMode with 
+                    | MenuState.WIM | MenuState.WIMLandmarks | MenuState.HoverChangeUserWIM -> return true 
+                    | _ -> return false
+                }
             m.WIMuserPos
             |> AList.toASet 
             |> ASet.map (fun b -> 
@@ -825,8 +825,18 @@ module Demo =
             |> Sg.set
             |> defaultEffect
             |> Sg.noEvents
+            |> Sg.onOff mkDisappear
 
         let userConeOnWim = 
+            let mkDisappear = 
+                let menuMode = m.menuModel.menu
+                
+                adaptive {
+                    let! newMenuMode = menuMode
+                    match newMenuMode with 
+                    | MenuState.WIM | MenuState.WIMLandmarks | MenuState.HoverChangeUserWIM -> return true 
+                    | _ -> return false
+                }
             m.WIMuserPosCone
             |> AList.toASet
             |> ASet.map (fun b -> 
@@ -834,6 +844,7 @@ module Demo =
             )
             |> Sg.set
             |> defaultEffect
+            |> Sg.onOff mkDisappear
 
         let initialUserPosOnWIM = 
             m.WIMinitialUserPos
@@ -909,6 +920,15 @@ module Demo =
             |> Sg.noEvents
 
         let evaluationLandsOnWIM = 
+            let mkDisappear = 
+                let menuMode = m.menuModel.menu
+                
+                adaptive {
+                    let! newMenuMode = menuMode
+                    match newMenuMode with 
+                    | MenuState.WIM | MenuState.WIMLandmarks | MenuState.HoverChangeUserWIM -> return true 
+                    | _ -> return false
+                }
             m.evaluationLandmarksWIM
             |> AList.toASet 
             |> ASet.map (fun b ->
@@ -917,8 +937,18 @@ module Demo =
             |> Sg.set
             |> defaultEffect
             |> Sg.noEvents
+            |> Sg.onOff mkDisappear
 
         let evaluationLandsOnWIMLook = 
+            let mkDisappear = 
+                let menuMode = m.menuModel.menu
+                
+                adaptive {
+                    let! newMenuMode = menuMode
+                    match newMenuMode with 
+                    | MenuState.WIM | MenuState.WIMLandmarks | MenuState.HoverChangeUserWIM -> return true 
+                    | _ -> return false
+                }
             m.evaluationLandmarksWIMLook
             |> AList.toASet 
             |> ASet.map (fun b ->
@@ -927,8 +957,18 @@ module Demo =
             |> Sg.set
             |> defaultEffect
             |> Sg.noEvents
+            |> Sg.onOff mkDisappear
 
         let evaluationLandsOnWIM2RealWorld = 
+            let mkDisappear = 
+                let menuMode = m.menuModel.menu
+                
+                adaptive {
+                    let! newMenuMode = menuMode
+                    match newMenuMode with 
+                    | MenuState.WIM | MenuState.WIMLandmarks | MenuState.HoverChangeUserWIM -> return true 
+                    | _ -> return false
+                }
             m.evaluationLandmarksWIM2RealWorld
             |> AList.toASet 
             |> ASet.map (fun b ->
@@ -937,6 +977,7 @@ module Demo =
             |> Sg.set
             |> defaultEffect
             |> Sg.noEvents
+            |> Sg.onOff mkDisappear
 
         let deviceSgs = 
             info.state.devices |> AMap.toASet |> ASet.chooseM (fun (_,d) ->
@@ -1130,9 +1171,9 @@ module Demo =
                     | _ -> return false
                 }
 
-            let boxCenter = V3d(m.droneControl.cameraPosition.GetValue().GetModelOrigin().X, m.droneControl.cameraPosition.GetValue().GetModelOrigin().Y, m.droneControl.cameraPosition.GetValue().GetModelOrigin().Z + 0.25)
-
-            Sg.box (Mod.constant C4b.White) (Mod.constant (Box3d.FromCenterAndSize(boxCenter, V3d(0.5, 0.1, 0.5)))) //V3d(0.1, 0.5, 0.5)
+            let boxCenter = V3d(m.droneControl.cameraPosition.GetValue().GetModelOrigin().X, m.droneControl.cameraPosition.GetValue().GetModelOrigin().Y + 0.2, m.droneControl.cameraPosition.GetValue().GetModelOrigin().Z + 0.2)
+            //* Trafo3d.Translation(V3d(0.0, 0.2, 0.025))
+            Sg.box (Mod.constant C4b.White) (Mod.constant (Box3d.FromCenterAndSize(boxCenter, V3d(0.35, 0.01, 0.35)))) //V3d(0.1, 0.5, 0.5)
             |> Sg.diffuseTexture offscreenTexture
             |> Sg.shader {
                 do! DefaultSurfaces.trafo
@@ -1174,9 +1215,9 @@ module Demo =
                     | _ -> return false
                 }
 
-            let boxCenter = V3d(m.droneControl.cameraPosition.GetValue().GetModelOrigin().X, m.droneControl.cameraPosition.GetValue().GetModelOrigin().Y  + 0.12, m.droneControl.cameraPosition.GetValue().GetModelOrigin().Z + 0.20)
+            let boxCenter = V3d(m.droneControl.cameraPosition.GetValue().GetModelOrigin().X, m.droneControl.cameraPosition.GetValue().GetModelOrigin().Y  + 0.25, m.droneControl.cameraPosition.GetValue().GetModelOrigin().Z + 0.20)
             
-            Sg.box (Mod.constant C4b.Red) (Mod.constant (Box3d.FromCenterAndSize(boxCenter, V3d(0.70, 0.12, 0.70))))
+            Sg.box (Mod.constant C4b.Red) (Mod.constant (Box3d.FromCenterAndSize(boxCenter, V3d(0.40, 0.012, 0.40))))
             |> Sg.noEvents
             |> defaultEffect
             |> Sg.trafo m.droneControl.screenPosition

@@ -199,6 +199,15 @@ module Model =
                 |> Array.fold (fun a b -> HMap.union a b) HMap.empty
             kdTrees
         
+        let newEvalLandmarks = 
+            let number = 15
+            let controllerPos = Trafo3d.Translation(V3d.One * 100000.0)
+            [0..number-1]
+            |> List.map (fun x -> 
+                let pos = V3d(controllerPos.GetModelOrigin().X + float(x), controllerPos.GetModelOrigin().Y, controllerPos.GetModelOrigin().Z) * 1000000.0
+                VisibleBox.createFlag C4b.Red pos)
+            |> PList.ofList
+
         {
             text                = "some text"
             vr                  = false
@@ -245,12 +254,12 @@ module Model =
             WIMinitialUserPosCone       = PList.empty
             userPosOnAnnotationSpace    = PList.empty
 
-            evaluationLandmarks         = PList.empty
+            evaluationLandmarks         = newEvalLandmarks
             evaluationLandmarksWIM      = PList.empty
             evaluationLandmarksWIM2RealWorld= PList.empty
             evaluationLookAtLand        = StringInfo.initial
             
-            evaluationLandmarksLook     = PList.empty 
+            evaluationLandmarksLook     = newEvalLandmarks 
             evaluationLandmarksWIMLook  = PList.empty
             evaluationLandmarksWIM2RealWorldLook = PList.empty
             
