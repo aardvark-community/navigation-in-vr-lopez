@@ -22,6 +22,15 @@ open OpcViewer.Base.Attributes
 open Demo.Menu
 open Demo
 
+module Shaders = 
+    open FShade
+    open Aardvark.Base.Rendering.Effects
+
+    let blendColor (c : C4f) (v : Vertex) = 
+        let c = c.ToV4d()
+        fragment {
+            return c * v.c
+        }
 
 type DemoAction =
 | SetText of string 
@@ -988,6 +997,11 @@ module Demo =
                         |> Sg.noEvents 
                         |> Sg.trafo d.pose.deviceToWorld
                         |> Sg.onOff d.pose.isValid
+                        |> Sg.shader {
+                            do! DefaultSurfaces.trafo
+                            do! DefaultSurfaces.diffuseTexture
+                            do! Shaders.blendColor (if d.id % 2 = 0 then C4f.Red else C4f.Green)
+                        }
                         |> Some
                     | None -> 
                         None 
@@ -1215,7 +1229,7 @@ module Demo =
                     | _ -> return false
                 }
 
-            let boxCenter = V3d(m.droneControl.cameraPosition.GetValue().GetModelOrigin().X, m.droneControl.cameraPosition.GetValue().GetModelOrigin().Y  + 0.25, m.droneControl.cameraPosition.GetValue().GetModelOrigin().Z + 0.20)
+            let boxCenter = V3d(m.droneControl.cameraPosition.GetValue().GetModelOrigin().X, m.droneControl.cameraPosition.GetValue().GetModelOrigin().Y  + 0.21, m.droneControl.cameraPosition.GetValue().GetModelOrigin().Z + 0.20)
             
             Sg.box (Mod.constant C4b.Red) (Mod.constant (Box3d.FromCenterAndSize(boxCenter, V3d(0.40, 0.012, 0.40))))
             |> Sg.noEvents

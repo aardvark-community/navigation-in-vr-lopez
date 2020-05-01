@@ -60,7 +60,7 @@ module PlaceLandmark =
     let updateLandmarksPosition model : Model = 
         let randomIndex = 
             let count = model.evaluationLandmarks |> PList.toArray |> Array.length
-            let rand = Aardvark.Base.RandomSystem(1)
+            let rand = Aardvark.Base.RandomSystem(0)
             let randomOrderIndex = rand.CreatePermutationArray(count)
             let takeRandomInt = 
                 randomOrderIndex 
