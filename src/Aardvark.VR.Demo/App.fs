@@ -135,7 +135,6 @@ module Demo =
             { newModel with 
                 menuModel = newMenuModel; 
             }
-
         | CameraMessage m -> 
             { model with cameraState = FreeFlyController.update model.cameraState m }   
         | SetControllerPosition (kind, p) ->    
@@ -344,13 +343,14 @@ module Demo =
                     let newModel = newModel |> WIMOpc.showMiniMap
 
                     let newLandmarkList = OpcUtilities.mkEvalFlags (Trafo3d.Translation(V3d.One * 100000.0)) 5
+                    let newLandmarkListLook = OpcUtilities.mkCone (Trafo3d.Translation(V3d.One * 100000.0)) 5
                     
                     let newModel = 
                         {newModel with 
                             droneControl = Drone.initial; 
                             evaluationLandmarksWIM2RealWorld = newLandmarkList
                             evaluationLandmarksWIM = newLandmarkList 
-                            evaluationLandmarksWIMLook = newLandmarkList
+                            evaluationLandmarksWIMLook = newLandmarkListLook
                         }
 
                     newModel 
@@ -672,6 +672,30 @@ module Demo =
                 do! DefaultSurfaces.vertexColor
                 //do! DefaultSurfaces.simpleLighting
                 }
+
+    let mkConeLook (cp : MVisibleCone) (color : IMod<C4b>) =
+        Sg.cone 20 color (Mod.constant 0.5) (Mod.constant 5.0) 
+            |> Sg.noEvents
+            |> Sg.scale 5.0
+            //|> Sg.trafo (Mod.constant (Trafo3d.RotationInDegrees(V3d(-90.0,90.0,0.0))))
+            |> Sg.trafo cp.trafo
+            |> Sg.shader {
+                do! DefaultSurfaces.trafo
+                do! DefaultSurfaces.vertexColor
+                //do! DefaultSurfaces.simpleLighting
+                }
+    
+    let mkConeLookWIM (cp : MVisibleCone) (color : IMod<C4b>) =
+        Sg.cone 20 color (Mod.constant 0.25) (Mod.constant 5.0) 
+            |> Sg.noEvents
+            |> Sg.scale 4.25
+            //|> Sg.trafo (Mod.constant (Trafo3d.RotationInDegrees(V3d(-90.0,90.0,0.0))))
+            |> Sg.trafo cp.trafo
+            |> Sg.shader {
+                do! DefaultSurfaces.trafo
+                do! DefaultSurfaces.vertexColor
+                //do! DefaultSurfaces.simpleLighting
+                }
     
     let mkConeTeleport (cp : MVisibleCone) (color : IMod<C4b>) =
         Sg.cone 20 color (Mod.constant 0.5) (Mod.constant 5.0) 
@@ -922,7 +946,7 @@ module Demo =
             m.evaluationLandmarksLook
             |> AList.toASet 
             |> ASet.map (fun b ->
-                mkFlag m b
+                mkConeLook b b.color
             )
             |> Sg.set
             |> defaultEffect
@@ -961,7 +985,7 @@ module Demo =
             m.evaluationLandmarksWIMLook
             |> AList.toASet 
             |> ASet.map (fun b ->
-                mkFlag m b
+                mkConeLookWIM b b.color
             )
             |> Sg.set
             |> defaultEffect
@@ -1473,8 +1497,9 @@ module Demo =
         let cameraStateInit = 
             OpcViewerFunc.restoreCamStateImport boundingBoxInit V3d.OOI
 
-        let newEvalLandmarks = 
-            OpcUtilities.mkEvalFlags (Trafo3d.Translation(V3d.One * 100000.0)) 15
+        let newEvalLandmarks = OpcUtilities.mkEvalFlags (Trafo3d.Translation(V3d.One * 100000.0)) 15
+
+        let newEvalLandmarksLook = OpcUtilities.mkCone (Trafo3d.Translation(V3d.One * 100000.0)) 15
 
         Log.line "using path: %s" path
         //C:\Users\lopez\Desktop\VictoriaCrater\HiRISE_VictoriaCrater_SuperResolution
@@ -1553,7 +1578,7 @@ module Demo =
             evaluationLandmarksWIM      = PList.empty
             evaluationLandmarksWIM2RealWorld= PList.empty
 
-            evaluationLandmarksLook     = newEvalLandmarks 
+            evaluationLandmarksLook     = newEvalLandmarksLook 
             evaluationLandmarksWIMLook  = PList.empty
             evaluationLandmarksWIM2RealWorldLook = PList.empty
             evaluationLookAtLand        = StringInfo.initial

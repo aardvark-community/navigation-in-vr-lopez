@@ -13,6 +13,7 @@ module PlaceLandmark =
     open Aardvark.Base.MapExtImplementation
     open Demo
     open Demo.Menu
+    open Aardvark.Base.IndexedGeometryPrimitives
 
     let createNewTrafo con : Trafo3d = 
         let con2Pos = con.pose.deviceToWorld
@@ -142,9 +143,10 @@ module PlaceLandmark =
                     V3d(213.29870223999, -40.9213066101074, 8.6432933807373);
                     V3d(87.7236366271973, -0.589466094970703, -2.62374877929688);]
                     
+                let newTrafo = Trafo3d.Translation(newPositions.Item model.evaluationCounter)
                 {el with 
-                    trafo = Trafo3d.Translation(newPositions.Item model.evaluationCounter);
-                    geometry = Box3d.FromSize(V3d(1.0, 1.0, 15.0));
+                    trafo = newTrafo;
+                    geometry = Cone.solidCone (newTrafo.GetModelOrigin()) V3d.Zero 5.0 0.5 20 C4b.Red //Box3d.FromSize(V3d(1.0, 1.0, 15.0));
                     color = C4b.Blue
                 })
 

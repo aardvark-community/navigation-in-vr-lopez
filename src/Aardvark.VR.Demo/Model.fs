@@ -122,9 +122,9 @@ type Model =
         evaluationLandmarksWIM      : plist<VisibleBox>
         evaluationLandmarksWIM2RealWorld : plist<VisibleBox>
 
-        evaluationLandmarksLook     : plist<VisibleBox> 
-        evaluationLandmarksWIMLook  : plist<VisibleBox>
-        evaluationLandmarksWIM2RealWorldLook : plist<VisibleBox>
+        evaluationLandmarksLook     : plist<VisibleCone> 
+        evaluationLandmarksWIMLook  : plist<VisibleCone>
+        evaluationLandmarksWIM2RealWorldLook : plist<VisibleCone>
         evaluationLookAtLand        : StringInfo
 
         evaluationCounter           : int
@@ -137,8 +137,6 @@ type Model =
         teleportBox                 : plist<VisibleBox> 
         teleportCone                : plist<VisibleCone>
         hitPoint                    : V3d
-
-        
     }
 
 module Model =
@@ -208,6 +206,14 @@ module Model =
                 VisibleBox.createFlag C4b.Red pos)
             |> PList.ofList
 
+        let newEvalLandmarksLook = 
+            let number = 15
+            let controllerPos = Trafo3d.Translation(V3d.One * 100000.0)
+            [0..number-1]
+            |> List.map (fun x -> 
+                VisibleCone.createVisibleCone C4b.Red (controllerPos.GetModelOrigin()))
+            |> PList.ofList
+
         {
             text                = "some text"
             vr                  = false
@@ -259,7 +265,7 @@ module Model =
             evaluationLandmarksWIM2RealWorld= PList.empty
             evaluationLookAtLand        = StringInfo.initial
             
-            evaluationLandmarksLook     = newEvalLandmarks 
+            evaluationLandmarksLook     = newEvalLandmarksLook 
             evaluationLandmarksWIMLook  = PList.empty
             evaluationLandmarksWIM2RealWorldLook = PList.empty
             

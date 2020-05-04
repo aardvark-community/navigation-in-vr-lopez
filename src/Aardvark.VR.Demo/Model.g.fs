@@ -222,9 +222,9 @@ module Mutable =
         let _evaluationLandmarks = MList.Create(__initial.evaluationLandmarks, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _evaluationLandmarksWIM = MList.Create(__initial.evaluationLandmarksWIM, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
         let _evaluationLandmarksWIM2RealWorld = MList.Create(__initial.evaluationLandmarksWIM2RealWorld, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
-        let _evaluationLandmarksLook = MList.Create(__initial.evaluationLandmarksLook, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
-        let _evaluationLandmarksWIMLook = MList.Create(__initial.evaluationLandmarksWIMLook, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
-        let _evaluationLandmarksWIM2RealWorldLook = MList.Create(__initial.evaluationLandmarksWIM2RealWorldLook, (fun v -> Demo.Mutable.MVisibleBox.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleBox.Update(m, v)), (fun v -> v))
+        let _evaluationLandmarksLook = MList.Create(__initial.evaluationLandmarksLook, (fun v -> Demo.Mutable.MVisibleCone.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleCone.Update(m, v)), (fun v -> v))
+        let _evaluationLandmarksWIMLook = MList.Create(__initial.evaluationLandmarksWIMLook, (fun v -> Demo.Mutable.MVisibleCone.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleCone.Update(m, v)), (fun v -> v))
+        let _evaluationLandmarksWIM2RealWorldLook = MList.Create(__initial.evaluationLandmarksWIM2RealWorldLook, (fun v -> Demo.Mutable.MVisibleCone.Create(v)), (fun (m,v) -> Demo.Mutable.MVisibleCone.Update(m, v)), (fun v -> v))
         let _evaluationLookAtLand = MStringInfo.Create(__initial.evaluationLookAtLand)
         let _evaluationCounter = ResetMod.Create(__initial.evaluationCounter)
         let _droneControl = MDrone.Create(__initial.droneControl)
@@ -576,19 +576,19 @@ module Mutable =
                     override x.Update(r,f) = { r with evaluationLandmarksWIM2RealWorld = f r.evaluationLandmarksWIM2RealWorld }
                 }
             let evaluationLandmarksLook =
-                { new Lens<Demo.Main.Model, Aardvark.Base.plist<Demo.VisibleBox>>() with
+                { new Lens<Demo.Main.Model, Aardvark.Base.plist<Demo.VisibleCone>>() with
                     override x.Get(r) = r.evaluationLandmarksLook
                     override x.Set(r,v) = { r with evaluationLandmarksLook = v }
                     override x.Update(r,f) = { r with evaluationLandmarksLook = f r.evaluationLandmarksLook }
                 }
             let evaluationLandmarksWIMLook =
-                { new Lens<Demo.Main.Model, Aardvark.Base.plist<Demo.VisibleBox>>() with
+                { new Lens<Demo.Main.Model, Aardvark.Base.plist<Demo.VisibleCone>>() with
                     override x.Get(r) = r.evaluationLandmarksWIMLook
                     override x.Set(r,v) = { r with evaluationLandmarksWIMLook = v }
                     override x.Update(r,f) = { r with evaluationLandmarksWIMLook = f r.evaluationLandmarksWIMLook }
                 }
             let evaluationLandmarksWIM2RealWorldLook =
-                { new Lens<Demo.Main.Model, Aardvark.Base.plist<Demo.VisibleBox>>() with
+                { new Lens<Demo.Main.Model, Aardvark.Base.plist<Demo.VisibleCone>>() with
                     override x.Get(r) = r.evaluationLandmarksWIM2RealWorldLook
                     override x.Set(r,v) = { r with evaluationLandmarksWIM2RealWorldLook = v }
                     override x.Update(r,f) = { r with evaluationLandmarksWIM2RealWorldLook = f r.evaluationLandmarksWIM2RealWorldLook }
