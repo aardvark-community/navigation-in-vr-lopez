@@ -718,6 +718,24 @@ module Demo =
                 do! DefaultSurfaces.vertexColor
                 //do! DefaultSurfaces.simpleLighting
                 } 
+
+    let mkFlagCullMode (model : MModel) (box : MVisibleBox) =
+        let color = //mkColor model box
+            box.color |> Mod.map (fun yy -> C4f(yy.ToC3f(), 0.5f).ToC4b())
+            
+        let pos = box.trafo
+
+        Sg.box color box.geometry
+            |> Sg.noEvents
+            |> Sg.trafo(pos)
+            |> Sg.shader {
+                do! DefaultSurfaces.trafo
+                do! DefaultSurfaces.vertexColor
+                //do! DefaultSurfaces.simpleLighting
+                } 
+            |> Sg.blendMode (Mod.constant BlendMode.Blend)
+            |> Sg.cullMode (Mod.constant CullMode.Front)
+            |> Sg.pass (RenderPass.after "" RenderPassOrder.Arbitrary RenderPass.main)
                                
     let mkSphere (model : MModel) (sphere : MVisibleSphere) =
         let color = sphere.color
@@ -934,7 +952,7 @@ module Demo =
             m.evaluationLandmarks
             |> AList.toASet 
             |> ASet.map (fun b ->
-                mkFlag m b
+                mkFlagCullMode m b
             )
             |> Sg.set
             |> defaultEffect
