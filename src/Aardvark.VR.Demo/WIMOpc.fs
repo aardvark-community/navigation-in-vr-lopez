@@ -88,15 +88,6 @@ module WIMOpc =
                 newModel.WIMuserPos
                 |> PList.map (fun lmkC ->
                     let newTrafo = 
-                        //let con2Pos = pos.pose.deviceToWorld * newModel.workSpaceTrafo.Inverse * newModel.WIMworkSpaceTrafo
-                        //let r = con2Pos.GetOrthoNormalOrientation()
-                        //let rot = Rot3d.FromFrame(r.Forward.C0.XYZ, r.Forward.C1.XYZ, r.Forward.C2.XYZ)
-                        //let rotation = rot.GetEulerAngles()
-                        //let rotation1 = V3d(0.0, 0.0, rotation.Z)
-                        //let translation = V3d(con2Pos.GetModelOrigin().X, con2Pos.GetModelOrigin().Y, con2Pos.GetModelOrigin().Z) + pos.pose.deviceToWorld.Forward.C1.XYZ * 0.05
-                        //let scale = V3d(0.5, 0.5, 0.5)
-                        
-                        //Trafo3d.FromComponents(scale, rotation1, translation)
                         let newLmkC = pos.pose.deviceToWorld * newModel.workSpaceTrafo.Inverse * newModel.WIMworkSpaceTrafo
                         let rtLmkC = newLmkC.GetOrthoNormalOrientation()
                         let rotLmkC = Rot3d.FromFrame(rtLmkC.Forward.C0.XYZ, rtLmkC.Forward.C1.XYZ, rtLmkC.Forward.C2.XYZ)
@@ -124,7 +115,6 @@ module WIMOpc =
                         let rotationLmkC1 = V3d(0.0, 0.0, rotationLmkC.Z)
 
                         let translationLmkC = V3d(newLmkC.GetModelOrigin().X, newLmkC.GetModelOrigin().Y, newLmkC.GetModelOrigin().Z + 0.07)
-                        //let translationLmkC = V3d(newLmkC.GetModelOrigin().X, newLmkC.GetModelOrigin().Y, newLmkC.GetModelOrigin().Z + 0.07) + pos.pose.deviceToWorld.Forward.C1.XYZ * 0.05
                     
                         let scaleLmkC = V3d.One
                         Trafo3d.FromComponents(scaleLmkC, rotationLmkC1, translationLmkC)
