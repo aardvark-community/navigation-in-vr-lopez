@@ -174,8 +174,10 @@ module PlaceLandmark =
         match newCP, evalLandmark, secondCon with
         | Some con, Some evalLand, Some con2 ->
             let controllerOnAnnotationSpace = con.pose.deviceToWorld * model.workSpaceTrafo.Inverse
-            let dist = System.Math.Round(V3d.Distance(controllerOnAnnotationSpace.GetModelOrigin(), evalLand.trafo.GetModelOrigin()), 3)
-            //printfn "dist: %A" dist
+            let dist = System.Math.Round((evalLand.trafo.GetModelOrigin().XY - controllerOnAnnotationSpace.GetModelOrigin().XY).Length, 3)
+            
+            //printfn "minimum dist: %A" dist
+            
             let model = 
                 let newTrafo = Trafo3d.Translation(V3d(con.pose.deviceToWorld.GetModelOrigin().X + 0.30, con.pose.deviceToWorld.GetModelOrigin().Y - 0.75, con.pose.deviceToWorld.GetModelOrigin().Z))
                 let updateDrone = {model.droneDistanceToLandmark with text = "distance to next landmark: " + dist.ToString() + " meters"; trafo = newTrafo}
