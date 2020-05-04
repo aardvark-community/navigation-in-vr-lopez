@@ -677,7 +677,6 @@ module Demo =
         Sg.cone 20 color (Mod.constant 0.5) (Mod.constant 5.0) 
             |> Sg.noEvents
             |> Sg.scale 5.0
-            //|> Sg.trafo (Mod.constant (Trafo3d.RotationInDegrees(V3d(-90.0,90.0,0.0))))
             |> Sg.trafo cp.trafo
             |> Sg.shader {
                 do! DefaultSurfaces.trafo
@@ -689,7 +688,6 @@ module Demo =
         Sg.cone 20 color (Mod.constant 0.25) (Mod.constant 5.0) 
             |> Sg.noEvents
             |> Sg.scale 4.25
-            //|> Sg.trafo (Mod.constant (Trafo3d.RotationInDegrees(V3d(-90.0,90.0,0.0))))
             |> Sg.trafo cp.trafo
             |> Sg.shader {
                 do! DefaultSurfaces.trafo
@@ -1423,8 +1421,7 @@ module Demo =
             [
                 evaluationLands
                 evaluationLandsLook
-                texturedQuad
-                //lookHereString
+                //texturedQuad
                 drones
                 droneCylinder
             ]
