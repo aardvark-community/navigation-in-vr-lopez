@@ -616,13 +616,13 @@ module Demo =
     let threads (model : Model) =
         ThreadPool.empty
         
-    let input (msg : VrMessage) =
+    let input (state : VrState) (msg : VrMessage) =
         match msg with
         // buttons identifications: sensitive = 0, backButton = 1, sideButtons = 2
         | VrMessage.Touch(con,button) -> 
+            printfn "touchin button: %d" button
             match button with 
             | 0 -> 
-                printfn "touchin"
                 [MenuMessage (Demo.MenuAction.CreateMenu(con |> ControllerKind.fromInt, true), con |> ControllerKind.fromInt, true)]
             | _ -> []
         | VrMessage.Untouch(con,button) -> 
@@ -647,9 +647,19 @@ module Demo =
             | 2 -> [Select(con |> ControllerKind.fromInt, button |> ControllerButtons.fromInt, false)]
             | _ -> []
         | VrMessage.UpdatePose(cn,p) -> 
+            
+            // old way: 
             if p.isValid then 
                 [SetControllerPosition (cn |> ControllerKind.fromInt, p)]
             else []
+            // new way:
+            //if p.isValid then 
+            //    let kind  =
+            //        match HMap.tryFind cn state.devices with
+            //        | None -> []
+            //        | Some d -> 
+            //            [SetControllerPosition (d.kind, p)]
+            //else []
         | VrMessage.Press(con,button) -> 
             printfn "%d Touch identification %d" con button
             match button with

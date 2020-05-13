@@ -148,7 +148,7 @@ type ComposedApp<'model, 'mmodel, 'msg> =
         initial     : 'model
         update      : VrState -> VrActions -> 'model -> 'msg -> 'model
         threads     : 'model -> ThreadPool<'msg>
-        input       : VrMessage -> list<'msg>
+        input       : VrState -> VrMessage -> list<'msg>
         ui          : VrSystemInfo -> 'mmodel -> DomNode<'msg>
         vr          : VrSystemInfo -> 'mmodel -> ISg<'msg>
 
@@ -223,7 +223,7 @@ module ComposedApp =
 
         let input (msg : VrMessage) =
             if running.Value then
-                capp.input msg
+                capp.input vrapp.SystemInfo.state.Current msg
             else
                 []
 
@@ -258,7 +258,7 @@ module ComposedApp =
                     new IMutableVrApp with
                         member x.Scene = RuntimeCommand.Render(objects)
                         member x.Stop() = ()
-                        member x.Input msg = mapp.update Guid.Empty (capp.input msg :> seq<_>)
+                        member x.Input msg = mapp.update Guid.Empty (capp.input vrapp.SystemInfo.state.Current msg :> seq<_>)
                 }
 
         stop <- fun () ->

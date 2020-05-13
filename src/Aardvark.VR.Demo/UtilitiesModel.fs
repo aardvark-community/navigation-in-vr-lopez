@@ -8,10 +8,10 @@ open Aardvark.Base.IndexedGeometryPrimitives
 
 type ControllerKind =
 | HMD = 0
-| LightHouseA = 1
-| LightHouseB = 2
-| ControllerA = 3
-| ControllerB = 4
+| LightHouseA = 3
+| LightHouseB = 4
+| ControllerA = 2
+| ControllerB = 1
 
 module ControllerKind =
     let fromInt i =

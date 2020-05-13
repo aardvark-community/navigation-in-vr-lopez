@@ -354,7 +354,7 @@ module Mutable =
 
 type VrApp<'model, 'mmodel, 'msg> =
     {
-        input       : VrMessage -> list<'msg>
+        input       : VrState -> VrMessage -> list<'msg>
         view        : 'mmodel -> IMVrState -> IRuntime -> IUniformProvider -> StencilMode -> RuntimeCommand
         update      : 'model -> VrState -> 'msg -> 'model
         initial     : 'model
@@ -480,8 +480,8 @@ module MutableVrApp =
             
             currentThreads <- ThreadPool<'msg>(HMap.choose2 merge currentThreads.store newThreads.store)
 
-        let input (msg : VrMessage) =
-            app.input msg |> Seq.iter emit
+        let input  (msg : VrMessage) =
+            app.input info.state.Current msg |> Seq.iter emit
             
         
         let hmdLocation = info.hmd.Pose |> Mod.map (fun t -> t.Forward.C3.XYZ)

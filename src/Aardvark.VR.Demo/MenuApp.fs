@@ -128,7 +128,7 @@ module MenuApp =
             | false -> model
         | CloseMenu -> model
             
-    let input (msg : VrMessage) =
+    let input (vrState : VrState) (msg : VrMessage) =
         match msg with
         // buttons identifications: sensitive = 0, backButton = 1, sideButtons = 2
         | VrMessage.Touch(con,button) -> 
