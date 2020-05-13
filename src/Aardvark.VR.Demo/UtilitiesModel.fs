@@ -10,8 +10,8 @@ type ControllerKind =
 | HMD = 0
 | LightHouseA = 3
 | LightHouseB = 4
-| ControllerA = 2
-| ControllerB = 1
+| ControllerA = 1
+| ControllerB = 2
 
 module ControllerKind =
     let fromInt i =
