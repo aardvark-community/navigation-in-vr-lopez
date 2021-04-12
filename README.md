@@ -9,6 +9,8 @@ The experiments were carried out using the Victoria Crater SuperResolution datas
 
 Running the demo `Tansportation.Thesis` download the data from http://download.vrvis.at/acquisition/32987e2792e0/PRo3D/VictoriaCrater.zip and place the subfolder `HiRISE_VictoriaCrater_SuperResolution` it beside the executeable in a folder called data.
 
+For convinience, a prebuilt version which was used for the experiments is listed as release (this one was compiled for windows).
+
 
 
 Thanks to Marc for his great work!
