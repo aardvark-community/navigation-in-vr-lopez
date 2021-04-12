@@ -4,7 +4,7 @@ VisualStudioVersion = 16.0.29306.81
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Aardvark.VR", "Aardvark.VR\Aardvark.VR.fsproj", "{42E9CA68-FB39-4EB7-B173-82A457373652}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Aardvark.VR.Demo", "Aardvark.VR.Demo\Aardvark.VR.Demo.fsproj", "{817C8DBE-A2C3-48DD-AB89-78E00E204E35}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Transportation.Thesis", "Aardvark.VR.Demo\Transportation.Thesis.fsproj", "{817C8DBE-A2C3-48DD-AB89-78E00E204E35}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "OPCViewer.Base", "OPCViewer.Base\OPCViewer.Base.fsproj", "{1C3CD089-6168-4BAD-B714-33E955A87ADC}"
 	ProjectSection(ProjectDependencies) = postProject

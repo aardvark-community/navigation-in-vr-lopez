@@ -1503,7 +1503,9 @@ module Demo =
         let path = 
             if System.IO.Directory.Exists publishPath then publishPath
             elif System.IO.Directory.Exists marcPath then marcPath
-            else failwithf "could not find data dir. current directory i: %s" System.Environment.CurrentDirectory
+            elif System.IO.Directory.Exists "./data" then "./data"
+            else 
+                failwithf "could not find data dir. current directory i: %s" System.Environment.CurrentDirectory
         let patchHierarchiesInit = 
             OpcViewerFunc.patchHierarchiesImport path //"..\bin\data" //"C:\Users\lopez\Desktop\VictoriaCrater\HiRISE_VictoriaCrater_SuperResolution"
 
