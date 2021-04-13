@@ -1,3 +1,5 @@
+![teaser](./thesis/teaser.png)
+
 This repository contains the code for the master thesis 
 *How can I get there? Disorientation and motion sickness effects depending on the virtual reality navigation technique* **by Marc Domenech Lopez**.
 
