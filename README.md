@@ -5,6 +5,8 @@ This repository contains the code for the master thesis
 
 The thesis itself can be found in [thesis](./thesis/Marc-Lopez-2019-Master-Thesis.pdf)
 
+The work is based on packages from [aardvark platform](https://github.com/aardvark-platform) and [PRo3D](https://pro3d.space/).
+
 
 The experiments were carried out using the Victoria Crater SuperResolution dataset:
 HiRISE_VictoriaCrater_SuperResolution: 5cm orthorectified Super Resolution Restoration (SRR) image created from 6-image input by Tao & Muller (2016) using the GPT algorithm. See 'Tao, Y.; Muller, J.-P. (2016) A novel method for surface exploration: Super-resolution restoration of Mars repeat-pass orbital imagery. Planetary and Space Science, 121, 103–114.doi:10.1016/j.pss.2015.11.010'
